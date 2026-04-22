@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { asset } from '$app/paths';
 
   export interface InterludeData {
     chapterLabel: string;
@@ -12,7 +12,7 @@
   }
 
   let { data }: { data: InterludeData } = $props();
-  const imageUrl = $derived(`${base}${data.image}`);
+  const imageUrl = $derived(asset(data.image as `/${string}`));
 </script>
 
 <div class="panel panel--alt interlude" data-scroll-screen aria-label="Curator's Note">

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { m } from '$i18n';
+
   let {
     current = 1,
     total = 4,
@@ -14,12 +16,12 @@
   } = $props();
 </script>
 
-<div class="scroll-status" role="navigation" aria-label="Exhibition progress">
+<div class="scroll-status" role="navigation" aria-label={m.scroll_progress()}>
   <button
     class="ss-btn"
     onclick={onPrev}
     disabled={current <= 1}
-    aria-label="Previous room"
+    aria-label={m.scroll_previous()}
   >
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M10 3L5 8l5 5"/>
@@ -41,7 +43,7 @@
     class="ss-btn"
     onclick={onNext}
     disabled={current >= total}
-    aria-label="Next room"
+    aria-label={m.scroll_next()}
   >
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M6 3l5 5-5 5"/>

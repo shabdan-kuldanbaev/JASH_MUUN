@@ -2,6 +2,7 @@
   import { resolve } from '$app/paths';
   import type { PageData } from './$types';
   import type { GalleryItem } from '$lib/types/datocms';
+  import { m, LOCALES } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
   import CmsImage from '$cms/CmsImage.svelte';
   import StructuredTextRenderer from '$cms/StructuredTextRenderer.svelte';
@@ -12,7 +13,7 @@
 
   const date = $derived(
     data.practice.publishedDate
-      ? new Date(data.practice.publishedDate).toLocaleDateString('en-GB', {
+      ? new Date(data.practice.publishedDate).toLocaleDateString(data.locale, {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
@@ -37,6 +38,10 @@
   description={data.practice.seo?.description ?? data.practice.excerpt}
   seo={data.practice.seo}
   locale={data.locale}
+  alternateLocales={LOCALES.map((locale) => ({
+    locale,
+    url: resolve(`/${locale}/practices/${data.practice.slug}/`),
+  }))}
 />
 
 <article class="article">
@@ -44,7 +49,7 @@
   <header class="article-header">
     <div class="article-meta">
       {#if data.practice.featured}
-        <span class="article-featured">Featured</span>
+        <span class="article-featured">{m.common_featured()}</span>
         <span class="article-sep" aria-hidden="true">·</span>
       {/if}
       {#if date}
@@ -75,23 +80,23 @@
 
   <!-- YouTube embed -->
   {#if data.practice.youtubeUrl}
-    <section class="article-video" aria-label="Video">
-      <h2 class="section-label">Video</h2>
+    <section class="article-video" aria-label={m.detail_video_aria()}>
+      <h2 class="section-label">{m.common_video()}</h2>
       <YouTubeEmbed url={data.practice.youtubeUrl} title={data.practice.title} />
     </section>
   {/if}
 
   <!-- Gallery -->
   {#if galleryItems.length > 0}
-    <section class="article-gallery" aria-label="Photo gallery">
-      <h2 class="section-label">Gallery</h2>
+    <section class="article-gallery" aria-label={m.detail_photo_gallery_aria()}>
+      <h2 class="section-label">{m.common_gallery()}</h2>
       <GalleryGrid items={galleryItems} locale={data.locale} />
     </section>
   {/if}
 
   <!-- Back link -->
-  <nav class="article-nav" aria-label="Practice navigation">
-    <a href={resolve(`/${data.locale}/practices/`)} class="back-link">← Back to Practices</a>
+  <nav class="article-nav" aria-label={m.detail_practice_navigation_aria()}>
+    <a href={resolve(`/${data.locale}/practices/`)} class="back-link">← {m.common_back_to_practices()}</a>
   </nav>
 </article>
 

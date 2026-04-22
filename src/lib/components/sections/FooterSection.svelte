@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { asset } from '$app/paths';
+  import { m } from '$i18n';
 
   let email = $state('');
   let submitted = $state(false);
-  const mainLogoSrc = $derived(`${base}/assets/main-logo.svg`);
-  const supportingLogoSrc = $derived(`${base}/assets/supporting-logo.svg`);
+  const mainLogoSrc = asset('/assets/main-logo.svg');
+  const supportingLogoSrc = asset('/assets/supporting-logo.svg');
 
   function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
@@ -13,32 +14,29 @@
   }
 </script>
 
-<section class="panel panel--w-full footer-wrap" data-scroll-screen aria-label="Contact & Partners">
+<section class="panel panel--w-full footer-wrap" data-scroll-screen aria-label={m.footer_aria_section()}>
   <div class="footer-inner">
     <div class="footer-grid">
       <div class="footer-left">
-        <div class="chapter">End of the exhibition</div>
-        <h2>The archive stays open.<br>You are welcome back.</h2>
-        <p>
-          Send us a letter, a recording, a photograph of your grandmother's shyrdak.
-          The collection grows one story at a time.
-        </p>
+        <div class="chapter">{m.footer_chapter()}</div>
+        <h2>{m.footer_title_line_1()}<br>{m.footer_title_line_2()}</h2>
+        <p>{m.footer_body()}</p>
         <form class="news" onsubmit={handleSubmit}>
           <input
             type="email"
-            placeholder="your@email"
-            aria-label="Email address"
+            placeholder={m.footer_email_placeholder()}
+            aria-label={m.footer_email_label()}
             bind:value={email}
             required
           />
           <button type="submit">
-            {submitted ? 'Thank you ↗' : 'Subscribe →'}
+            {submitted ? m.footer_thank_you() : m.footer_subscribe()}
           </button>
         </form>
       </div>
 
       <aside class="partners" aria-label="Supporters">
-        <span class="label">Supported by</span>
+        <span class="label">{m.footer_supported_by()}</span>
         <div class="logos">
           <span class="plogo main" aria-label="Jash-Muun">
             <img src={mainLogoSrc} alt="Jash-Muun" style="height:72px;width:auto;display:block;" />
@@ -47,21 +45,18 @@
             <img src={supportingLogoSrc} alt="ALIPH" style="height:72px;width:auto;display:block;" />
           </span>
         </div>
-        <p class="note">
-          This project is supported by ALIPH (International Alliance for the Protection of Heritage
-          in Conflict Areas) and Jash-Muun Foundation.
-        </p>
+        <p class="note">{m.footer_support_note()}</p>
       </aside>
     </div>
 
     <footer class="colophon">
       <div>
-        <span>© 2026 Jash-Muun Foundation · Bishkek, Kyrgyzstan</span>
+        <span>{m.footer_copyright()}</span>
       </div>
       <div class="links" aria-label="Footer links">
-        <span>About</span>
-        <span>Contact</span>
-        <span>Privacy</span>
+        <span>{m.footer_link_about()}</span>
+        <span>{m.footer_link_contact()}</span>
+        <span>{m.footer_link_privacy()}</span>
       </div>
       <span class="mark">Jash-Muun</span>
     </footer>

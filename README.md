@@ -26,6 +26,7 @@ Open [http://localhost:5173](http://localhost:5173).
 | `yarn build` | Production build |
 | `yarn preview` | Preview production build |
 | `yarn datocms:schema` | Fetch local DatoCMS GraphQL schema snapshot |
+| `yarn i18n:compile` | Regenerate Paraglide runtime from message catalogs |
 | `yarn run check` | Type-check Svelte components |
 | `yarn lint` | Run ESLint across the project |
 | `yarn lint:fix` | Apply safe ESLint fixes |
@@ -50,6 +51,25 @@ yarn lint:fix
 ```
 
 CI enforcement lives in `.github/workflows/lint.yml`.
+
+## i18n
+
+UI translations are handled by Paraglide JS.
+
+Key files:
+
+- `project.inlang/settings.json` — locale and project config
+- `messages/*.json` — source message catalogs
+- `src/lib/paraglide/*` — generated runtime and message functions
+
+Current UI locales:
+
+- `ky`
+- `en`
+- `fr`
+- `ru`
+
+The route structure remains locale-prefixed as `/${locale}/...`, and Paraglide locale state is synchronized from the active route param in `src/routes/[locale]/+layout.ts`.
 
 ## Deployment
 

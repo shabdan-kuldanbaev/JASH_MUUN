@@ -1,6 +1,6 @@
 import { datoRequest } from '../client';
 import type { Practice } from '$lib/types/datocms';
-import { LOCALES, resolveContentLocale } from '$lib/types/datocms';
+import { LOCALES, resolveContentLocale } from '$lib/i18n';
 
 const POST_QUERY = /* GraphQL */ `
   query Practice($locale: SiteLocale!, $slug: String!) {
@@ -12,22 +12,7 @@ const POST_QUERY = /* GraphQL */ `
       coverImage { url alt width height blurUpThumb }
       publishedDate
       featured
-      content {
-        value
-        blocks {
-          __typename
-          ... on ImageBlockRecord {
-            id
-            caption
-            image { url alt width height blurUpThumb }
-          }
-          ... on QuoteBlockRecord {
-            id
-            quote
-            attribution
-          }
-        }
-      }
+      content { value }
       gallery { url alt width height blurUpThumb }
       youtubeUrl
       seo {

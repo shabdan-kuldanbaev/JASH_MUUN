@@ -1,23 +1,6 @@
 // Shared TypeScript types for DatoCMS content.
 // Safe to import from both server files and Svelte components (types are erased at runtime).
-
-// ── Locales ───────────────────────────────────────────────────────────────────
-
-// TARGET locales — add here once configured in DatoCMS Settings > Locales.
-// Currently only 'ru' is active; 'ky'/'en'/'fr' queries are skipped gracefully.
-export const LOCALES = ['ru', 'ky', 'en', 'fr'] as const;
-export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'ru';
-
-export function isValidLocale(value: string): value is Locale {
-  return (LOCALES as readonly string[]).includes(value);
-}
-
-/** Returns the locale if it is configured in DatoCMS, otherwise falls back to 'ru'. */
-export function resolveContentLocale(locale: string): string {
-  const available = ['ru'];
-  return available.includes(locale) ? locale : 'ru';
-}
+// Locale constants and helpers live in $i18n, not here.
 
 // ── Shared field shapes ───────────────────────────────────────────────────────
 
@@ -167,6 +150,8 @@ export interface DastBlock {
 }
 
 // ── Custom blocks inside Structured Text ──────────────────────────────────────
+// These types exist for when DatoCMS has block types configured on the content field.
+// Currently no blocks are configured — content.blocks will be undefined at runtime.
 
 export type CustomBlock = ImageBlock | QuoteBlock;
 

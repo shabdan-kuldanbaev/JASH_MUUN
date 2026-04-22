@@ -11,6 +11,7 @@ const config = {
       assets: 'build'
     }),
     alias: {
+      $i18n: 'src/lib/i18n',
       $components: 'src/lib/components',
       $cms: 'src/lib/components/cms'
     },

@@ -1,6 +1,6 @@
 import { datoRequest } from '../client';
 import type { PracticeSummary } from '$lib/types/datocms';
-import { resolveContentLocale } from '$lib/types/datocms';
+import { resolveContentLocale } from '$lib/i18n';
 
 const QUERY = /* GraphQL */ `
   query PracticeIndex($locale: SiteLocale!) {

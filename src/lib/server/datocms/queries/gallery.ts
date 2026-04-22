@@ -1,6 +1,6 @@
 import { datoRequest } from '../client';
 import type { GalleryItem } from '$lib/types/datocms';
-import { resolveContentLocale } from '$lib/types/datocms';
+import { resolveContentLocale } from '$lib/i18n';
 
 // Gallery items are derived from the `gallery` asset gallery field on practice records.
 

@@ -1,40 +1,47 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { base, resolve } from '$app/paths';
-  import { LOCALES } from '$lib/types/datocms';
+  import { resolve, asset } from '$app/paths';
+  import { m, LOCALES } from '$i18n';
 
   let { locale }: { locale: string } = $props();
 
   // Derive which nav link is "current" from the URL pathname.
   const path = $derived($page.url.pathname);
+  // Slice from the locale segment onward — strips any base-path prefix automatically.
+  const pathFromLocale = $derived(path.slice(path.indexOf(`/${locale}`)));
   const isPractice = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
   const homeHref = $derived(resolve(`/${locale}/`));
   const practicesHref = $derived(resolve(`/${locale}/practices/`));
   const galleryHref = $derived(resolve(`/${locale}/gallery/`));
-  const mainLogoSrc = $derived(`${base}/assets/main-logo.svg`);
-  const supportingLogoSrc = $derived(`${base}/assets/supporting-logo.svg`);
+  const mainLogoSrc = asset('/assets/main-logo.svg');
+  const supportingLogoSrc = asset('/assets/supporting-logo.svg');
+
+  function localePath(targetLocale: string): `/${string}` {
+    const localized = pathFromLocale.replace(/^\/[^/]+(?=\/|$)/, `/${targetLocale}`);
+    return (localized || `/${targetLocale}/`) as `/${string}`;
+  }
 </script>
 
 <header class="nav">
   <nav class="nav-left" aria-label="Primary">
-    <a href={homeHref} class:is-current={!isPractice && !isGallery}>Home</a>
-    <a href={practicesHref} class:is-current={isPractice}>Practices</a>
-    <a href={galleryHref} class:is-current={isGallery}>Archive</a>
+    <a href={homeHref} class:is-current={!isPractice && !isGallery}>{m.nav_home()}</a>
+    <a href={practicesHref} class:is-current={isPractice}>{m.nav_practices()}</a>
+    <a href={galleryHref} class:is-current={isGallery}>{m.nav_archive()}</a>
 
-    <span class="nav-lang" aria-label="Language">
+    <span class="nav-lang" aria-label={m.nav_language()}>
       {#each LOCALES as l (l)}
-        <a href={resolve(`/${l}/`)} class:on={l === locale}>{l.toUpperCase()}</a>
+        <a href={resolve(localePath(l))} class:on={l === locale}>{l.toUpperCase()}</a>
       {/each}
     </span>
   </nav>
 
   <div class="nav-right">
-    <a href={homeHref} class="logo-main" aria-label="Jash-Muun — home">
+    <a href={homeHref} class="logo-main" aria-label={m.nav_brand_home()}>
       <img src={mainLogoSrc} alt="Jash-Muun" class="svg-main" />
     </a>
     <div class="nav-divider" aria-hidden="true"></div>
-    <span class="logo-support" aria-label="ALIPH — supporting partner">
+    <span class="logo-support" aria-label={m.nav_support_partner()}>
       <img src={supportingLogoSrc} alt="ALIPH" class="svg-supp" />
     </span>
   </div>

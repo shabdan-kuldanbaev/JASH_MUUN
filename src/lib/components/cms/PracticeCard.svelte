@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import { m } from '$i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -7,7 +8,7 @@
 
   const date = $derived(
     practice.publishedDate
-      ? new Date(practice.publishedDate).toLocaleDateString('en-GB', {
+      ? new Date(practice.publishedDate).toLocaleDateString(locale, {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
@@ -32,7 +33,7 @@
     <div class="card-body">
       <div class="card-meta">
         {#if practice.featured}
-          <span class="card-featured">Featured</span>
+          <span class="card-featured">{m.common_featured()}</span>
           <span class="card-sep" aria-hidden="true">·</span>
         {/if}
         {#if date && practice.publishedDate}
@@ -46,7 +47,7 @@
         <p class="card-excerpt">{practice.excerpt}</p>
       {/if}
 
-      <span class="card-read">Read →</span>
+      <span class="card-read">{m.common_read()}</span>
     </div>
   </a>
 </article>

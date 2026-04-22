@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import type { PageData } from './$types';
+  import { m, LOCALES } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
   import PracticeCard from '$cms/PracticeCard.svelte';
 
@@ -7,24 +9,28 @@
 </script>
 
 <SeoHead
-  title="Practices — Jash-Muun"
-  description="Documented cultural practices, field research, and heritage records from Kyrgyz mountain communities."
+  title={m.practices_meta_title()}
+  description={m.practices_meta_description()}
   locale={data.locale}
+  alternateLocales={LOCALES.map((locale) => ({
+    locale,
+    url: resolve(`/${locale}/practices/`),
+  }))}
 />
 
 <div class="page">
   <header class="page-header">
-    <p class="page-sup">Archive</p>
-    <h1 class="page-title">Practices</h1>
+    <p class="page-sup">{m.practices_kicker()}</p>
+    <h1 class="page-title">{m.practices_title()}</h1>
     <div class="page-rule" aria-hidden="true"></div>
   </header>
 
   {#if data.practices.length === 0}
     <div class="empty-state">
-      <p>No practices published yet.</p>
+      <p>{m.practices_empty()}</p>
     </div>
   {:else}
-    <section class="practice-list" aria-label="Practice list">
+    <section class="practice-list" aria-label={m.practices_list_aria()}>
       {#each data.practices as practice (practice.id)}
         <PracticeCard {practice} locale={data.locale} />
       {/each}

@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { LOCALES, type GalleryItem } from '$lib/types/datocms';
+import { LOCALES } from '$i18n';
+import type { GalleryItem } from '$lib/types/datocms';
 import { getGalleryItems } from '$lib/server/datocms/queries/gallery';
 import { DatoLocaleError } from '$lib/server/datocms/client';
 

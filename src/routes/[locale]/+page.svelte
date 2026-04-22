@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { PageData } from './$types';
+  import {resolve} from '$app/paths';
+  import {onMount} from 'svelte';
+  import type {PageData} from './$types';
+  import {LOCALES, m} from '$i18n';
   import Header from '$components/layout/Header.svelte';
   import ScrollProgress from '$components/layout/ScrollProgress.svelte';
   import HeroSection from '$components/sections/HeroSection.svelte';
@@ -99,8 +101,7 @@
 
   function update() {
     const max = maxScroll();
-    const pct = max > 0 ? stage.scrollLeft / max : 0;
-    scrollProgress = pct;
+    scrollProgress = max > 0 ? stage.scrollLeft / max : 0;
     currentScreen = currentIndex() + 1;
     if (stage.scrollLeft > 40) showHint = false;
   }
@@ -193,8 +194,11 @@
 </script>
 
 <svelte:head>
-  <title>Jash-Muun · Living Heritage</title>
-  <meta name="description" content="A digital exhibition of intangible cultural heritage from Kyrgyz mountain communities." />
+  <title>{m.home_meta_title()}</title>
+  <meta name="description" content={m.home_meta_description()} />
+  {#each LOCALES as locale (locale)}
+    <link rel="alternate" hreflang={locale} href={resolve(`/${locale}/`)} />
+  {/each}
 </svelte:head>
 
 <Header locale={data.locale} />
@@ -208,7 +212,7 @@
 <!-- Scroll hint -->
 <div class="scroll-hint" class:hide={!showHint} aria-hidden="true">
   <span class="line"></span>
-  Scroll to explore
+  {m.home_scroll_hint()}
 </div>
 
 <ScrollProgress

@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { LOCALES, type PracticeSummary } from '$lib/types/datocms';
+import { LOCALES } from '$i18n';
+import type { PracticeSummary } from '$lib/types/datocms';
 import { getPracticeIndex } from '$lib/server/datocms/queries/practiceIndex';
 
 export const prerender = true;

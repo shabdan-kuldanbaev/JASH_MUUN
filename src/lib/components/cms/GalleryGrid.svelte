@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import { m } from '$i18n';
   import type { GalleryItem } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -13,7 +14,7 @@
 </script>
 
 {#if items.length === 0}
-  <p class="empty">No images in the archive yet.</p>
+  <p class="empty">{m.common_empty_gallery()}</p>
 {:else}
   <div class="grid">
     {#each items as item (item.imageUrl)}

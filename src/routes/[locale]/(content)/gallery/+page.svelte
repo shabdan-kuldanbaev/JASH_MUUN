@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import type { PageData } from './$types';
+  import { m, LOCALES } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
   import GalleryGrid from '$cms/GalleryGrid.svelte';
 
@@ -7,24 +9,26 @@
 </script>
 
 <SeoHead
-  title="Archive — Jash-Muun"
-  description="A visual archive of photographs from Kyrgyz mountain communities — dwellings, craft, ritual, and bloodlines."
+  title={m.gallery_meta_title()}
+  description={m.gallery_meta_description()}
   locale={data.locale}
+  alternateLocales={LOCALES.map((locale) => ({
+    locale,
+    url: resolve(`/${locale}/gallery/`),
+  }))}
 />
 
 <div class="page">
   <header class="page-header">
-    <p class="page-sup">Visual record</p>
-    <h1 class="page-title">Archive</h1>
-    <p class="page-desc">
-      Photographs drawn from documented practices across Naryn, Issyk-Kul, and the Suusamyr Valley.
-    </p>
+    <p class="page-sup">{m.gallery_kicker()}</p>
+    <h1 class="page-title">{m.gallery_title()}</h1>
+    <p class="page-desc">{m.gallery_description()}</p>
     <div class="page-rule" aria-hidden="true"></div>
   </header>
 
   {#if data.items.length === 0}
     <div class="empty-state">
-      <p>No images in the archive yet.</p>
+      <p>{m.gallery_empty()}</p>
     </div>
   {:else}
     <GalleryGrid items={data.items} locale={data.locale} />

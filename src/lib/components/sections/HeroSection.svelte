@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import PracticeCard from '$components/ui/PracticeCard.svelte';
+  import { m } from '$i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
   let {
@@ -12,17 +13,14 @@
 <section class="panel panel--w-hero hero" data-scroll-screen aria-label="01 Hero">
   <div class="hero-layout">
     <div class="hero-text">
-      <div class="eyebrow">A living archive · est. 2023</div>
+      <div class="eyebrow">{m.hero_eyebrow()}</div>
       <h1>
-        Discover the<br>
-        practices, people<br>
-        and patterns of<br>
-        <em>Kyrgyz heritage.</em>
+        {m.hero_title_line_1()}<br>
+        {m.hero_title_line_2()}<br>
+        {m.hero_title_line_3()}<br>
+        <em>{m.hero_title_emphasis()}</em>
       </h1>
-      <p class="hero-lede">
-        Jash-Muun gathers the voices and makers keeping nomadic heritage in motion — from
-        felt-pressed yurts to the horses that carry their bloodline across the Tien Shan.
-      </p>
+      <p class="hero-lede">{m.hero_lede()}</p>
       <div class="hero-ctas">
         <a href={resolve(`/${locale}/practices/`)} class="cta">
           <span class="arrow">
@@ -30,7 +28,7 @@
               <path d="M3 8h10M9 4l4 4-4 4"/>
             </svg>
           </span>
-          Enter the exhibition
+          {m.hero_enter_cta()}
         </a>
       </div>
     </div>
