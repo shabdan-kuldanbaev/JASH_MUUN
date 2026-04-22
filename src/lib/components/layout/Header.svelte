@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { base } from '$app/paths';
+  import { base, resolve } from '$app/paths';
   import { LOCALES } from '$lib/types/datocms';
 
   let { locale }: { locale: string } = $props();
@@ -9,9 +9,9 @@
   const path = $derived($page.url.pathname);
   const isPractice = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
-  const homeHref = $derived(`${base}/${locale}/`);
-  const practicesHref = $derived(`${base}/${locale}/practices/`);
-  const galleryHref = $derived(`${base}/${locale}/gallery/`);
+  const homeHref = $derived(resolve(`/${locale}/`));
+  const practicesHref = $derived(resolve(`/${locale}/practices/`));
+  const galleryHref = $derived(resolve(`/${locale}/gallery/`));
   const mainLogoSrc = $derived(`${base}/assets/main-logo.svg`);
   const supportingLogoSrc = $derived(`${base}/assets/supporting-logo.svg`);
 </script>
@@ -23,8 +23,8 @@
     <a href={galleryHref} class:is-current={isGallery}>Archive</a>
 
     <span class="nav-lang" aria-label="Language">
-      {#each LOCALES as l}
-        <a href={`${base}/${l}/`} class:on={l === locale}>{l.toUpperCase()}</a>
+      {#each LOCALES as l (l)}
+        <a href={resolve(`/${l}/`)} class:on={l === locale}>{l.toUpperCase()}</a>
       {/each}
     </span>
   </nav>

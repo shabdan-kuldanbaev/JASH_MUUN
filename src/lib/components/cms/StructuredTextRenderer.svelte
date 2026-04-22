@@ -3,10 +3,9 @@
    * StructuredTextRenderer
    *
    * Renders a DatoCMS Structured Text field (DAST document) into semantic HTML.
-   * Supports all standard node types plus three custom block types:
+   * Supports standard block/text nodes plus custom image/quote blocks when present.
    *   - ImageBlockRecord
    *   - QuoteBlockRecord
-   *   - YoutubeEmbedBlockRecord
    *
    * Usage:
    *   <StructuredTextRenderer content={post.content} />
@@ -67,11 +66,52 @@
 
   // Render a span node to an HTML string (safe: no user-controllable HTML injection).
   function spanHtml(node: DastSpan): string {
-    const escaped = node.value
+    const escaped = escapeHtml(node.value);
+    return `${markOpen(node.marks)}${escaped}${markClose(node.marks)}`;
+  }
+
+  function escapeHtml(value: string): string {
+    return value
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    return `${markOpen(node.marks)}${escaped}${markClose(node.marks)}`;
+  }
+
+  function sanitizeHref(url: string): string {
+    const trimmed = url.trim();
+
+    if (trimmed.startsWith('/') || trimmed.startsWith('#')) {
+      return trimmed.replace(/"/g, '&quot;');
+    }
+
+    try {
+      const parsed = new URL(trimmed);
+      if (!['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol)) {
+        return '#';
+      }
+      return parsed.toString().replace(/"/g, '&quot;');
+    } catch {
+      return '#';
+    }
+  }
+
+  function nodeKey(node: DastNode, index: number): string {
+    if (node.type === 'block') return `block-${node.item}`;
+    if (node.type === 'inlineItem') return `inline-${node.item}`;
+    if (node.type === 'span') return `span-${index}-${node.value}`;
+    if (node.type === 'link') return `link-${index}-${node.url}`;
+    if (node.type === 'heading') return `heading-${index}-${node.level}`;
+    if (node.type === 'code') return `code-${index}-${node.language ?? 'plain'}`;
+    if (node.type === 'list') return `list-${index}-${node.style}`;
+    return `${node.type}-${index}`;
+  }
+
+  function isImageBlock(block: CustomBlock): block is ImageBlock {
+    return block.__typename === 'ImageBlockRecord';
+  }
+
+  function isQuoteBlock(block: CustomBlock): block is QuoteBlock {
+    return block.__typename === 'QuoteBlockRecord';
   }
 
   // Render inline children (spans and links) to an HTML string.
@@ -80,7 +120,7 @@
       .map((child) => {
         if (child.type === 'span') return spanHtml(child);
         if (child.type === 'link') {
-          const href = child.url.replace(/"/g, '&quot;');
+          const href = sanitizeHref(child.url);
           const inner = inlineHtml(child.children);
           return `<a href="${href}">${inner}</a>`;
         }
@@ -91,100 +131,110 @@
 </script>
 
 <!--
-  Recursive rendering: Svelte cannot import a component from within itself,
-  but svelte:self handles recursion for list items and blockquotes.
-  Block-level nodes (paragraph, heading, list, blockquote, code, block)
-  are rendered here. Inline content uses the inlineHtml helper above.
+  The renderer handles block-level nodes directly in the template.
+  Inline content uses the inlineHtml helper above.
 -->
 
-{#each content.value.document.children as node}
-  {#if node.type === 'paragraph'}
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    <p>{@html inlineHtml(node.children)}</p>
+<div class="structured-text">
+  {#each content.value.document.children as node, nodeIndex (nodeKey(node, nodeIndex))}
+    {#if node.type === 'paragraph'}
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+      <p>{@html inlineHtml(node.children)}</p>
 
-  {:else if node.type === 'heading'}
-    {#if node.level === 1}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <h1>{@html inlineHtml(node.children)}</h1>
-    {:else if node.level === 2}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <h2>{@html inlineHtml(node.children)}</h2>
-    {:else if node.level === 3}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <h3>{@html inlineHtml(node.children)}</h3>
-    {:else if node.level === 4}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <h4>{@html inlineHtml(node.children)}</h4>
-    {:else if node.level === 5}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <h5>{@html inlineHtml(node.children)}</h5>
-    {:else}
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <h6>{@html inlineHtml(node.children)}</h6>
-    {/if}
+    {:else if node.type === 'heading'}
+      {#if node.level === 1}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <h1>{@html inlineHtml(node.children)}</h1>
+      {:else if node.level === 2}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <h2>{@html inlineHtml(node.children)}</h2>
+      {:else if node.level === 3}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <h3>{@html inlineHtml(node.children)}</h3>
+      {:else if node.level === 4}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <h4>{@html inlineHtml(node.children)}</h4>
+      {:else if node.level === 5}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <h5>{@html inlineHtml(node.children)}</h5>
+      {:else}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <h6>{@html inlineHtml(node.children)}</h6>
+      {/if}
 
-  {:else if node.type === 'list'}
-    {#if node.style === 'bulleted'}
-      <ul>
-        {#each node.children as item}
-          {#if item.type === 'listItem'}
+    {:else if node.type === 'list'}
+      {#if node.style === 'bulleted'}
+        <ul>
+          {#each node.children as item, itemIndex (nodeKey(item, itemIndex))}
+            {#if item.type === 'listItem'}
+              <li>
+                {#each item.children as child, childIndex (nodeKey(child, childIndex))}
+                  {#if child.type === 'paragraph'}
+                    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                    <p>{@html inlineHtml(child.children)}</p>
+                  {/if}
+                {/each}
+              </li>
+            {/if}
+          {/each}
+        </ul>
+      {:else}
+        <ol>
+          {#each node.children as item, itemIndex (nodeKey(item, itemIndex))}
+            {#if item.type === 'listItem'}
+              <li>
+                {#each item.children as child, childIndex (nodeKey(child, childIndex))}
+                  {#if child.type === 'paragraph'}
+                    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                    <p>{@html inlineHtml(child.children)}</p>
+                  {/if}
+                {/each}
+              </li>
+            {/if}
+          {/each}
+        </ol>
+      {/if}
+
+    {:else if node.type === 'blockquote'}
+      <blockquote>
+        {#each node.children as child, childIndex (nodeKey(child, childIndex))}
+          {#if child.type === 'paragraph'}
             <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-            <li>{@html inlineHtml(item.children)}</li>
+            <p>{@html inlineHtml(child.children)}</p>
           {/if}
         {/each}
-      </ul>
-    {:else}
-      <ol>
-        {#each node.children as item}
-          {#if item.type === 'listItem'}
-            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-            <li>{@html inlineHtml(item.children)}</li>
-          {/if}
-        {/each}
-      </ol>
-    {/if}
-
-  {:else if node.type === 'blockquote'}
-    <blockquote>
-      {#each node.children as child}
-        {#if child.type === 'paragraph'}
-          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          <p>{@html inlineHtml(child.children)}</p>
+        {#if node.attribution}
+          <cite>{node.attribution}</cite>
         {/if}
-      {/each}
-      {#if node.attribution}
-        <cite>{node.attribution}</cite>
-      {/if}
-    </blockquote>
+      </blockquote>
 
-  {:else if node.type === 'code'}
-    <pre><code class={node.language ? `language-${node.language}` : undefined}>{node.code}</code></pre>
+    {:else if node.type === 'code'}
+      <pre><code class={node.language ? `language-${node.language}` : undefined}>{node.code}</code></pre>
 
-  {:else if node.type === 'block'}
-    {@const block = blockMap.get(node.item)}
-    {#if block}
-      {#if block.__typename === 'ImageBlockRecord'}
-        {@const b = block as ImageBlock}
-        <figure class="block-image">
-          <CmsImage image={b.image} sizes="(min-width: 900px) 720px, 100vw" />
-          {#if b.caption}
-            <figcaption>{b.caption}</figcaption>
-          {/if}
-        </figure>
+    {:else if node.type === 'block'}
+      {@const block = blockMap.get(node.item)}
+      {#if block}
+        {#if isImageBlock(block)}
+          <figure class="block-image">
+            <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
+            {#if block.caption}
+              <figcaption>{block.caption}</figcaption>
+            {/if}
+          </figure>
 
-      {:else if block.__typename === 'QuoteBlockRecord'}
-        {@const b = block as QuoteBlock}
-        <blockquote class="block-quote">
-          <p>{b.quote}</p>
-          {#if b.attribution}
-            <cite>{b.attribution}</cite>
-          {/if}
-        </blockquote>
+        {:else if isQuoteBlock(block)}
+          <blockquote class="block-quote">
+            <p>{block.quote}</p>
+            {#if block.attribution}
+              <cite>{block.attribution}</cite>
+            {/if}
+          </blockquote>
 
+        {/if}
       {/if}
     {/if}
-  {/if}
-{/each}
+  {/each}
+</div>
 
 <style>
   /* All styles use :global to reach {@html} output and block components */
@@ -315,6 +365,4 @@
     color: var(--ink-2);
     line-height: 1.6;
   }
-
-  .block-video { margin: 2.4em 0; }
 </style>

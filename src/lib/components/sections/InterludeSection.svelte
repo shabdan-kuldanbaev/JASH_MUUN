@@ -24,7 +24,7 @@
     <div class="interlude-text">
       <div class="chapter">{data.chapterLabel}</div>
       <h2>{data.heading}</h2>
-      {#each data.paragraphs as para}
+      {#each data.paragraphs as para, index (`${index}-${para}`)}
         <p>{para}</p>
       {/each}
       <blockquote class="pull">

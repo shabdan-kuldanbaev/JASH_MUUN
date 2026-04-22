@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
   import type { PageData } from './$types';
   import type { GalleryItem } from '$lib/types/datocms';
   import SeoHead from '$cms/SeoHead.svelte';
@@ -91,7 +91,7 @@
 
   <!-- Back link -->
   <nav class="article-nav" aria-label="Practice navigation">
-    <a href={`${base}/${data.locale}/practices/`} class="back-link">← Back to Practices</a>
+    <a href={resolve(`/${data.locale}/practices/`)} class="back-link">← Back to Practices</a>
   </nav>
 </article>
 

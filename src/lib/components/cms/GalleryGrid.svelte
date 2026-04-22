@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
   import type { GalleryItem } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -18,7 +18,7 @@
   <div class="grid">
     {#each items as item (item.imageUrl)}
       <figure class="grid-item">
-        <a href={`${base}/${locale}/practices/${item.postSlug}/`} class="grid-link" aria-label={item.postTitle}>
+        <a href={resolve(`/${locale}/practices/${item.postSlug}/`)} class="grid-link" aria-label={item.postTitle}>
           <CmsImage
             image={{
               url: item.imageUrl,

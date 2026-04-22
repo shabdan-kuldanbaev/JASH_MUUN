@@ -45,7 +45,7 @@
   {/if}
 
   <!-- Alternate locale links for hreflang -->
-  {#each alternateLocales as alt}
+  {#each alternateLocales as alt (alt.locale)}
     <link rel="alternate" hreflang={alt.locale} href={alt.url} />
   {/each}
 </svelte:head>

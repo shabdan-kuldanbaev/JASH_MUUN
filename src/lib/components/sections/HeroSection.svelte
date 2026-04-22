@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
   import PracticeCard from '$components/ui/PracticeCard.svelte';
   import type { PracticeSummary } from '$lib/types/datocms';
 
@@ -24,7 +24,7 @@
         felt-pressed yurts to the horses that carry their bloodline across the Tien Shan.
       </p>
       <div class="hero-ctas">
-        <a href={`${base}/${locale}/practices/`} class="cta">
+        <a href={resolve(`/${locale}/practices/`)} class="cta">
           <span class="arrow">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M3 8h10M9 4l4 4-4 4"/>
@@ -37,7 +37,7 @@
 
     {#if practices.length > 0}
       <div class="cards-row">
-        {#each practices as practice, i}
+        {#each practices as practice, i (practice.id)}
           <PracticeCard {practice} {locale} index={i} total={practices.length} />
         {/each}
       </div>

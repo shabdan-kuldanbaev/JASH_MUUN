@@ -39,7 +39,9 @@ async function loadEnv() {
     try {
       const content = await fs.readFile(path.join(root, file), 'utf8');
       Object.assign(result, parseEnv(content));
-    } catch {}
+    } catch {
+      // Ignore missing local env files and continue with the next source.
+    }
   }
 
   Object.assign(result, process.env);

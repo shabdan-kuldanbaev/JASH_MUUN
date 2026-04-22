@@ -26,7 +26,9 @@ Open [http://localhost:5173](http://localhost:5173).
 | `yarn build` | Production build |
 | `yarn preview` | Preview production build |
 | `yarn datocms:schema` | Fetch local DatoCMS GraphQL schema snapshot |
-| `yarn check` | Type-check Svelte components |
+| `yarn run check` | Type-check Svelte components |
+| `yarn lint` | Run ESLint across the project |
+| `yarn lint:fix` | Apply safe ESLint fixes |
 
 ## DatoCMS
 
@@ -35,6 +37,19 @@ Open [http://localhost:5173](http://localhost:5173).
 3. Run `yarn datocms:schema` to fetch a local schema snapshot for GraphQL-aware editors.
 
 The project ships with `graphql.config.cjs`. Editors can validate GraphQL queries embedded in `src/**/*.{ts,svelte}` against DatoCMS. The config prefers a local `.generated/datocms-schema.json` snapshot and falls back to the live DatoCMS endpoint when a token is available.
+
+## Linting
+
+ESLint is the primary linter for this repository, using the official Svelte flat-config integration from `eslint-plugin-svelte`.
+
+Local workflow:
+
+```bash
+yarn lint
+yarn lint:fix
+```
+
+CI enforcement lives in `.github/workflows/lint.yml`.
 
 ## Deployment
 

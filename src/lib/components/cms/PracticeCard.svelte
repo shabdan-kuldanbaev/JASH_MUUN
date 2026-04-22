@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
   import type { PracticeSummary } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -17,7 +17,7 @@
 </script>
 
 <article class="card">
-  <a href={`${base}/${locale}/practices/${practice.slug}/`} class="card-link" aria-label={practice.title}>
+  <a href={resolve(`/${locale}/practices/${practice.slug}/`)} class="card-link" aria-label={practice.title}>
     {#if practice.coverImage}
       <div class="card-image">
         <CmsImage

@@ -12,7 +12,22 @@ const POST_QUERY = /* GraphQL */ `
       coverImage { url alt width height blurUpThumb }
       publishedDate
       featured
-      content { value }
+      content {
+        value
+        blocks {
+          __typename
+          ... on ImageBlockRecord {
+            id
+            caption
+            image { url alt width height blurUpThumb }
+          }
+          ... on QuoteBlockRecord {
+            id
+            quote
+            attribution
+          }
+        }
+      }
       gallery { url alt width height blurUpThumb }
       youtubeUrl
       seo {

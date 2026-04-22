@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import { resolve } from '$app/paths';
   import type { PracticeSummary } from '$lib/types/datocms';
 
   const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
@@ -16,7 +16,7 @@
   const indexLabel = $derived(`${num} / ${tot}`);
   const room = $derived(`Room ${ROMAN[index] ?? String(index + 1)}`);
   const imageUrl = $derived(practice.coverImage?.url ?? '');
-  const practiceHref = $derived(`${base}/${locale}/practices/${practice.slug}/`);
+  const practiceHref = $derived(resolve(`/${locale}/practices/${practice.slug}/`));
 </script>
 
 <a href={practiceHref} class="p-card-link" aria-label={practice.title}>
