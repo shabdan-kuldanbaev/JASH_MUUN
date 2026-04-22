@@ -31,13 +31,15 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: yarn
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
 
       - name: Build site
-        run: npm run build
+        run: yarn build
 
       - name: Ensure GitHub Pages compatibility
         run: touch build/.nojekyll
