@@ -1,6 +1,6 @@
 import adapter from '@sveltejs/adapter-static';
 
-const repoName = 'JASH_MOON';
+const repoName = 'JASH_MUUN';
 const isGithubPages = process.env.GITHUB_ACTIONS === 'true';
 
 /** @type {import('@sveltejs/kit').Config} */
