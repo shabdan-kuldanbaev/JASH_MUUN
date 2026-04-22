@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+   DESIGN TOKENS — warm archival neutrals
+   ===================================================================== */
+:root {
+  --paper:   #f1ebe0;
+  --paper-2: #e9e1d3;
+  --ink:     #1d1b16;
+  --ink-2:   #3a362c;
+  --muted:   #7a7264;
+  --line:    #2a261e;
+  --ochre-2: #8a4a18;
+  --madder:  #9a2f1c;
+  --moss:    #39472e;
+
+  --nav-h:      88px;
+  --ui-bottom:  104px;
+  --gutter:     clamp(32px, 4vw, 72px);
+  --panel-pad:  clamp(32px, 4vw, 72px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Noto Sans', system-ui, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { overflow: hidden; }
+
+a { color: inherit; text-decoration: none; }
