@@ -47,7 +47,7 @@
   .panel {
     display: inline-flex;
     vertical-align: top;
-    height: 100vh;
+    height: 100dvh;
     position: relative;
     padding: var(--panel-pad);
     padding-top: calc(var(--nav-h) + 16px);
@@ -63,7 +63,7 @@
     grid-template-columns: minmax(420px, 560px) 1fr;
     gap: clamp(48px, 6vw, 120px);
     align-items: end;
-    min-height: calc(100vh - var(--nav-h) - 16px - var(--ui-bottom));
+    min-height: calc(100dvh - var(--nav-h) - 16px - var(--ui-bottom));
     margin-right: 48px;
   }
   .hero-text {
@@ -145,5 +145,54 @@
     gap: clamp(24px, 2vw, 40px);
     align-items: flex-start;
     height: 100%;
+  }
+
+  /* ── Mobile (< 768px) — vertical stacked layout ───────────────────── */
+  @media (max-width: 767px) {
+    .panel {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      min-height: 100dvh;
+      width: 100%;
+      /* Contain the horizontal card strip — prevent page-level horizontal scroll. */
+      overflow-x: hidden;
+    }
+
+    .hero-layout {
+      grid-template-columns: 1fr;
+      margin-right: 0;
+      min-height: auto;
+      align-items: start;
+      gap: 32px;
+    }
+
+    .hero-text {
+      max-width: 100%;
+    }
+
+    h1 {
+      font-size: clamp(36px, 10vw, 56px);
+    }
+
+    .hero-lede {
+      max-width: 100%;
+    }
+
+    /* Cards become a horizontal scroll strip, bleeding to panel edges. */
+    .cards-row {
+      margin-left: calc(-1 * var(--panel-pad));
+      margin-right: calc(-1 * var(--panel-pad));
+      padding-left: var(--panel-pad);
+      padding-right: var(--panel-pad);
+      padding-bottom: 4px;
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      height: auto;
+      align-items: stretch;
+    }
+    .cards-row::-webkit-scrollbar { display: none; }
   }
 </style>

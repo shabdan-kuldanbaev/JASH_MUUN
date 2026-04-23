@@ -67,7 +67,7 @@
   .panel {
     display: inline-flex;
     vertical-align: top;
-    height: 100vh;
+    height: 100dvh;
     position: relative;
     padding: var(--panel-pad);
     padding-top: calc(var(--nav-h) + 16px);
@@ -85,7 +85,7 @@
     display: grid;
     grid-template-rows: 1fr auto;
     gap: 28px;
-    min-height: calc(100vh - var(--nav-h) - 16px - var(--ui-bottom));
+    min-height: calc(100dvh - var(--nav-h) - 16px - var(--ui-bottom));
   }
   .footer-grid {
     display: grid;
@@ -209,5 +209,38 @@
     color: var(--ink);
     font-weight: 600;
     letter-spacing: .02em;
+  }
+
+  /* ── Mobile (< 768px) — vertical stacked layout ───────────────────── */
+  @media (max-width: 767px) {
+    .panel {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      width: 100%;
+    }
+
+    .footer-inner {
+      min-height: auto;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    h2 {
+      font-size: clamp(32px, 9vw, 48px);
+    }
+
+    .logos {
+      gap: 28px;
+    }
+
+    .colophon {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
   }
 </style>

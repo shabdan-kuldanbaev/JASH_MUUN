@@ -45,7 +45,7 @@
   .p-card {
     flex: 0 0 auto;
     width: clamp(300px, 24vw, 360px);
-    height: calc(100vh - var(--nav-h) - var(--ui-bottom) - 48px);
+    height: calc(100dvh - var(--nav-h) - var(--ui-bottom) - 48px);
     max-height: 620px;
     min-height: 440px;
     background: #000;
@@ -143,5 +143,15 @@
     gap: 8px;
     font-size: 12px;
     letter-spacing: .08em;
+  }
+
+  /* ── Mobile (< 768px) — compact card for horizontal strip ─────────── */
+  @media (max-width: 767px) {
+    .p-card {
+      width: 240px;
+      height: 320px;
+      min-height: auto;
+      max-height: none;
+    }
   }
 </style>
