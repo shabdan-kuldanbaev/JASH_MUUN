@@ -24,8 +24,8 @@ export const DEFAULT_LOCALE: Locale = 'ru';
 // ── Locale helpers ────────────────────────────────────────────────────────────
 
 /** Returns true when `value` is one of the supported route locales. */
-export function isValidLocale(value: string): value is Locale {
-  return (LOCALES as readonly string[]).includes(value);
+export function isValidLocale(value: unknown): value is Locale {
+  return (LOCALES as readonly string[]).includes(value as string);
 }
 
 /**

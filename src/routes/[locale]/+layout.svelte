@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { localeState } from '$lib/locale.svelte.js';
   import { isValidLocale, DEFAULT_LOCALE } from '$i18n';
 
@@ -10,7 +10,7 @@
   // Updating localeState.current ($state) causes all m.*() calls in templates
   // to re-evaluate automatically via Svelte 5's fine-grained reactivity.
   $effect(() => {
-    const locale = $page.params.locale;
+    const locale = page.params.locale;
     localeState.current = isValidLocale(locale) ? locale : DEFAULT_LOCALE;
   });
 </script>

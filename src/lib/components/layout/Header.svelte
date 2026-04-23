@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
   import { m, LOCALES } from '$i18n';
 
   let { locale }: { locale: string } = $props();
 
   // Derive which nav link is "current" from the URL pathname.
-  const path = $derived($page.url.pathname);
+  const path = $derived(page.url.pathname);
   // Slice from the locale segment onward — strips any base-path prefix automatically.
   const pathFromLocale = $derived(path.slice(path.indexOf(`/${locale}`)));
   const isPractice = $derived(path.includes('/practices'));
@@ -16,6 +16,7 @@
   const galleryHref = $derived(resolve(`/${locale}/gallery/`));
   const mainLogoSrc = asset('/assets/main-logo.svg');
   const supportingLogoSrc = asset('/assets/supporting-logo.svg');
+  const coFounderLogoSrc = asset('/assets/eu-logo.svg');
 
   function localePath(targetLocale: string): `/${string}` {
     const localized = pathFromLocale.replace(/^\/[^/]+(?=\/|$)/, `/${targetLocale}`);
@@ -37,12 +38,14 @@
   </nav>
 
   <div class="nav-right">
-    <a href={homeHref} class="logo-main" aria-label={m.nav_brand_home()}>
-      <img src={mainLogoSrc} alt="Jash-Muun" class="svg-main" />
-    </a>
-    <div class="nav-divider" aria-hidden="true"></div>
-    <span class="logo-support" aria-label={m.nav_support_partner()}>
+    <span class="logo" aria-label={m.nav_brand_home()}>
+      <img src={mainLogoSrc} alt="Jash Muun" class="svg-supp" />
+    </span>
+    <span class="logo" aria-label={m.nav_support_partner()}>
       <img src={supportingLogoSrc} alt="ALIPH" class="svg-supp" />
+    </span>
+    <span class="logo" aria-label={m.nav_support_partner()}>
+      <img src={coFounderLogoSrc} alt="ALIPH" class="svg-supp" />
     </span>
   </div>
 </header>
@@ -93,12 +96,9 @@
 
   .nav-right {
     display: flex;
-    gap: 28px;
+    gap: 24px;
     align-items: center;
   }
-  .logo-main { height: 44px; width: auto; }
-  .logo-main img { height: 100%; width: auto; display: block; }
-  .nav-divider { width: 1px; height: 28px; background: var(--ink); opacity: .25; }
-  .logo-support { height: 38px; }
-  .logo-support img { height: 100%; width: auto; display: block; }
+  .logo { height: 80px; width: auto; }
+  .logo img { height: 100%; width: auto; display: block; }
 </style>

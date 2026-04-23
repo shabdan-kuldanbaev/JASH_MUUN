@@ -1,13 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 125.65 135.53">
-  <defs>
-    
-  </defs>
-  <g>
-    <polygon class="cls-4" points="58.1 104.37 58.1 126.37 68.39 126.37 68.39 122.38 62.29 122.38 62.29 104.37 58.1 104.37"></polygon>
-    <rect class="cls-4" x="72.12" y="104.37" width="4.15" height="22"></rect>
-    <path class="cls-4" d="M88.17,113.59h-4v-5.05h4c1.39,0,2.52,1.13,2.52,2.53s-1.13,2.53-2.52,2.53M88.17,104.39h-4s-4.15-.01-4.15-.01v21.99h4.15v-8.63h4c3.68,0,6.67-2.99,6.67-6.67s-2.99-6.67-6.67-6.67"></path>
-    <path class="cls-4" d="M45.96,110.13l2.93,7.55h-5.88l2.95-7.55ZM11.56,24.39v97.4h25.5l-1.74,4.51h4.35l1.78-4.51h8.99l1.72,4.51h4.35l-8.46-22h-4.24l-5.17,13.41H15.64V28.47h93.74v85.04h-7.58v-9.22h-4.15v22h4.15v-8.63h7.49v8.63h4.17V24.39H11.56Z"></path>
-  </g>
-  <text class="cls-3" transform="translate(37.2 17.54)"><tspan class="cls-6" x="0" y="0">S</tspan><tspan class="cls-9" x="7.51" y="0">uppo</tspan><tspan class="cls-5" x="36.29" y="0">r</tspan><tspan class="cls-8" x="40.86" y="0">t</tspan><tspan class="cls-6" x="45.91" y="0">e</tspan><tspan class="cls-9" x="52.69" y="0">d </tspan><tspan class="cls-1" x="63.49" y="0">b</tspan><tspan class="cls-2" x="70.38" y="0">y</tspan><tspan class="cls-7" x="76.44" y="0" xml:space="preserve">  </tspan></text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="11.56 24.39 101.9 101.98">
+ <g fill="#032696">
+  <path class="cls-4" d="M58.1 104.37v22h10.29v-3.99h-6.1v-18.01zm14.02 0h4.15v22h-4.15zm16.05 9.22h-4v-5.05h4c1.39 0 2.52 1.13 2.52 2.53s-1.13 2.53-2.52 2.53m0-9.21h-4l-4.15-.01v21.99h4.15v-8.63h4c3.68 0 6.67-2.99 6.67-6.67s-2.99-6.67-6.67-6.67"/>
+  <path class="cls-4" d="m45.96 110.13 2.93 7.55h-5.88zm-34.4-85.74v97.4h25.5l-1.74 4.51h4.35l1.78-4.51h8.99l1.72 4.51h4.35l-8.46-22h-4.24l-5.17 13.41h-23V28.47h93.74v85.04h-7.58v-9.22h-4.15v22h4.15v-8.63h7.49v8.63h4.17V24.39z"/>
+ </g>
 </svg>
