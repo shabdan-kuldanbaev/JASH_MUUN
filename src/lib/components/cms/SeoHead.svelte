@@ -8,7 +8,7 @@
     seo = null,
     canonicalUrl = null,
     locale = 'ru',
-    alternateLocales = [],
+    alternateLocales = []
   }: {
     title: string;
     description?: string | null;

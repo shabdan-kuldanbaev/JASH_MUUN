@@ -5,7 +5,12 @@
 
   const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 
-  let { practice, locale, index, total }: {
+  let {
+    practice,
+    locale,
+    index,
+    total
+  }: {
     practice: PracticeSummary;
     locale: Locale;
     index: number;
@@ -54,96 +59,115 @@
     overflow: hidden;
     position: relative;
     box-shadow:
-      0 1px 0 rgba(0,0,0,.04),
-      0 24px 48px -24px rgba(30,27,20,.22),
-      0 6px 16px -8px rgba(30,27,20,.1);
+      0 1px 0 rgba(0, 0, 0, 0.04),
+      0 24px 48px -24px rgba(30, 27, 20, 0.22),
+      0 6px 16px -8px rgba(30, 27, 20, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     color: #fff;
-    transition: box-shadow .5s;
+    transition: box-shadow 0.5s;
   }
+
   .p-card:hover {
     box-shadow:
-      0 1px 0 rgba(0,0,0,.04),
-      0 36px 60px -28px rgba(30,27,20,.35),
-      0 10px 20px -10px rgba(30,27,20,.18);
+      0 1px 0 rgba(0, 0, 0, 0.04),
+      0 36px 60px -28px rgba(30, 27, 20, 0.35),
+      0 10px 20px -10px rgba(30, 27, 20, 0.18);
   }
+
   .img {
     position: absolute;
     inset: 0;
     background-size: cover;
     background-position: center;
-    transition: transform 1.2s cubic-bezier(.2,.7,.2,1);
+    transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .p-card:hover .img { transform: scale(1.04); }
+
+  .p-card:hover .img {
+    transform: scale(1.04);
+  }
+
   .shade {
     position: absolute;
     inset: 0;
     background: linear-gradient(
       180deg,
-      rgba(15,12,6,0) 30%,
-      rgba(15,12,6,.25) 55%,
-      rgba(15,12,6,.85) 100%
+      rgba(15, 12, 6, 0) 30%,
+      rgba(15, 12, 6, 0.25) 55%,
+      rgba(15, 12, 6, 0.85) 100%
     );
   }
+
   .content {
     position: relative;
     padding: 28px 28px 26px;
   }
+
   .kicker {
     font-size: 11px;
-    letter-spacing: .22em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: rgba(255,255,255,.78);
+    color: rgba(255, 255, 255, 0.78);
     margin-bottom: 12px;
     display: flex;
     gap: 10px;
     align-items: center;
   }
+
   .kicker::before {
-    content: "";
+    content: '';
     width: 18px;
     height: 1px;
-    background: rgba(255,255,255,.6);
+    background: rgba(255, 255, 255, 0.6);
   }
+
   h3 {
     font-family: 'Noto Serif Display', serif;
     font-weight: 400;
     font-size: 30px;
     line-height: 1.05;
-    letter-spacing: -.01em;
+    letter-spacing: -0.01em;
     margin-bottom: 12px;
     text-wrap: balance;
   }
+
   p {
     font-size: 13.5px;
     line-height: 1.5;
-    color: rgba(255,255,255,.8);
+    color: rgba(255, 255, 255, 0.8);
     max-width: 32ch;
   }
+
   .row {
     margin-top: 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
   }
+
   .p-card-link {
     display: contents;
   }
+
   .img--empty {
-    background: rgba(15,12,6,.4);
+    background: rgba(15, 12, 6, 0.4);
   }
-  .num { color: rgba(255,255,255,.55); letter-spacing: .18em; }
+
+  .num {
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.18em;
+  }
+
   .explore {
-    color: rgba(255,255,255,.7);
+    color: rgba(255, 255, 255, 0.7);
     display: inline-flex;
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
   }
 
   /* ── Mobile (< 768px) — compact card for horizontal strip ─────────── */

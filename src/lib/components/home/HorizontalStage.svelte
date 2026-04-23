@@ -44,7 +44,7 @@
     if (!stage) return;
     const rect = stage.getBoundingClientRect();
     screens = [...stage.querySelectorAll(SCREEN_SELECTOR)];
-    screenOffsets = screens.map(s => {
+    screenOffsets = screens.map((s) => {
       const x = s.getBoundingClientRect().left - rect.left + stage!.scrollLeft;
       return clampX(x);
     });
@@ -53,10 +53,14 @@
   }
 
   function nearestIndex(x: number): number {
-    let idx = 0, min = Infinity;
+    let idx = 0,
+      min = Infinity;
     for (let i = 0; i < screenOffsets.length; i++) {
       const d = Math.abs(screenOffsets[i] - x);
-      if (d < min) { min = d; idx = i; }
+      if (d < min) {
+        min = d;
+        idx = i;
+      }
     }
     return idx;
   }
@@ -145,7 +149,10 @@
     };
 
     // Touch: drive horizontal stage from any swipe direction.
-    let tx0 = 0, ty0 = 0, sx0 = 0, touching = false;
+    let tx0 = 0,
+      ty0 = 0,
+      sx0 = 0,
+      touching = false;
     const onTouchStart = (e: TouchEvent) => {
       if (!e.touches[0]) return;
       tx0 = e.touches[0].clientX;
@@ -160,25 +167,35 @@
       setTarget(sx0 + (Math.abs(dy) >= Math.abs(dx) ? -dy : -dx));
       e.preventDefault();
     };
-    const onTouchEnd = () => { touching = false; snapToNearest(); };
+    const onTouchEnd = () => {
+      touching = false;
+      snapToNearest();
+    };
 
     // Keyboard: arrow keys, space, page keys, home/end.
     const onKeydown = (e: KeyboardEvent) => {
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) {
-        e.preventDefault(); goTo(activeIndex() + 1);
+        e.preventDefault();
+        goTo(activeIndex() + 1);
       } else if (['ArrowLeft', 'PageUp'].includes(e.key)) {
-        e.preventDefault(); goTo(activeIndex() - 1);
+        e.preventDefault();
+        goTo(activeIndex() - 1);
       } else if (e.key === 'Home') {
-        e.preventDefault(); goTo(0);
+        e.preventDefault();
+        goTo(0);
       } else if (e.key === 'End') {
-        e.preventDefault(); goTo(screenOffsets.length - 1);
+        e.preventDefault();
+        goTo(screenOffsets.length - 1);
       }
     };
 
     // Stage's own scroll event (momentum, scrollbar drag).
     const onScroll = () => {
       if (performance.now() < internalScrollUntil) return;
-      if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       currentX = targetX = el.scrollLeft;
       syncProgress();
     };
@@ -203,7 +220,10 @@
       window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('keydown', onKeydown);
       el.removeEventListener('scroll', onScroll);
-      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
     };
   });
 
@@ -259,16 +279,21 @@
     inset: 0;
     width: 100vw;
     height: 100vh;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: auto hidden;
     scroll-behavior: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
     white-space: nowrap;
     font-size: 0; /* collapses inline-flex gaps between panels */
   }
-  .stage > :global(*) { font-size: initial; }
-  .stage::-webkit-scrollbar { display: none; }
+
+  .stage > :global(*) {
+    font-size: initial;
+  }
+
+  .stage::-webkit-scrollbar {
+    display: none;
+  }
 
   /* ── Vertical fallback ────────────────────────────────────────────── */
   .page-vertical {
@@ -285,23 +310,35 @@
     align-items: center;
     gap: 14px;
     font-size: 11px;
-    letter-spacing: .24em;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--muted);
     pointer-events: none;
-    transition: opacity .4s;
+    transition: opacity 0.4s;
   }
-  .scroll-hint.hide { opacity: 0; }
+
+  .scroll-hint.hide {
+    opacity: 0;
+  }
 
   .line {
     width: 44px;
     height: 1px;
     background: var(--ink);
-    opacity: .5;
+    opacity: 0.5;
     animation: slide 2.4s ease-in-out infinite;
   }
+
   @keyframes slide {
-    0%, 100% { transform: scaleX(1);   transform-origin: left; }
-    50%       { transform: scaleX(1.6); transform-origin: left; }
+    0%,
+    100% {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    50% {
+      transform: scaleX(1.6);
+      transform-origin: left;
+    }
   }
 </style>

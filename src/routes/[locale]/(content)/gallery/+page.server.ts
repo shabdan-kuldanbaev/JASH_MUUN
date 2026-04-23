@@ -26,6 +26,6 @@ export const load: PageServerLoad = async ({ parent }) => {
   return {
     locale: parentData.locale,
     siteSettings: parentData.siteSettings,
-    items,
+    items
   };
 };

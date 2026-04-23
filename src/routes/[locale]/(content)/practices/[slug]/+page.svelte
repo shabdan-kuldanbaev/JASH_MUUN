@@ -16,7 +16,7 @@
       ? new Date(data.practice.publishedDate).toLocaleDateString(data.locale, {
           year: 'numeric',
           month: 'long',
-          day: 'numeric',
+          day: 'numeric'
         })
       : null
   );
@@ -28,7 +28,7 @@
       postTitle: data.practice.title,
       postSlug: data.practice.slug,
       locale: data.locale,
-      publishedDate: data.practice.publishedDate ?? '',
+      publishedDate: data.practice.publishedDate ?? ''
     }))
   );
 </script>
@@ -40,7 +40,7 @@
   locale={data.locale}
   alternateLocales={LOCALES.map((locale) => ({
     locale,
-    url: resolve(`/${locale}/practices/${data.practice.slug}/`),
+    url: resolve(`/${locale}/practices/${data.practice.slug}/`)
   }))}
 />
 
@@ -96,7 +96,9 @@
 
   <!-- Back link -->
   <nav class="article-nav" aria-label={m.detail_practice_navigation_aria()}>
-    <a href={resolve(`/${data.locale}/practices/`)} class="back-link">← {m.common_back_to_practices()}</a>
+    <a href={resolve(`/${data.locale}/practices/`)} class="back-link"
+      >← {m.common_back_to_practices()}</a
+    >
   </nav>
 </article>
 
@@ -107,11 +109,13 @@
     padding: clamp(48px, 6vw, 80px) var(--gutter) clamp(80px, 10vw, 140px);
   }
 
-  .article-header { margin-bottom: clamp(32px, 4vw, 56px); }
+  .article-header {
+    margin-bottom: clamp(32px, 4vw, 56px);
+  }
 
   .article-meta {
     font-size: 12px;
-    letter-spacing: .12em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
     display: flex;
@@ -119,13 +123,19 @@
     align-items: center;
     margin-bottom: 20px;
   }
-  .article-featured { color: var(--ochre-2); }
-  .article-sep { opacity: .5; }
+
+  .article-featured {
+    color: var(--ochre-2);
+  }
+
+  .article-sep {
+    opacity: 0.5;
+  }
 
   .article-title {
     font-size: clamp(28px, 4.5vw, 58px);
     font-weight: 300;
-    letter-spacing: -.02em;
+    letter-spacing: -0.02em;
     line-height: 1.15;
     color: var(--ink);
     margin-bottom: 20px;
@@ -144,6 +154,7 @@
     overflow: hidden;
     max-height: 70vh;
   }
+
   .article-cover :global(img) {
     width: 100%;
     height: 100%;
@@ -166,7 +177,7 @@
 
   .section-label {
     font-size: 11px;
-    letter-spacing: .24em;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--muted);
     margin-bottom: clamp(24px, 3vw, 40px);
@@ -180,9 +191,12 @@
 
   .back-link {
     font-size: 13px;
-    letter-spacing: .06em;
+    letter-spacing: 0.06em;
     color: var(--muted);
-    transition: color .2s;
+    transition: color 0.2s;
   }
-  .back-link:hover { color: var(--ink); }
+
+  .back-link:hover {
+    color: var(--ink);
+  }
 </style>

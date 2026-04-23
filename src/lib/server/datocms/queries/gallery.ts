@@ -16,7 +16,13 @@ const QUERY = /* GraphQL */ `
       title
       slug
       publishedDate
-      gallery { url alt width height blurUpThumb }
+      gallery {
+        url
+        alt
+        width
+        height
+        blurUpThumb
+      }
     }
   }
 `;
@@ -47,7 +53,7 @@ export async function getGalleryItems(locale: Locale): Promise<GalleryItem[]> {
         postTitle: post.title,
         postSlug: post.slug,
         locale,
-        publishedDate: post.publishedDate,
+        publishedDate: post.publishedDate
       });
     }
   }

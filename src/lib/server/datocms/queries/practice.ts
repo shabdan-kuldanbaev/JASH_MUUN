@@ -10,16 +10,35 @@ const POST_QUERY = /* GraphQL */ `
       title
       slug
       excerpt
-      coverImage { url alt width height blurUpThumb }
+      coverImage {
+        url
+        alt
+        width
+        height
+        blurUpThumb
+      }
       publishedDate
       featured
-      content { value }
-      gallery { url alt width height blurUpThumb }
+      content {
+        value
+      }
+      gallery {
+        url
+        alt
+        width
+        height
+        blurUpThumb
+      }
       youtubeUrl
       seo {
         title
         description
-        image { url alt width height }
+        image {
+          url
+          alt
+          width
+          height
+        }
       }
     }
   }
@@ -34,10 +53,7 @@ export async function getAllPracticeSlugs(): Promise<{ locale: Locale; slug: str
       const data = await datoRequest<{ allPractices: { slug: string }[] }>(
         /* GraphQL */ `
           query PracticeSlugs($locale: SiteLocale!) {
-            allPractices(
-              locale: $locale
-              filter: { _status: { eq: published } }
-            ) {
+            allPractices(locale: $locale, filter: { _status: { eq: published } }) {
               slug
             }
           }
@@ -62,14 +78,11 @@ export async function getAllPracticeSlugs(): Promise<{ locale: Locale; slug: str
   });
 }
 
-export async function getPracticeBySlug(
-  locale: Locale,
-  slug: string
-): Promise<Practice | null> {
+export async function getPracticeBySlug(locale: Locale, slug: string): Promise<Practice | null> {
   const resolved = resolveContentLocale(locale);
   const data = await datoRequest<{ practice: Practice | null }>(POST_QUERY, {
     locale: resolved,
-    slug,
+    slug
   });
   return data.practice;
 }

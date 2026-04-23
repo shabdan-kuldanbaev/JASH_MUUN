@@ -5,7 +5,7 @@
     image,
     sizes = '100vw',
     class: className = '',
-    eager = false,
+    eager = false
   }: {
     image: DatoImage;
     sizes?: string;
@@ -34,6 +34,8 @@
   height={image.height}
   loading={eager ? 'eager' : 'lazy'}
   decoding="async"
-  style={image.blurUpThumb ? `background-image: url('${image.blurUpThumb}'); background-size: cover;` : undefined}
+  style={image.blurUpThumb
+    ? `background-image: url('${image.blurUpThumb}'); background-size: cover;`
+    : undefined}
   class={className}
 />

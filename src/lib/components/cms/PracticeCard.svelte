@@ -12,14 +12,18 @@
       ? new Date(practice.publishedDate).toLocaleDateString(locale, {
           year: 'numeric',
           month: 'long',
-          day: 'numeric',
+          day: 'numeric'
         })
       : null
   );
 </script>
 
 <article class="card">
-  <a href={resolve(`/${locale}/practices/${practice.slug}/`)} class="card-link" aria-label={practice.title}>
+  <a
+    href={resolve(`/${locale}/practices/${practice.slug}/`)}
+    class="card-link"
+    aria-label={practice.title}
+  >
     {#if practice.coverImage}
       <div class="card-image">
         <CmsImage
@@ -54,7 +58,9 @@
 </article>
 
 <style>
-  .card { border-top: 1px solid color-mix(in srgb, var(--ink) 15%, transparent); }
+  .card {
+    border-top: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
+  }
 
   .card-link {
     display: grid;
@@ -62,29 +68,42 @@
     gap: clamp(24px, 3vw, 56px);
     padding: clamp(32px, 4vw, 64px) 0;
     align-items: start;
-    transition: opacity .2s;
+    transition: opacity 0.2s;
   }
-  .card-link:hover { opacity: .8; }
+
+  .card-link:hover {
+    opacity: 0.8;
+  }
 
   .card:nth-child(even) .card-link {
     direction: rtl;
   }
-  .card:nth-child(even) .card-link > * { direction: ltr; }
+
+  .card:nth-child(even) .card-link > * {
+    direction: ltr;
+  }
 
   .card-image {
     aspect-ratio: 4 / 3;
     overflow: hidden;
     background: var(--paper-2);
   }
-  .card-image--empty { background: var(--paper-2); }
+
+  .card-image--empty {
+    background: var(--paper-2);
+  }
+
   .card-image :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform .6s ease;
+    transition: transform 0.6s ease;
   }
-  .card-link:hover .card-image :global(img) { transform: scale(1.03); }
+
+  .card-link:hover .card-image :global(img) {
+    transform: scale(1.03);
+  }
 
   .card-body {
     display: flex;
@@ -96,21 +115,27 @@
 
   .card-meta {
     font-size: 12px;
-    letter-spacing: .12em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
     display: flex;
     gap: 8px;
     align-items: center;
   }
-  .card-featured { color: var(--ochre-2); }
-  .card-sep { opacity: .5; }
+
+  .card-featured {
+    color: var(--ochre-2);
+  }
+
+  .card-sep {
+    opacity: 0.5;
+  }
 
   .card-title {
     font-size: clamp(22px, 2.8vw, 38px);
     font-weight: 400;
     line-height: 1.2;
-    letter-spacing: -.01em;
+    letter-spacing: -0.01em;
     color: var(--ink);
   }
 
@@ -123,7 +148,7 @@
 
   .card-read {
     font-size: 13px;
-    letter-spacing: .06em;
+    letter-spacing: 0.06em;
     color: var(--muted);
     margin-top: 8px;
   }

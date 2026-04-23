@@ -7,7 +7,7 @@
 
   let {
     items,
-    locale,
+    locale
   }: {
     items: GalleryItem[];
     locale: Locale;
@@ -20,14 +20,18 @@
   <div class="grid">
     {#each items as item (item.imageUrl)}
       <figure class="grid-item">
-        <a href={resolve(`/${locale}/practices/${item.postSlug}/`)} class="grid-link" aria-label={item.postTitle}>
+        <a
+          href={resolve(`/${locale}/practices/${item.postSlug}/`)}
+          class="grid-link"
+          aria-label={item.postTitle}
+        >
           <CmsImage
             image={{
               url: item.imageUrl,
               alt: item.imageAlt,
               width: 800,
               height: 600,
-              blurUpThumb: null,
+              blurUpThumb: null
             }}
             sizes="(min-width: 1200px) 400px, (min-width: 768px) 33vw, 50vw"
           />
@@ -47,17 +51,26 @@
     gap: 2px;
   }
 
-  .grid-item { margin: 0; overflow: hidden; }
+  .grid-item {
+    margin: 0;
+    overflow: hidden;
+  }
 
-  .grid-link { display: block; }
+  .grid-link {
+    display: block;
+  }
+
   .grid-link :global(img) {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
     display: block;
-    transition: transform .5s ease;
+    transition: transform 0.5s ease;
   }
-  .grid-link:hover :global(img) { transform: scale(1.04); }
+
+  .grid-link:hover :global(img) {
+    transform: scale(1.04);
+  }
 
   .grid-caption {
     padding: 12px 0 20px;

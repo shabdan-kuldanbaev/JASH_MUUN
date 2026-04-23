@@ -34,7 +34,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return paraglideStorage.run({ locale, origin }, () =>
     resolve(event, {
-      transformPageChunk: ({ html }) => html.replace('%lang%', locale),
+      transformPageChunk: ({ html }) => html.replace('%lang%', locale)
     })
   );
 };

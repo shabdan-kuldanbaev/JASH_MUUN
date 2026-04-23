@@ -1,41 +1,67 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
-  import { m, LOCALES } from '$i18n';
+  import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
+  import { panel, type PanelId } from '$lib/panel.svelte';
 
   let { locale }: { locale: Locale } = $props();
 
-  // Derive which nav link is "current" from the URL pathname.
   const path = $derived(page.url.pathname);
-  // Slice from the locale segment onward — strips any base-path prefix automatically.
-  const pathFromLocale = $derived(path.slice(path.indexOf(`/${locale}`)));
   const isPractice = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
   const homeHref = $derived(resolve(`/${locale}/`));
-  const practicesHref = $derived(resolve(`/${locale}/practices/`));
-  const galleryHref = $derived(resolve(`/${locale}/gallery/`));
   const mainLogoSrc = asset('/assets/main-logo.svg');
   const supportingLogoSrc = asset('/assets/supporting-logo.svg');
   const coFounderLogoSrc = asset('/assets/eu-logo.svg');
 
-  function localePath(targetLocale: Locale): `/${string}` {
-    const localized = pathFromLocale.replace(/^\/[^/]+(?=\/|$)/, `/${targetLocale}`);
-    return (localized || `/${targetLocale}/`) as `/${string}`;
+  function onHeaderClick(e: MouseEvent, id: PanelId) {
+    e.preventDefault();
+    if (!panel.active) {
+      panel.open(id as NonNullable<PanelId>);
+      return;
+    }
+
+    if (panel.active !== id) {
+      panel.switchTo(id as NonNullable<PanelId>);
+      return;
+    }
+
+    panel.close();
   }
 </script>
 
 <header class="nav">
   <nav class="nav-left" aria-label="Primary">
-    <a href={homeHref} class:is-current={!isPractice && !isGallery}>{m.nav_home()}</a>
-    <a href={practicesHref} class:is-current={isPractice}>{m.nav_practices()}</a>
-    <a href={galleryHref} class:is-current={isGallery}>{m.nav_archive()}</a>
+    <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}
+      >{m.nav_home()}</a
+    >
 
-    <span class="nav-lang" aria-label={m.nav_language()}>
-      {#each LOCALES as l (l)}
-        <a href={resolve(localePath(l))} class:on={l === locale}>{l.toUpperCase()}</a>
-      {/each}
-    </span>
+    <button
+      class="nav-item"
+      class:is-active={isPractice || panel.active === 'practices'}
+      onclick={(e) => onHeaderClick(e, 'practices')}
+      aria-expanded={panel.active === 'practices'}
+      aria-label={m.nav_practices()}>{m.nav_practices()}</button
+    >
+
+    <button
+      class="nav-item"
+      class:is-active={isGallery}
+      onclick={(e) => onHeaderClick(e, 'archive')}
+      aria-expanded={panel.active === 'archive'}
+      aria-label={m.nav_archive()}>{m.nav_archive()}</button
+    >
+
+    <button
+      class="nav-item"
+      class:is-active={panel.active === 'language'}
+      onclick={(e) => onHeaderClick(e, 'language')}
+      aria-expanded={panel.active === 'language'}
+      aria-label={m.nav_language()}
+    >
+      {locale.toUpperCase()}
+    </button>
   </nav>
 
   <div class="nav-right">
@@ -54,7 +80,9 @@
 <style>
   .nav {
     position: fixed;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     height: var(--nav-h);
     display: flex;
     align-items: center;
@@ -66,40 +94,52 @@
 
   .nav-left {
     display: flex;
-    gap: 36px;
+    gap: 28px;
     align-items: baseline;
   }
-  .nav-left a {
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: .02em;
-    color: var(--ink);
-    padding-bottom: 3px;
-    border-bottom: 1px solid transparent;
-    transition: border-color .25s ease, color .25s ease;
-  }
-  .nav-left a:hover { border-bottom-color: var(--ink); }
-  .nav-left a.is-current { border-bottom-color: var(--ink); }
 
-  .nav-lang {
+  /* Unified style for all nav items — links and the locale button */
+  .nav-item {
     font-size: 12px;
-    letter-spacing: .12em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-    display: flex;
-    gap: 10px;
-    margin-left: 24px;
-    align-items: center;
+    font-weight: 400;
+    font-family: inherit;
+
+    /* button reset */
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    /* underline indicator */
+    padding: 0 0 3px;
+    border-bottom: 1px solid transparent;
+    transition:
+      border-color 0.25s ease,
+      color 0.25s ease;
   }
-  .nav-lang a { color: var(--muted); border-bottom: none; font-weight: 400; }
-  .nav-lang a.on { color: var(--ink); font-weight: 500; }
-  .nav-lang a:hover { color: var(--ink); border-bottom: none; }
+
+  .nav-item:hover,
+  .nav-item.is-active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
 
   .nav-right {
     display: flex;
     gap: 24px;
     align-items: center;
   }
-  .logo { height: 60px; width: auto; }
-  .logo img { height: 100%; width: auto; display: block; }
+
+  .logo {
+    height: 60px;
+    width: auto;
+  }
+
+  .logo img {
+    height: 100%;
+    width: auto;
+    display: block;
+  }
 </style>

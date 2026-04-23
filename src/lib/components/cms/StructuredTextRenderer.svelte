@@ -16,7 +16,7 @@
     DastSpan,
     CustomBlock,
     ImageBlock,
-    QuoteBlock,
+    QuoteBlock
   } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -34,13 +34,20 @@
     return marks
       .map((m) => {
         switch (m) {
-          case 'strong': return '<strong>';
-          case 'emphasis': return '<em>';
-          case 'underline': return '<u>';
-          case 'strikethrough': return '<s>';
-          case 'code': return '<code>';
-          case 'highlight': return '<mark>';
-          default: return '';
+          case 'strong':
+            return '<strong>';
+          case 'emphasis':
+            return '<em>';
+          case 'underline':
+            return '<u>';
+          case 'strikethrough':
+            return '<s>';
+          case 'code':
+            return '<code>';
+          case 'highlight':
+            return '<mark>';
+          default:
+            return '';
         }
       })
       .join('');
@@ -52,13 +59,20 @@
       .reverse()
       .map((m) => {
         switch (m) {
-          case 'strong': return '</strong>';
-          case 'emphasis': return '</em>';
-          case 'underline': return '</u>';
-          case 'strikethrough': return '</s>';
-          case 'code': return '</code>';
-          case 'highlight': return '</mark>';
-          default: return '';
+          case 'strong':
+            return '</strong>';
+          case 'emphasis':
+            return '</em>';
+          case 'underline':
+            return '</u>';
+          case 'strikethrough':
+            return '</s>';
+          case 'code':
+            return '</code>';
+          case 'highlight':
+            return '</mark>';
+          default:
+            return '';
         }
       })
       .join('');
@@ -71,10 +85,7 @@
   }
 
   function escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function sanitizeHref(url: string): string {
@@ -140,7 +151,6 @@
     {#if node.type === 'paragraph'}
       <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       <p>{@html inlineHtml(node.children)}</p>
-
     {:else if node.type === 'heading'}
       {#if node.level === 1}
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -161,7 +171,6 @@
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         <h6>{@html inlineHtml(node.children)}</h6>
       {/if}
-
     {:else if node.type === 'list'}
       {#if node.style === 'bulleted'}
         <ul>
@@ -194,7 +203,6 @@
           {/each}
         </ol>
       {/if}
-
     {:else if node.type === 'blockquote'}
       <blockquote>
         {#each node.children as child, childIndex (nodeKey(child, childIndex))}
@@ -207,10 +215,9 @@
           <cite>{node.attribution}</cite>
         {/if}
       </blockquote>
-
     {:else if node.type === 'code'}
-      <pre><code class={node.language ? `language-${node.language}` : undefined}>{node.code}</code></pre>
-
+      <pre><code class={node.language ? `language-${node.language}` : undefined}>{node.code}</code
+        ></pre>
     {:else if node.type === 'block'}
       {@const block = blockMap.get(node.item)}
       {#if block}
@@ -221,7 +228,6 @@
               <figcaption>{block.caption}</figcaption>
             {/if}
           </figure>
-
         {:else if isQuoteBlock(block)}
           <blockquote class="block-quote">
             <p>{block.quote}</p>
@@ -229,7 +235,6 @@
               <cite>{block.attribution}</cite>
             {/if}
           </blockquote>
-
         {/if}
       {/if}
     {/if}
@@ -252,10 +257,10 @@
   h2 {
     font-size: clamp(22px, 2.4vw, 30px);
     font-weight: 400;
-    letter-spacing: -.01em;
+    letter-spacing: -0.01em;
     line-height: 1.25;
     color: var(--ink);
-    margin: 2.4em 0 .8em;
+    margin: 2.4em 0 0.8em;
   }
 
   :global(.structured-text h3),
@@ -264,7 +269,7 @@
     font-weight: 500;
     line-height: 1.3;
     color: var(--ink);
-    margin: 2em 0 .6em;
+    margin: 2em 0 0.6em;
   }
 
   :global(.structured-text h4),
@@ -272,7 +277,7 @@
     font-size: 17px;
     font-weight: 500;
     color: var(--ink);
-    margin: 1.6em 0 .5em;
+    margin: 1.6em 0 0.5em;
   }
 
   :global(.structured-text ul),
@@ -288,7 +293,7 @@
     font-size: clamp(16px, 1.8vw, 18px);
     line-height: 1.7;
     color: var(--ink-2);
-    margin-bottom: .4em;
+    margin-bottom: 0.4em;
   }
 
   :global(.structured-text blockquote),
@@ -305,10 +310,10 @@
   :global(.structured-text blockquote cite),
   blockquote cite {
     display: block;
-    margin-top: .8em;
+    margin-top: 0.8em;
     font-size: 13px;
     font-style: normal;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     color: var(--muted);
   }
 
@@ -324,10 +329,10 @@
   :global(.structured-text code),
   code {
     font-family: 'Fira Code', 'Cascadia Code', monospace;
-    font-size: .9em;
+    font-size: 0.9em;
     color: var(--ochre-2);
     background: color-mix(in srgb, var(--ochre-2) 8%, transparent);
-    padding: .1em .3em;
+    padding: 0.1em 0.3em;
   }
 
   :global(.structured-text pre code),
@@ -341,19 +346,30 @@
   :global(.structured-text a),
   :global(.structured-text-content a) {
     color: var(--ochre-2);
-    border-bottom: 1px solid currentColor;
-    transition: opacity .2s;
+    border-bottom: 1px solid currentcolor;
+    transition: opacity 0.2s;
   }
-  :global(.structured-text a:hover),
-  :global(.structured-text-content a:hover) { opacity: .7; }
 
-  .block-image { margin: 2.4em 0; }
-  .block-image :global(img) { width: 100%; height: auto; display: block; }
+  :global(.structured-text a:hover),
+  :global(.structured-text-content a:hover) {
+    opacity: 0.7;
+  }
+
+  .block-image {
+    margin: 2.4em 0;
+  }
+
+  .block-image :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
   .block-image :global(figcaption) {
     margin-top: 10px;
     font-size: 13px;
     color: var(--muted);
-    letter-spacing: .02em;
+    letter-spacing: 0.02em;
   }
 
   .block-quote {

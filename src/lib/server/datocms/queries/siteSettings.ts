@@ -13,7 +13,12 @@ const QUERY = /* GraphQL */ `
         fallbackSeo {
           title
           description
-          image { url alt width height }
+          image {
+            url
+            alt
+            width
+            height
+          }
         }
       }
     }
@@ -38,7 +43,7 @@ export async function getSiteSettings(locale: Locale): Promise<SiteSettings> {
     const data = await datoRequest<RawData>(QUERY, { locale });
     return {
       siteName: data._site.globalSeo?.siteName ?? 'Jash-Muun',
-      defaultSeo: data._site.globalSeo?.fallbackSeo ?? null,
+      defaultSeo: data._site.globalSeo?.fallbackSeo ?? null
     };
   } catch (err) {
     if (!(err instanceof DatoLocaleError)) {

@@ -31,7 +31,7 @@ export async function datoRequest<T>(
     'Content-Type': 'application/json',
     Authorization: `Bearer ${DATO_CMS_READONLY_TOKEN}`,
     // Silently exclude invalid records (missing locales, broken references)
-    'X-Exclude-Invalid': 'true',
+    'X-Exclude-Invalid': 'true'
   };
 
   if (options.preview) {
@@ -41,7 +41,7 @@ export async function datoRequest<T>(
   const response = await fetch(DATO_ENDPOINT, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ query, variables }),
+    body: JSON.stringify({ query, variables })
   });
 
   if (!response.ok) {

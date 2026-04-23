@@ -2,7 +2,7 @@
   let {
     url,
     caption = null,
-    title = 'YouTube video',
+    title = 'YouTube video'
   }: {
     url: string;
     caption?: string | null;
@@ -42,7 +42,9 @@
 {/if}
 
 <style>
-  .yt-figure { margin: 0; }
+  .yt-figure {
+    margin: 0;
+  }
 
   .yt-ratio {
     position: relative;
@@ -50,6 +52,7 @@
     padding-bottom: 56.25%; /* 16:9 */
     background: var(--ink);
   }
+
   .yt-ratio iframe {
     position: absolute;
     inset: 0;
@@ -61,7 +64,7 @@
   .yt-caption {
     margin-top: 10px;
     font-size: 13px;
-    letter-spacing: .02em;
+    letter-spacing: 0.02em;
     color: var(--muted);
   }
 </style>

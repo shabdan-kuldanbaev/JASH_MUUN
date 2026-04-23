@@ -5,10 +5,8 @@
   import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
-  let {
-    practices = [],
-    locale = 'ru',
-  }: { practices?: PracticeSummary[]; locale?: Locale } = $props();
+  let { practices = [], locale = 'ru' }: { practices?: PracticeSummary[]; locale?: Locale } =
+    $props();
 </script>
 
 <section class="panel panel--w-hero hero" data-scroll-screen aria-label="01 Hero">
@@ -16,9 +14,9 @@
     <div class="hero-text">
       <div class="eyebrow">{m.hero_eyebrow()}</div>
       <h1>
-        {m.hero_title_line_1()}<br>
-        {m.hero_title_line_2()}<br>
-        {m.hero_title_line_3()}<br>
+        {m.hero_title_line_1()}<br />
+        {m.hero_title_line_2()}<br />
+        {m.hero_title_line_3()}<br />
         <em>{m.hero_title_emphasis()}</em>
       </h1>
       <p class="hero-lede">{m.hero_lede()}</p>
@@ -26,7 +24,7 @@
         <a href={resolve(`/${locale}/practices/`)} class="cta">
           <span class="arrow">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
-              <path d="M3 8h10M9 4l4 4-4 4"/>
+              <path d="M3 8h10M9 4l4 4-4 4" />
             </svg>
           </span>
           {m.hero_enter_cta()}
@@ -57,7 +55,10 @@
     background: var(--paper);
     white-space: normal;
   }
-  .panel--w-hero { width: auto; }
+
+  .panel--w-hero {
+    width: auto;
+  }
 
   .hero-layout {
     display: grid;
@@ -67,14 +68,16 @@
     min-height: calc(100dvh - var(--nav-h) - 16px - var(--ui-bottom));
     margin-right: 48px;
   }
+
   .hero-text {
     align-self: center;
     max-width: 580px;
   }
+
   .eyebrow {
     font-family: 'Noto Sans', sans-serif;
     font-size: 12px;
-    letter-spacing: .22em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--muted);
     display: flex;
@@ -82,27 +85,32 @@
     gap: 14px;
     margin-bottom: 44px;
   }
+
   .eyebrow::before {
-    content: "";
-    width: 44px; height: 1px;
+    content: '';
+    width: 44px;
+    height: 1px;
     background: var(--ink);
-    opacity: .4;
+    opacity: 0.4;
     display: inline-block;
   }
+
   h1 {
     font-family: 'Noto Sans', sans-serif;
     font-weight: 700;
     font-size: clamp(46px, 4.6vw, 78px);
     line-height: 1.04;
-    letter-spacing: -.025em;
+    letter-spacing: -0.025em;
     color: var(--ink);
     text-wrap: balance;
   }
+
   h1 :global(em) {
     font-style: normal;
     font-weight: 700;
     color: var(--ochre-2);
   }
+
   .hero-lede {
     margin-top: 40px;
     font-size: 15.5px;
@@ -111,6 +119,7 @@
     max-width: 44ch;
     text-wrap: pretty;
   }
+
   .hero-ctas {
     margin-top: 44px;
     display: flex;
@@ -118,28 +127,44 @@
     gap: 16px;
     align-items: flex-start;
   }
+
   .cta {
     font-size: 15px;
-    letter-spacing: .01em;
+    letter-spacing: 0.01em;
     color: var(--ink);
     font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 12px;
     padding: 6px 0;
-    transition: gap .25s ease;
+    transition: gap 0.25s ease;
   }
-  .cta:hover { gap: 18px; }
+
+  .cta:hover {
+    gap: 18px;
+  }
+
   .arrow {
     display: inline-grid;
     place-items: center;
-    width: 22px; height: 22px;
+    width: 22px;
+    height: 22px;
     border: 1px solid var(--ink);
     border-radius: 50%;
-    transition: background .25s, color .25s;
+    transition:
+      background 0.25s,
+      color 0.25s;
   }
-  .cta:hover .arrow { background: var(--ink); color: var(--paper); }
-.cta :global(svg) { width: 14px; height: 14px; }
+
+  .cta:hover .arrow {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .cta :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
 
   .cards-row {
     display: flex;
@@ -156,6 +181,7 @@
       height: auto;
       min-height: 100dvh;
       width: 100%;
+
       /* Contain the horizontal card strip — prevent page-level horizontal scroll. */
       overflow-x: hidden;
     }
@@ -187,13 +213,15 @@
       padding-left: var(--panel-pad);
       padding-right: var(--panel-pad);
       padding-bottom: 4px;
-      overflow-x: auto;
-      overflow-y: visible;
+      overflow: auto visible;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       height: auto;
       align-items: stretch;
     }
-    .cards-row::-webkit-scrollbar { display: none; }
+
+    .cards-row::-webkit-scrollbar {
+      display: none;
+    }
   }
 </style>

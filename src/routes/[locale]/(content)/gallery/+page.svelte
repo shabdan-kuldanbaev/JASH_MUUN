@@ -14,7 +14,7 @@
   locale={data.locale}
   alternateLocales={LOCALES.map((locale) => ({
     locale,
-    url: resolve(`/${locale}/gallery/`),
+    url: resolve(`/${locale}/gallery/`)
   }))}
 />
 
@@ -42,11 +42,13 @@
     padding: clamp(48px, 6vw, 96px) var(--gutter) clamp(64px, 8vw, 128px);
   }
 
-  .page-header { margin-bottom: clamp(40px, 5vw, 72px); }
+  .page-header {
+    margin-bottom: clamp(40px, 5vw, 72px);
+  }
 
   .page-sup {
     font-size: 11px;
-    letter-spacing: .24em;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--muted);
     margin-bottom: 16px;
@@ -55,7 +57,7 @@
   .page-title {
     font-size: clamp(36px, 6vw, 80px);
     font-weight: 300;
-    letter-spacing: -.02em;
+    letter-spacing: -0.02em;
     line-height: 1;
     color: var(--ink);
     margin-bottom: 20px;
