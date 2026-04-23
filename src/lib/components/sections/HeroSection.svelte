@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import PracticeCard from '$components/ui/PracticeCard.svelte';
+  import { reveal } from '$lib/actions/reveal';
   import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
@@ -35,7 +36,9 @@
     {#if practices.length > 0}
       <div class="cards-row">
         {#each practices as practice, i (practice.id)}
-          <PracticeCard {practice} {locale} index={i} total={practices.length} />
+          <div use:reveal={i * 120}>
+            <PracticeCard {practice} {locale} index={i} total={practices.length} />
+          </div>
         {/each}
       </div>
     {/if}
@@ -171,6 +174,23 @@
     gap: clamp(24px, 2vw, 40px);
     align-items: flex-start;
     height: 100%;
+  }
+
+  /* Reveal: slides in from right */
+  .cards-row :global([data-reveal='pending']) {
+    opacity: 0;
+    transform: translateX(48px);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
+  }
+
+  .cards-row :global([data-reveal='done']) {
+    opacity: 1;
+    transform: translateX(0);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
   }
 
   /* ── Mobile (< 768px) — vertical stacked layout ───────────────────── */

@@ -2,22 +2,22 @@
   import { m } from '$i18n';
 
   let {
-    current = 1,
-    total = 4,
     progress = 0,
+    atStart = true,
+    atEnd = false,
     onPrev,
     onNext
   }: {
-    current?: number;
-    total?: number;
     progress?: number;
+    atStart?: boolean;
+    atEnd?: boolean;
     onPrev?: () => void;
     onNext?: () => void;
   } = $props();
 </script>
 
 <div class="scroll-status" role="navigation" aria-label={m.scroll_progress()}>
-  <button class="ss-btn" onclick={onPrev} disabled={current <= 1} aria-label={m.scroll_previous()}>
+  <button class="ss-btn" onclick={onPrev} disabled={atStart} aria-label={m.scroll_previous()}>
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M10 3L5 8l5 5" />
     </svg>
@@ -28,13 +28,7 @@
     <div class="ss-fill" style="width: {progress * 100}%"></div>
   </div>
 
-  <div class="ss-index">
-    <b>{String(current).padStart(2, '0')}</b>
-    <span>/</span>
-    <span>{String(total).padStart(2, '0')}</span>
-  </div>
-
-  <button class="ss-btn" onclick={onNext} disabled={current >= total} aria-label={m.scroll_next()}>
+  <button class="ss-btn" onclick={onNext} disabled={atEnd} aria-label={m.scroll_next()}>
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M6 3l5 5-5 5" />
     </svg>
@@ -128,17 +122,5 @@
     background-size: 8px 2px;
     background-repeat: repeat-x;
     transition: width 0.2s;
-  }
-
-  .ss-index {
-    font-variant-numeric: tabular-nums;
-    color: var(--muted);
-    font-size: 12px;
-    letter-spacing: 0.12em;
-  }
-
-  .ss-index b {
-    color: var(--ink);
-    font-weight: 500;
   }
 </style>

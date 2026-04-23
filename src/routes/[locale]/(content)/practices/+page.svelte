@@ -4,6 +4,7 @@
   import { m, LOCALES } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
   import PracticeCard from '$cms/PracticeCard.svelte';
+  import { reveal } from '$lib/actions/reveal';
 
   let { data }: { data: PageData } = $props();
 </script>
@@ -31,8 +32,10 @@
     </div>
   {:else}
     <section class="practice-list" aria-label={m.practices_list_aria()}>
-      {#each data.practices as practice (practice.id)}
-        <PracticeCard {practice} locale={data.locale} />
+      {#each data.practices as practice, i (practice.id)}
+        <div use:reveal={i * 120}>
+          <PracticeCard {practice} locale={data.locale} />
+        </div>
       {/each}
     </section>
   {/if}
@@ -75,6 +78,23 @@
   .practice-list {
     display: flex;
     flex-direction: column;
+  }
+
+  /* Reveal animation: slides in from right */
+  .practice-list :global([data-reveal='pending']) {
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
+  }
+
+  .practice-list :global([data-reveal='done']) {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
   }
 
   .empty-state {

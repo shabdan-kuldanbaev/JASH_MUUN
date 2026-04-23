@@ -72,11 +72,6 @@
       in:slideX={{ x: '-100%', duration: 380, easing: cubicInOut }}
       out:slideX={{ x: '-100%', duration: 320, easing: cubicInOut }}
     >
-      <!-- Close button sits outside the keyed block so it doesn't re-render on content switch -->
-      <div class="shell-top">
-        <button class="close-btn" onclick={() => panel.close()} aria-label="Закрыть">✕</button>
-      </div>
-
       <!-- Content area: position:relative + overflow:hidden clips the sliding content elements -->
       <div class="shell-body">
         {#key panel.contentKey}
@@ -110,28 +105,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-
-  .shell-top {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-    padding: clamp(1rem, 2vw, 1.5rem) var(--gutter) 0;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-    color: var(--muted);
-    padding: 0.25rem 0.5rem;
-    line-height: 1;
-    transition: color 0.2s ease;
-  }
-
-  .close-btn:hover {
-    color: var(--ink);
   }
 
   /* Clipping container — overflow:hidden creates the wipe effect during transitions */

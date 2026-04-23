@@ -4,6 +4,7 @@
   import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import { panel, type PanelId } from '$lib/panel.svelte';
+  import { fade } from 'svelte/transition';
 
   let { locale }: { locale: Locale } = $props();
 
@@ -11,9 +12,14 @@
   const isPractice = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
   const homeHref = $derived(resolve(`/${locale}/`));
-  const mainLogoSrc = asset('/assets/main-logo.svg');
-  const supportingLogoSrc = asset('/assets/supporting-logo.svg');
-  const coFounderLogoSrc = asset('/assets/eu-logo.svg');
+
+  const logos = [
+    { src: asset('/assets/main-logo.svg'), alt: 'Jash Muun', label: m.nav_brand_home() },
+    { src: asset('/assets/supporting-logo.svg'), alt: 'ALIPH', label: m.nav_support_partner() },
+    { src: asset('/assets/eu-logo.svg'), alt: 'EU', label: m.nav_support_partner() }
+  ];
+
+  const isOpen = $derived(panel.active !== null);
 
   function onHeaderClick(e: MouseEvent, id: PanelId) {
     e.preventDefault();
@@ -21,21 +27,19 @@
       panel.open(id as NonNullable<PanelId>);
       return;
     }
-
     if (panel.active !== id) {
       panel.switchTo(id as NonNullable<PanelId>);
       return;
     }
-
     panel.close();
   }
 </script>
 
 <header class="nav">
   <nav class="nav-left" aria-label="Primary">
-    <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}
-      >{m.nav_home()}</a
-    >
+    <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}>
+      {m.nav_home()}
+    </a>
 
     <button
       class="nav-item"
@@ -58,22 +62,40 @@
       class:is-active={panel.active === 'language'}
       onclick={(e) => onHeaderClick(e, 'language')}
       aria-expanded={panel.active === 'language'}
-      aria-label={m.nav_language()}
+      aria-label={m.nav_language()}>{locale.toUpperCase()}</button
     >
-      {locale.toUpperCase()}
-    </button>
   </nav>
 
   <div class="nav-right">
-    <span class="logo" aria-label={m.nav_brand_home()}>
-      <img src={mainLogoSrc} alt="Jash Muun" class="svg-supp" />
-    </span>
-    <span class="logo" aria-label={m.nav_support_partner()}>
-      <img src={supportingLogoSrc} alt="ALIPH" class="svg-supp" />
-    </span>
-    <span class="logo" aria-label={m.nav_support_partner()}>
-      <img src={coFounderLogoSrc} alt="ALIPH" class="svg-supp" />
-    </span>
+    <!--
+      Logos stay in DOM at all times — CSS transitions handle enter/exit.
+      Removing from DOM via {#if} caused coexistence flicker with the close button.
+    -->
+    {#each logos as logo, i (logo.alt)}
+      <span
+        class="logo"
+        class:logo--out={isOpen}
+        aria-label={logo.label}
+        style="transition-delay: {isOpen ? `${i * 50}ms` : `${(2 - i) * 100}ms`}"
+      >
+        <img src={logo.src} alt={logo.alt} />
+      </span>
+    {/each}
+
+    <!-- Close button overlays the logo area while panel is open -->
+    {#if isOpen}
+      <button
+        class="close-btn"
+        onclick={() => panel.close()}
+        aria-label="Закрыть"
+        in:fade={{ duration: 280, delay: 200 }}
+        out:fade={{ duration: 180 }}
+      >
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M3 3l10 10M13 3L3 13" />
+        </svg>
+      </button>
+    {/if}
   </div>
 </header>
 
@@ -98,7 +120,7 @@
     align-items: baseline;
   }
 
-  /* Unified style for all nav items — links and the locale button */
+  /* Unified style for all nav items — links and buttons */
   .nav-item {
     font-size: 12px;
     letter-spacing: 0.12em;
@@ -106,13 +128,9 @@
     color: var(--muted);
     font-weight: 400;
     font-family: inherit;
-
-    /* button reset */
     background: none;
     border: none;
     cursor: pointer;
-
-    /* underline indicator */
     padding: 0 0 3px;
     border-bottom: 1px solid transparent;
     transition:
@@ -126,20 +144,60 @@
     border-bottom-color: var(--ink);
   }
 
+  /* ── Logo area ──────────────────────────────────────────────────────── */
   .nav-right {
+    position: relative;
     display: flex;
     gap: 24px;
     align-items: center;
+    height: 60px;
   }
 
   .logo {
     height: 60px;
-    width: auto;
+    flex-shrink: 0;
+    transition:
+      transform 0.32s ease,
+      opacity 0.32s ease;
   }
 
   .logo img {
     height: 100%;
     width: auto;
     display: block;
+  }
+
+  /* Logos exit to the right when panel opens */
+  .logo--out {
+    transform: translateX(80px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Close button ───────────────────────────────────────────────────── */
+  .close-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    translate: 0 -50%;
+    height: 48px;
+    width: 48px;
+    display: grid;
+    place-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink);
+    padding: 0;
+    transition: opacity 0.2s;
+  }
+
+  .close-btn:hover {
+    opacity: 0.5;
+  }
+
+  .close-btn svg {
+    width: 100%;
+    height: 100%;
   }
 </style>
