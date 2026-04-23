@@ -9,19 +9,18 @@ export function entries() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-export const load: PageServerLoad = async ({ params, parent }) => {
-  const { locale } = params;
+export const load: PageServerLoad = async ({ parent }) => {
   const parentData = await parent();
 
   let practices: PracticeSummary[];
   try {
-    practices = await getPracticeIndex(locale);
+    practices = await getPracticeIndex(parentData.locale);
   } catch {
     practices = [];
   }
 
   return {
-    locale,
+    locale: parentData.locale,
     siteSettings: parentData.siteSettings,
     practices,
   };

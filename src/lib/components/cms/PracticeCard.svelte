@@ -1,10 +1,11 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { m } from '$i18n';
+  import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
-  let { practice, locale }: { practice: PracticeSummary; locale: string } = $props();
+  let { practice, locale }: { practice: PracticeSummary; locale: Locale } = $props();
 
   const date = $derived(
     practice.publishedDate

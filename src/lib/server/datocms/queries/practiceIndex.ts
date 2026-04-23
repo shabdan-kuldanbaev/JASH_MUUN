@@ -1,6 +1,7 @@
 import { datoRequest } from '../client';
 import type { PracticeSummary } from '$lib/types/datocms';
 import { resolveContentLocale } from '$lib/i18n';
+import type { Locale } from '$lib/i18n';
 
 const QUERY = /* GraphQL */ `
   query PracticeIndex($locale: SiteLocale!) {
@@ -44,7 +45,7 @@ interface RawData {
   }>;
 }
 
-export async function getPracticeIndex(locale: string): Promise<PracticeSummary[]> {
+export async function getPracticeIndex(locale: Locale): Promise<PracticeSummary[]> {
   const resolved = resolveContentLocale(locale);
   const data = await datoRequest<RawData>(QUERY, { locale: resolved });
   return data.allPractices;

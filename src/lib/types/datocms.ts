@@ -1,3 +1,5 @@
+import type { Locale } from '$lib/i18n';
+
 // Shared TypeScript types for DatoCMS content.
 // Safe to import from both server files and Svelte components (types are erased at runtime).
 // Locale constants and helpers live in $i18n, not here.
@@ -49,7 +51,7 @@ export interface GalleryItem {
   imageAlt: string;
   postTitle: string;
   postSlug: string;
-  locale: string;
+  locale: Locale;
   publishedDate: string;
 }
 

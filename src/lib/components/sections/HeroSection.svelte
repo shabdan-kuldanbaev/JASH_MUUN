@@ -2,12 +2,13 @@
   import { resolve } from '$app/paths';
   import PracticeCard from '$components/ui/PracticeCard.svelte';
   import { m } from '$i18n';
+  import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
   let {
     practices = [],
     locale = 'ru',
-  }: { practices?: PracticeSummary[]; locale?: string } = $props();
+  }: { practices?: PracticeSummary[]; locale?: Locale } = $props();
 </script>
 
 <section class="panel panel--w-hero hero" data-scroll-screen aria-label="01 Hero">

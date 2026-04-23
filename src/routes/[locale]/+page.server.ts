@@ -9,13 +9,12 @@ export function entries() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-export const load: PageServerLoad = async ({ params, parent }) => {
+export const load: PageServerLoad = async ({ parent }) => {
   const parentData = await parent();
-  const { locale } = params;
 
   let practices: PracticeSummary[];
   try {
-    const all = await getPracticeIndex(locale);
+    const all = await getPracticeIndex(parentData.locale);
     practices = all.slice(0, 6);
   } catch {
     practices = [];

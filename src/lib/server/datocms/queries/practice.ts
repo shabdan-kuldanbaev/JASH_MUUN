@@ -1,6 +1,7 @@
 import { datoRequest } from '../client';
 import type { Practice } from '$lib/types/datocms';
 import { LOCALES, resolveContentLocale } from '$lib/i18n';
+import type { Locale } from '$lib/i18n';
 
 const POST_QUERY = /* GraphQL */ `
   query Practice($locale: SiteLocale!, $slug: String!) {
@@ -24,8 +25,8 @@ const POST_QUERY = /* GraphQL */ `
   }
 `;
 
-export async function getAllPracticeSlugs(): Promise<{ locale: string; slug: string }[]> {
-  const entries: { locale: string; slug: string }[] = [];
+export async function getAllPracticeSlugs(): Promise<{ locale: Locale; slug: string }[]> {
+  const entries: { locale: Locale; slug: string }[] = [];
 
   for (const locale of LOCALES) {
     try {
@@ -62,7 +63,7 @@ export async function getAllPracticeSlugs(): Promise<{ locale: string; slug: str
 }
 
 export async function getPracticeBySlug(
-  locale: string,
+  locale: Locale,
   slug: string
 ): Promise<Practice | null> {
   const resolved = resolveContentLocale(locale);

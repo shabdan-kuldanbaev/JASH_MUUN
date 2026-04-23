@@ -32,7 +32,7 @@ export function isValidLocale(value: unknown): value is Locale {
  * Maps a route locale to an available DatoCMS locale.
  * Falls back to 'ru' until additional CMS locales are configured.
  */
-export function resolveContentLocale(locale: string): string {
+export function resolveContentLocale(locale: Locale): Locale {
   const available = ['ru'];
   return available.includes(locale) ? locale : 'ru';
 }

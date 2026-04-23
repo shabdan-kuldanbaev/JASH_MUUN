@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Locale } from '$lib/i18n';
   import type { DatoSeo } from '$lib/types/datocms';
 
   let {
@@ -13,8 +14,8 @@
     description?: string | null;
     seo?: DatoSeo | null;
     canonicalUrl?: string | null;
-    locale?: string;
-    alternateLocales?: { locale: string; url: string }[];
+    locale?: Locale;
+    alternateLocales?: { locale: Locale; url: string }[];
   } = $props();
 
   const resolvedTitle = $derived(seo?.title ?? title);

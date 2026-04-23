@@ -10,13 +10,12 @@ export function entries() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-export const load: PageServerLoad = async ({ params, parent }) => {
-  const { locale } = params;
+export const load: PageServerLoad = async ({ parent }) => {
   const parentData = await parent();
 
   let items: GalleryItem[];
   try {
-    items = await getGalleryItems(locale);
+    items = await getGalleryItems(parentData.locale);
   } catch (err) {
     if (!(err instanceof DatoLocaleError)) {
       console.warn('[DatoCMS] getGalleryItems failed:', err);
@@ -25,7 +24,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
   }
 
   return {
-    locale,
+    locale: parentData.locale,
     siteSettings: parentData.siteSettings,
     items,
   };

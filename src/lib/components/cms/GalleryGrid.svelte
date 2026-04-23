@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { m } from '$i18n';
+  import type { Locale } from '$lib/i18n';
   import type { GalleryItem } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -9,7 +10,7 @@
     locale,
   }: {
     items: GalleryItem[];
-    locale: string;
+    locale: Locale;
   } = $props();
 </script>
 

@@ -2,8 +2,9 @@
   import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
   import { m, LOCALES } from '$i18n';
+  import type { Locale } from '$lib/i18n';
 
-  let { locale }: { locale: string } = $props();
+  let { locale }: { locale: Locale } = $props();
 
   // Derive which nav link is "current" from the URL pathname.
   const path = $derived(page.url.pathname);
@@ -18,7 +19,7 @@
   const supportingLogoSrc = asset('/assets/supporting-logo.svg');
   const coFounderLogoSrc = asset('/assets/eu-logo.svg');
 
-  function localePath(targetLocale: string): `/${string}` {
+  function localePath(targetLocale: Locale): `/${string}` {
     const localized = pathFromLocale.replace(/^\/[^/]+(?=\/|$)/, `/${targetLocale}`);
     return (localized || `/${targetLocale}/`) as `/${string}`;
   }
@@ -99,6 +100,6 @@
     gap: 24px;
     align-items: center;
   }
-  .logo { height: 80px; width: auto; }
+  .logo { height: 60px; width: auto; }
   .logo img { height: 100%; width: auto; display: block; }
 </style>

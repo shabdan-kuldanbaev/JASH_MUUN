@@ -1,6 +1,7 @@
 import { datoRequest } from '../client';
 import type { GalleryItem } from '$lib/types/datocms';
 import { resolveContentLocale } from '$lib/i18n';
+import type { Locale } from '$lib/i18n';
 
 // Gallery items are derived from the `gallery` asset gallery field on practice records.
 
@@ -34,7 +35,7 @@ interface RawPost {
   }>;
 }
 
-export async function getGalleryItems(locale: string): Promise<GalleryItem[]> {
+export async function getGalleryItems(locale: Locale): Promise<GalleryItem[]> {
   const resolved = resolveContentLocale(locale);
   const data = await datoRequest<{ allPractices: RawPost[] }>(QUERY, { locale: resolved });
   const items: GalleryItem[] = [];

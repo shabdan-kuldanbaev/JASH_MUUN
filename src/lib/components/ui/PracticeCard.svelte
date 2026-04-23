@@ -1,12 +1,13 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
   const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 
   let { practice, locale, index, total }: {
     practice: PracticeSummary;
-    locale: string;
+    locale: Locale;
     index: number;
     total: number;
   } = $props();

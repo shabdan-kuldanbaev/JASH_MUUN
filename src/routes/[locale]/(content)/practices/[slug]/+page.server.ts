@@ -14,11 +14,11 @@ export async function entries() {
 }
 
 export const load: PageServerLoad = async ({ params, parent }) => {
-  const { locale, slug } = params;
+  const { slug } = params;
   const parentData = await parent();
 
-  const practice = await getPracticeBySlug(locale, slug).catch((err) => {
-    console.error(`[DatoCMS] getPracticeBySlug failed (${locale}/${slug}):`, err);
+  const practice = await getPracticeBySlug(parentData.locale, slug).catch((err) => {
+    console.error(`[DatoCMS] getPracticeBySlug failed (${parentData.locale}/${slug}):`, err);
     throw error(500, `Failed to load practice: ${err}`);
   });
 
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
   }
 
   return {
-    locale,
+    locale: parentData.locale,
     siteSettings: parentData.siteSettings,
     practice,
   };

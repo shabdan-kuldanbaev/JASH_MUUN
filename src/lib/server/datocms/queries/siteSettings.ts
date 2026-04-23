@@ -1,5 +1,6 @@
 import { datoRequest, DatoLocaleError } from '../client';
 import type { SiteSettings } from '$lib/types/datocms';
+import type { Locale } from '$lib/i18n';
 
 // Uses only the built-in DatoCMS _site global SEO.
 // There is no site_settings singleton model in this project.
@@ -32,7 +33,7 @@ interface RawData {
   };
 }
 
-export async function getSiteSettings(locale: string): Promise<SiteSettings> {
+export async function getSiteSettings(locale: Locale): Promise<SiteSettings> {
   try {
     const data = await datoRequest<RawData>(QUERY, { locale });
     return {
