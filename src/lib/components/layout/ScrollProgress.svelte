@@ -48,13 +48,7 @@
     letter-spacing: 0.01em;
     color: var(--ink);
     font-weight: 500;
-    background: rgba(241, 235, 224, 0.82);
-    backdrop-filter: blur(10px) saturate(1.1);
     padding: 10px 16px;
-    border-radius: 999px;
-    box-shadow:
-      0 1px 0 rgba(29, 27, 22, 0.06),
-      0 8px 24px -12px rgba(29, 27, 22, 0.18);
   }
 
   .ss-btn {

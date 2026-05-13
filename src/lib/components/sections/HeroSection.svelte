@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import PracticeCard from '$components/ui/PracticeCard.svelte';
   import { reveal } from '$lib/actions/reveal';
   import { m } from '$i18n';
@@ -13,7 +12,6 @@
 <section class="panel panel--w-hero hero" data-scroll-screen aria-label="01 Hero">
   <div class="hero-layout">
     <div class="hero-text">
-      <div class="eyebrow">{m.hero_eyebrow()}</div>
       <h1>
         {m.hero_title_line_1()}<br />
         {m.hero_title_line_2()}<br />
@@ -21,23 +19,13 @@
         <em>{m.hero_title_emphasis()}</em>
       </h1>
       <p class="hero-lede">{m.hero_lede()}</p>
-      <div class="hero-ctas">
-        <a href={resolve(`/${locale}/practices/`)} class="cta">
-          <span class="arrow">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
-              <path d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </span>
-          {m.hero_enter_cta()}
-        </a>
-      </div>
     </div>
 
     {#if practices.length > 0}
       <div class="cards-row">
         {#each practices as practice, i (practice.id)}
-          <div use:reveal={i * 120}>
-            <PracticeCard {practice} {locale} index={i} total={practices.length} />
+          <div use:reveal={i * 120} class="reveal">
+            <PracticeCard {practice} {locale} />
           </div>
         {/each}
       </div>
@@ -74,28 +62,7 @@
 
   .hero-text {
     align-self: center;
-    max-width: 580px;
-  }
-
-  .eyebrow {
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 44px;
-  }
-
-  .eyebrow::before {
-    content: '';
-    width: 44px;
-    height: 1px;
-    background: var(--ink);
-    opacity: 0.4;
-    display: inline-block;
+    max-width: 500px;
   }
 
   h1 {
@@ -123,56 +90,14 @@
     text-wrap: pretty;
   }
 
-  .hero-ctas {
-    margin-top: 44px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .cta {
-    font-size: 15px;
-    letter-spacing: 0.01em;
-    color: var(--ink);
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 6px 0;
-    transition: gap 0.25s ease;
-  }
-
-  .cta:hover {
-    gap: 18px;
-  }
-
-  .arrow {
-    display: inline-grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border: 1px solid var(--ink);
-    border-radius: 50%;
-    transition:
-      background 0.25s,
-      color 0.25s;
-  }
-
-  .cta:hover .arrow {
-    background: var(--ink);
-    color: var(--paper);
-  }
-
-  .cta :global(svg) {
-    width: 14px;
-    height: 14px;
-  }
-
   .cards-row {
     display: flex;
     gap: clamp(24px, 2vw, 40px);
     align-items: flex-start;
+    height: 100%;
+  }
+
+  .reveal {
     height: 100%;
   }
 
@@ -226,22 +151,12 @@
       max-width: 100%;
     }
 
-    /* Cards become a horizontal scroll strip, bleeding to panel edges. */
+    /* Cards stack vertically, full-width. */
     .cards-row {
-      margin-left: calc(-1 * var(--panel-pad));
-      margin-right: calc(-1 * var(--panel-pad));
-      padding-left: var(--panel-pad);
-      padding-right: var(--panel-pad);
-      padding-bottom: 4px;
-      overflow: auto visible;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+      flex-direction: column;
+      gap: 20px;
       height: auto;
       align-items: stretch;
-    }
-
-    .cards-row::-webkit-scrollbar {
-      display: none;
     }
   }
 </style>

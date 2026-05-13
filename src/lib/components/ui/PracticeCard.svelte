@@ -3,26 +3,20 @@
   import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
-  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-
   let {
     practice,
-    locale,
-    index,
-    total
+    locale
   }: {
     practice: PracticeSummary;
     locale: Locale;
-    index: number;
-    total: number;
   } = $props();
-
-  const num = $derived(String(index + 1).padStart(2, '0'));
-  const tot = $derived(String(total).padStart(2, '0'));
-  const indexLabel = $derived(`${num} / ${tot}`);
-  const room = $derived(`Room ${ROMAN[index] ?? String(index + 1)}`);
   const imageUrl = $derived(practice.coverImage?.url ?? '');
   const practiceHref = $derived(resolve(`/${locale}/practices/${practice.slug}/`));
+  const truncatedExcerpt = $derived(
+    practice.excerpt && practice.excerpt.length > 120
+      ? practice.excerpt.slice(0, 120).trimEnd() + '…'
+      : practice.excerpt
+  );
 </script>
 
 <a href={practiceHref} class="p-card-link" aria-label={practice.title}>
@@ -34,13 +28,11 @@
     {/if}
     <div class="shade"></div>
     <div class="content">
-      <div class="kicker">{room}</div>
       <h3>{practice.title}</h3>
-      {#if practice.excerpt}
-        <p>{practice.excerpt}</p>
+      {#if truncatedExcerpt}
+        <p>{truncatedExcerpt}</p>
       {/if}
       <div class="row">
-        <span class="num">{indexLabel}</span>
         <span class="explore">Explore <span aria-hidden="true">→</span></span>
       </div>
     </div>
@@ -50,9 +42,8 @@
 <style>
   .p-card {
     flex: 0 0 auto;
-    width: clamp(300px, 24vw, 360px);
-    height: calc(100dvh - var(--nav-h) - var(--ui-bottom) - 48px);
-    max-height: 620px;
+    width: calc(0.54545455 * calc(calc(100vh - 6.875rem) - 5.5vmin - 9vmin));
+    height: 100%;
     min-height: 440px;
     background: #000;
     border-radius: 4px;
@@ -104,24 +95,6 @@
     padding: 28px 28px 26px;
   }
 
-  .kicker {
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.78);
-    margin-bottom: 12px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .kicker::before {
-    content: '';
-    width: 18px;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.6);
-  }
-
   h3 {
     font-family: 'Noto Serif Display', serif;
     font-weight: 400;
@@ -156,11 +129,6 @@
     background: rgba(15, 12, 6, 0.4);
   }
 
-  .num {
-    color: rgba(255, 255, 255, 0.55);
-    letter-spacing: 0.18em;
-  }
-
   .explore {
     color: rgba(255, 255, 255, 0.7);
     display: inline-flex;
@@ -173,9 +141,9 @@
   /* ── Mobile (< 768px) — compact card for horizontal strip ─────────── */
   @media (max-width: 767px) {
     .p-card {
-      width: 240px;
-      height: 320px;
-      min-height: auto;
+      width: 100%;
+      height: auto;
+      min-height: 320px;
       max-height: none;
     }
   }
