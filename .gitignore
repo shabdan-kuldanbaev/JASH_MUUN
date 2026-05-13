@@ -5,11 +5,6 @@
 .idea/
 .vscode/
 
-# Claude / AI artifacts
-.claude/
-CLAUDE.md
-claude-design
-
 # SvelteKit
 .svelte-kit/
 build/
@@ -31,3 +26,9 @@ src/lib/paraglide/
 
 # Production build output
 dist/
+
+# Claude / AI artifacts
+.claude/
+CLAUDE.md
+claude-design
+jash-muun-design-system

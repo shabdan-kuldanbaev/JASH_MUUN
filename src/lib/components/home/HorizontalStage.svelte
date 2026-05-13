@@ -2,7 +2,6 @@
   import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
   import ScrollProgress from '$components/layout/ScrollProgress.svelte';
-  import { m } from '$i18n';
 
   let {
     children,
@@ -21,7 +20,6 @@
 
   // ── Reactive display state ─────────────────────────────────────────────
   let scrollProgress = $state(0);
-  let showHint = $state(true);
 
   // ── Scroll helpers ─────────────────────────────────────────────────────
   function maxScroll(): number {
@@ -50,7 +48,6 @@
     if (!stage) return;
     const max = maxScroll();
     scrollProgress = max > 0 ? stage.scrollLeft / max : 0;
-    if (stage.scrollLeft > 40) showHint = false;
   }
 
   function checkEnabled(): void {
@@ -125,7 +122,6 @@
     window.addEventListener('keydown', onKeydown);
     el.addEventListener('scroll', onScroll, { passive: true });
 
-    showHint = true;
     syncProgress();
 
     return () => {
@@ -159,11 +155,6 @@
   <main class="stage" bind:this={stage} id="stage">
     {@render children()}
   </main>
-
-  <div class="scroll-hint" class:hide={!showHint} aria-hidden="true">
-    <span class="line"></span>
-    {m.home_scroll_hint()}
-  </div>
 
   <ScrollProgress
     progress={scrollProgress}
@@ -205,47 +196,5 @@
   /* ── Vertical fallback ────────────────────────────────────────────── */
   .page-vertical {
     background: var(--paper);
-  }
-
-  /* ── Scroll hint ──────────────────────────────────────────────────── */
-  .scroll-hint {
-    position: fixed;
-    left: var(--gutter);
-    bottom: 32px;
-    z-index: 45;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 11px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--muted);
-    pointer-events: none;
-    transition: opacity 0.4s;
-  }
-
-  .scroll-hint.hide {
-    opacity: 0;
-  }
-
-  .line {
-    width: 44px;
-    height: 1px;
-    background: var(--ink);
-    opacity: 0.5;
-    animation: slide 2.4s ease-in-out infinite;
-  }
-
-  @keyframes slide {
-    0%,
-    100% {
-      transform: scaleX(1);
-      transform-origin: left;
-    }
-
-    50% {
-      transform: scaleX(1.6);
-      transform-origin: left;
-    }
   }
 </style>
