@@ -1,14 +1,15 @@
 import { datoRequest } from '../client';
 import type { GalleryItem } from '$lib/types/datocms';
-import { resolveContentLocale } from '$lib/i18n';
+import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
 
 // Gallery items are derived from the `gallery` asset gallery field on practice records.
 
 const QUERY = /* GraphQL */ `
-  query GalleryItems($locale: SiteLocale!) {
+  query GalleryItems($locale: SiteLocale!, $fallbackLocales: [SiteLocale!]!) {
     allPractices(
       locale: $locale
+      fallbackLocales: $fallbackLocales
       filter: { _status: { eq: published } }
       orderBy: publishedDate_DESC
     ) {
@@ -43,7 +44,10 @@ interface RawPost {
 
 export async function getGalleryItems(locale: Locale): Promise<GalleryItem[]> {
   const resolved = resolveContentLocale(locale);
-  const data = await datoRequest<{ allPractices: RawPost[] }>(QUERY, { locale: resolved });
+  const data = await datoRequest<{ allPractices: RawPost[] }>(QUERY, {
+    locale: resolved,
+    fallbackLocales: [CMS_FALLBACK_LOCALE]
+  });
   const items: GalleryItem[] = [];
   for (const post of data.allPractices) {
     for (const image of post.gallery) {

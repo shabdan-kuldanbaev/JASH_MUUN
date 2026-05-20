@@ -1,11 +1,11 @@
 import { datoRequest } from '../client';
 import type { Practice } from '$lib/types/datocms';
-import { LOCALES, resolveContentLocale } from '$lib/i18n';
+import { LOCALES, CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
 
 const POST_QUERY = /* GraphQL */ `
-  query Practice($locale: SiteLocale!, $slug: String!) {
-    practice(locale: $locale, filter: { slug: { eq: $slug } }) {
+  query Practice($locale: SiteLocale!, $fallbackLocales: [SiteLocale!]!, $slug: String!) {
+    practice(locale: $locale, fallbackLocales: $fallbackLocales, filter: { slug: { eq: $slug } }) {
       id
       title
       slug
@@ -52,13 +52,17 @@ export async function getAllPracticeSlugs(): Promise<{ locale: Locale; slug: str
       const resolved = resolveContentLocale(locale);
       const data = await datoRequest<{ allPractices: { slug: string }[] }>(
         /* GraphQL */ `
-          query PracticeSlugs($locale: SiteLocale!) {
-            allPractices(locale: $locale, filter: { _status: { eq: published } }) {
+          query PracticeSlugs($locale: SiteLocale!, $fallbackLocales: [SiteLocale!]!) {
+            allPractices(
+              locale: $locale
+              fallbackLocales: $fallbackLocales
+              filter: { _status: { eq: published } }
+            ) {
               slug
             }
           }
         `,
-        { locale: resolved }
+        { locale: resolved, fallbackLocales: [CMS_FALLBACK_LOCALE] }
       );
       for (const { slug } of data.allPractices) {
         entries.push({ locale, slug });
@@ -82,6 +86,7 @@ export async function getPracticeBySlug(locale: Locale, slug: string): Promise<P
   const resolved = resolveContentLocale(locale);
   const data = await datoRequest<{ practice: Practice | null }>(POST_QUERY, {
     locale: resolved,
+    fallbackLocales: [CMS_FALLBACK_LOCALE],
     slug
   });
   return data.practice;
