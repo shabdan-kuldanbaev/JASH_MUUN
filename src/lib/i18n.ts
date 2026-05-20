@@ -21,6 +21,9 @@ export type Locale = (typeof LOCALES)[number];
 /** Locale shown to users when no valid locale segment is found in the URL. */
 export const DEFAULT_LOCALE: Locale = 'ru';
 
+/** Locale used as DatoCMS fallback when a field has no translation. */
+export const CMS_FALLBACK_LOCALE: Locale = 'fr';
+
 // ── Locale helpers ────────────────────────────────────────────────────────────
 
 /** Returns true when `value` is one of the supported route locales. */
