@@ -68,7 +68,7 @@ export async function getAllPracticeSlugs(): Promise<{ locale: Locale; slug: str
     }
   }
 
-  // Deduplicate: same slug may appear for multiple locales (all resolve to 'ru').
+  // Deduplicate: same slug may appear for multiple locales when slugs are shared.
   const seen = new Set<string>();
   return entries.filter(({ locale, slug }) => {
     const key = `${locale}:${slug}`;
