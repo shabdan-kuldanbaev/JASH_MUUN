@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { asset } from '$app/paths';
   import PracticeCard from '$components/ui/PracticeCard.svelte';
   import { reveal } from '$lib/actions/reveal';
   import { m } from '$i18n';
@@ -31,6 +32,20 @@
       </div>
     {/if}
   </div>
+
+  <!-- Petroglyph accents -->
+  <img
+    src={asset('/assets/petroglyphs/4.svg')}
+    aria-hidden="true"
+    class="petroglyph hero-petro-1"
+    alt=""
+  />
+  <img
+    src={asset('/assets/petroglyphs/9.svg')}
+    aria-hidden="true"
+    class="petroglyph hero-petro-2"
+    alt=""
+  />
 </section>
 
 <style>
@@ -53,8 +68,10 @@
   }
 
   .hero-layout {
+    position: relative;
+    z-index: 1;
     display: grid;
-    grid-template-columns: minmax(420px, 560px) 1fr;
+    grid-template-columns: minmax(420px, 640px) 1fr;
     gap: clamp(48px, 6vw, 120px);
     align-items: end;
     height: calc(100dvh - var(--nav-h) - 16px - var(--ui-bottom));
@@ -63,16 +80,15 @@
 
   .hero-text {
     align-self: center;
-    max-width: 500px;
+    max-width: 600px;
     min-height: 0;
-    overflow: hidden;
   }
 
   h1 {
     font-family: 'Figtree', sans-serif;
     font-weight: 700;
-    font-size: clamp(46px, 4.6vw, 78px);
-    line-height: 1.04;
+    font-size: clamp(40px, 4vw, 64px);
+    line-height: 1.08;
     letter-spacing: -0.025em;
     color: var(--ink);
     text-wrap: balance;
@@ -121,22 +137,43 @@
       transform 0.65s ease;
   }
 
+  /* Petroglyph placements */
+  .hero-petro-1 {
+    bottom: 8%;
+    left: 2%;
+    width: clamp(180px, 16vw, 280px);
+    transform: rotate(-8deg);
+  }
+
+  .hero-petro-2 {
+    top: 18%;
+    right: 3%;
+    width: clamp(120px, 10vw, 180px);
+    transform: rotate(5deg) scaleX(-1);
+  }
+
   /* ── Mobile (< 768px) — vertical stacked layout ───────────────────── */
   @media (max-width: 767px) {
     .panel {
       display: flex;
       flex-direction: column;
       height: auto;
-      min-height: 100dvh;
       width: 100%;
+      padding-bottom: clamp(32px, 4vw, 48px);
 
-      /* Contain the horizontal card strip — prevent page-level horizontal scroll. */
-      overflow-x: hidden;
+      /*
+       * overflow-x: clip instead of hidden.
+       * Clips petroglyph that bleeds outside (left: -2%) without
+       * triggering overflow-y: auto (CSS spec: hidden on one axis
+       * forces auto on the other; clip does not).
+       */
+      overflow-x: clip;
     }
 
     .hero-layout {
       grid-template-columns: 1fr;
       margin-right: 0;
+      height: auto; /* Override desktop calc(100dvh - ...) */
       min-height: auto;
       align-items: start;
       gap: 32px;
@@ -160,6 +197,18 @@
       gap: 20px;
       height: auto;
       align-items: stretch;
+    }
+
+    .reveal {
+      height: auto; /* Override desktop height: 100% */
+    }
+
+    .hero-petro-1 {
+      display: block;
+      width: 140px;
+      opacity: 0.03;
+      bottom: 4%;
+      left: -2%;
     }
   }
 </style>

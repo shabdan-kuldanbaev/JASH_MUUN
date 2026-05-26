@@ -10,6 +10,14 @@
 </script>
 
 <footer class="content-footer" aria-label={m.footer_aria_section()}>
+  <!-- Petroglyph accent — heritage tint -->
+  <img
+    src={asset('/assets/petroglyphs/5.svg')}
+    aria-hidden="true"
+    class="petroglyph petroglyph--heritage cfooter-petro"
+    alt=""
+  />
+
   <div class="footer-inner">
     <div class="partners">
       <span class="label">{m.footer_supported_by()}</span>
@@ -32,11 +40,21 @@
 
 <style>
   .content-footer {
+    position: relative;
     border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
     margin-top: clamp(64px, 8vw, 120px);
   }
 
+  .cfooter-petro {
+    top: 50%;
+    right: 5%;
+    width: clamp(140px, 14vw, 220px);
+    transform: translateY(-50%) rotate(6deg);
+  }
+
   .footer-inner {
+    position: relative;
+    z-index: 1;
     max-width: var(--content-w);
     margin: 0 auto;
     padding: clamp(40px, 5vw, 64px) var(--gutter) clamp(32px, 4vw, 48px);
@@ -108,6 +126,13 @@
   }
 
   @media (max-width: 600px) {
+    .cfooter-petro {
+      display: block;
+      width: 100px;
+      opacity: 0.05;
+      right: 2%;
+    }
+
     .logos {
       gap: 24px;
     }

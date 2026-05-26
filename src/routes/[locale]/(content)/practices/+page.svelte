@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
+  import { asset, resolve } from '$app/paths';
   import type { PageData } from './$types';
   import { m, LOCALES } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
@@ -29,6 +29,20 @@
 />
 
 <div class="page">
+  <!-- Petroglyph accents -->
+  <img
+    src={asset('/assets/petroglyphs/6.svg')}
+    aria-hidden="true"
+    class="petroglyph practices-petro-1"
+    alt=""
+  />
+  <img
+    src={asset('/assets/petroglyphs/3.svg')}
+    aria-hidden="true"
+    class="petroglyph practices-petro-2"
+    alt=""
+  />
+
   <h1 class="page-title">{m.practices_title()}</h1>
 
   {#if data.practices.length === 0}
@@ -63,12 +77,15 @@
 
 <style>
   .page {
+    position: relative;
     max-width: var(--content-w);
     margin: 0 auto;
     padding: clamp(24px, 3vw, 48px) var(--gutter) clamp(64px, 8vw, 120px);
   }
 
   .page-title {
+    position: relative;
+    z-index: 1;
     font-weight: 600;
     font-size: clamp(28px, 3vw, 40px);
     color: var(--ink);
@@ -84,6 +101,8 @@
   /* ── Grid ───────────────────────────────────── */
 
   .grid {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
@@ -165,6 +184,22 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* ── Petroglyphs ────────────────────────────── */
+
+  .practices-petro-1 {
+    top: 60px;
+    right: -20px;
+    width: clamp(100px, 10vw, 160px);
+    transform: rotate(-6deg);
+  }
+
+  .practices-petro-2 {
+    bottom: 80px;
+    left: -10px;
+    width: clamp(60px, 6vw, 90px);
+    transform: rotate(10deg);
   }
 
   /* ── Reveal ─────────────────────────────────── */

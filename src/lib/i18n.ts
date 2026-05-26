@@ -15,7 +15,7 @@ export { m } from '$lib/paraglide/messages.js';
 // ── Locale constants ─────────────────────────────────────────────────────────
 // Must stay in sync with the locales array in project.inlang/settings.json.
 
-export const LOCALES = ['ru', 'ky', 'en', 'fr'] as const;
+export const LOCALES = ['ky', 'fr', 'en', 'ru'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /** Locale shown to users when no valid locale segment is found in the URL. */
