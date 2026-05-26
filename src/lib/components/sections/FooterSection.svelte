@@ -154,7 +154,7 @@
   }
 
   .mark {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: 13px;
     color: var(--ink);
     font-weight: 600;

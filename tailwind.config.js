@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Figtree', 'system-ui', 'sans-serif'],
-        serif: ['Figtree', 'system-ui', 'sans-serif']
+        sans: ['Jost', 'system-ui', 'sans-serif'],
+        serif: ['Jost', 'system-ui', 'sans-serif']
       },
       colors: {
         paper: '#FAFAF7',

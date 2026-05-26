@@ -96,7 +96,7 @@
   }
 
   h3 {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-weight: 600;
     font-size: 30px;
     line-height: 1.05;

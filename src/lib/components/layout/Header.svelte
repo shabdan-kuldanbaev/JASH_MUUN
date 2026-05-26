@@ -402,7 +402,7 @@
   }
 
   .mobile-link {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     font-weight: 400;
     color: var(--ink-2);
@@ -438,7 +438,7 @@
   }
 
   .mobile-lang-item {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: 16px;
     font-weight: 400;
     color: var(--muted);
