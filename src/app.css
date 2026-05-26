@@ -3,18 +3,28 @@
 @tailwind utilities;
 
 /* =====================================================================
-   DESIGN TOKENS — warm archival neutrals
+   DESIGN TOKENS — Kyrgyz heritage palette
+   Inspired by shyrdak felt, Tien Shan skies, steppe gold, mountain valleys
    ===================================================================== */
 :root {
-  --paper: #f1ebe0;
-  --paper-2: #e9e1d3;
-  --ink: #1d1b16;
-  --ink-2: #3a362c;
-  --muted: #7a7264;
-  --line: #2a261e;
-  --ochre-2: #8a4a18;
+  --paper: #fafaf7;
+  --paper-2: #f0eeea;
+  --ink: #1a1a1a;
+  --ink-2: #444444;
+  --muted: #888888;
+  --line: #e0ddd8;
+
+  /* Heritage accent colors */
+  --shyrdak: #c84b31;
+  --indigo: #3a5ba0;
+  --steppe: #c49a2a;
+  --valley: #2a7a6a;
+  --clay: #a0522d;
+
+  /* Legacy aliases (used by existing components) */
+  --ochre-2: var(--shyrdak);
   --madder: #9a2f1c;
-  --moss: #39472e;
+  --moss: var(--valley);
 
   --nav-h: 88px;
   --ui-bottom: 104px;
@@ -34,7 +44,7 @@ html,
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Noto Sans', system-ui, sans-serif;
+  font-family: 'Figtree', system-ui, sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }

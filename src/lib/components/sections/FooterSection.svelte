@@ -65,7 +65,7 @@
 
   .footer-inner {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1320px;
     margin: 0 auto;
     display: grid;
     grid-template-rows: 1fr auto;
@@ -125,7 +125,7 @@
     justify-content: space-between;
     align-items: flex-end;
     padding-top: 28px;
-    border-top: 1px solid rgba(29, 27, 22, 0.15);
+    border-top: 1px solid var(--line);
     font-size: 12px;
     color: var(--muted);
     letter-spacing: 0.04em;
@@ -137,7 +137,7 @@
   }
 
   .mark {
-    font-family: 'Noto Sans', sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-size: 13px;
     color: var(--ink);
     font-weight: 600;

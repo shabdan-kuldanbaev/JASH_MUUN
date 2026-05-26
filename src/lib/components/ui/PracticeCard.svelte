@@ -46,7 +46,7 @@
     height: 100%;
     min-height: 440px;
     background: #000;
-    border-radius: 4px;
+    border-radius: 1rem;
     overflow: hidden;
     position: relative;
     box-shadow:
@@ -96,8 +96,8 @@
   }
 
   h3 {
-    font-family: 'Noto Serif Display', serif;
-    font-weight: 400;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
     font-size: 30px;
     line-height: 1.05;
     letter-spacing: -0.01em;

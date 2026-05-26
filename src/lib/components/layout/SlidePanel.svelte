@@ -119,8 +119,17 @@
     position: absolute;
     inset: 0;
     overflow-y: auto;
-    padding: clamp(1.5rem, 3vw, 2.5rem) var(--gutter) var(--gutter);
+    padding-top: clamp(1.5rem, 3vw, 2.5rem);
+    padding-bottom: var(--gutter);
     display: flex;
     flex-direction: column;
+  }
+
+  /* Mirror header's .nav-inner container for symmetric alignment */
+  .content-slide > :global(*) {
+    max-width: 1320px;
+    margin-inline: auto;
+    width: 100%;
+    padding-inline: var(--gutter);
   }
 </style>

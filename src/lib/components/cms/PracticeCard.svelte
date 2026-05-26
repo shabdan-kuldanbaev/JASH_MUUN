@@ -68,11 +68,6 @@
     gap: clamp(24px, 3vw, 56px);
     padding: clamp(32px, 4vw, 64px) 0;
     align-items: start;
-    transition: opacity 0.2s;
-  }
-
-  .card-link:hover {
-    opacity: 0.8;
   }
 
   .card:nth-child(even) .card-link {

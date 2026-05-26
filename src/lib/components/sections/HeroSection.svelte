@@ -40,6 +40,7 @@
     height: 100dvh;
     position: relative;
     padding: var(--panel-pad);
+    padding-left: max(var(--panel-pad), calc((100vw - 1320px) / 2 + var(--gutter)));
     padding-top: calc(var(--nav-h) + 16px);
     padding-bottom: var(--ui-bottom);
     align-items: stretch;
@@ -66,7 +67,7 @@
   }
 
   h1 {
-    font-family: 'Noto Sans', sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-weight: 700;
     font-size: clamp(46px, 4.6vw, 78px);
     line-height: 1.04;
@@ -78,7 +79,7 @@
   h1 :global(em) {
     font-style: normal;
     font-weight: 700;
-    color: var(--ochre-2);
+    color: var(--shyrdak);
   }
 
   .hero-lede {
