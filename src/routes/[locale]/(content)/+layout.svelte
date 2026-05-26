@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Header from '$components/layout/Header.svelte';
+  import ContentFooter from '$components/layout/ContentFooter.svelte';
 
   let { children, data } = $props();
 
@@ -18,6 +19,7 @@
 
 <div class="content-shell">
   {@render children()}
+  <ContentFooter />
 </div>
 
 <style>

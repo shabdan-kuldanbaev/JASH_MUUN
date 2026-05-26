@@ -19,15 +19,10 @@
 />
 
 <div class="page">
-  <header class="page-header">
-    <p class="page-sup">{m.gallery_kicker()}</p>
-    <h1 class="page-title">{m.gallery_title()}</h1>
-    <p class="page-desc">{m.gallery_description()}</p>
-    <div class="page-rule" aria-hidden="true"></div>
-  </header>
+  <h1 class="page-title">{m.gallery_title()}</h1>
 
   {#if data.items.length === 0}
-    <div class="empty-state">
+    <div class="empty">
       <p>{m.gallery_empty()}</p>
     </div>
   {:else}
@@ -37,49 +32,21 @@
 
 <style>
   .page {
-    max-width: 1520px;
+    max-width: var(--content-w);
     margin: 0 auto;
-    padding: clamp(48px, 6vw, 96px) var(--gutter) clamp(64px, 8vw, 128px);
-  }
-
-  .page-header {
-    margin-bottom: clamp(40px, 5vw, 72px);
-  }
-
-  .page-sup {
-    font-size: 11px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 16px;
+    padding: clamp(24px, 3vw, 48px) var(--gutter) clamp(64px, 8vw, 120px);
   }
 
   .page-title {
-    font-size: clamp(36px, 6vw, 80px);
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    line-height: 1;
+    font-weight: 600;
+    font-size: clamp(28px, 3vw, 40px);
     color: var(--ink);
-    margin-bottom: 20px;
+    margin-bottom: clamp(24px, 3vw, 40px);
   }
 
-  .page-desc {
-    font-size: 16px;
-    line-height: 1.6;
+  .empty {
+    padding: 120px 0;
     color: var(--muted);
-    max-width: 56ch;
-    margin-bottom: 32px;
-  }
-
-  .page-rule {
-    width: 100%;
-    height: 1px;
-    background: color-mix(in srgb, var(--ink) 15%, transparent);
-  }
-
-  .empty-state {
-    padding: 80px 0;
     font-size: 16px;
-    color: var(--muted);
   }
 </style>

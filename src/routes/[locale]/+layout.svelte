@@ -1,7 +1,8 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
-  import { afterNavigate } from '$app/navigation';
+  import { afterNavigate, onNavigate } from '$app/navigation';
+  import { getTransitionDirection } from '$lib/navigation';
   import { localeState } from '$lib/locale.svelte.js';
   import { isValidLocale, DEFAULT_LOCALE, LOCALES, m } from '$i18n';
   import type { Locale } from '$i18n';
@@ -16,6 +17,26 @@
   });
 
   afterNavigate(() => panel.close());
+
+  onNavigate((navigation) => {
+    if (!document.startViewTransition) return;
+
+    const direction = getTransitionDirection(navigation);
+    // Set before startViewTransition so CSS selectors match the old snapshot
+    document.documentElement.dataset.transitionDir = direction;
+
+    return new Promise<void>((done) => {
+      const transition = document.startViewTransition(async () => {
+        done();
+        // Wait for SvelteKit to finish DOM update
+        await navigation.complete;
+      });
+
+      transition.finished.then(() => {
+        delete document.documentElement.dataset.transitionDir;
+      });
+    });
+  });
 
   const path = $derived(page.url.pathname);
   const pathFromLocale = $derived(path.slice(path.indexOf(`/${localeState.current}`)));

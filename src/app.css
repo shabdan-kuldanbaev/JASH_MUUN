@@ -30,6 +30,8 @@
   --ui-bottom: 104px;
   --gutter: clamp(32px, 4vw, 72px);
   --panel-pad: clamp(32px, 4vw, 72px);
+  --content-w: 1320px;
+  --article-w: 900px;
 }
 
 *,
@@ -72,4 +74,69 @@ a {
 /* Lock scroll on content pages when SlidePanel is open */
 body[data-panel-open] {
   overflow: hidden;
+}
+
+/* =====================================================================
+   PAGE TRANSITIONS — View Transition API
+   Soft crossfade with subtle directional shift (editorial feel)
+   ===================================================================== */
+
+@keyframes fade-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes fade-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@keyframes fade-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@keyframes fade-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+/* Forward direction (default): old fades left, new fades in from right */
+::view-transition-old(root) {
+  animation: fade-out-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-new(root) {
+  animation: fade-in-from-right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Back direction: old fades right, new fades in from left */
+html[data-transition-dir='back'] ::view-transition-old(root) {
+  animation-name: fade-out-right;
+}
+
+html[data-transition-dir='back'] ::view-transition-new(root) {
+  animation-name: fade-in-from-left;
+}
+
+/* Header stays in place during page transitions */
+::view-transition-old(header),
+::view-transition-new(header) {
+  animation: none;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }

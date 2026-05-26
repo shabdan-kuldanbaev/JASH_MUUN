@@ -63,7 +63,7 @@
 
 <style>
   .page {
-    max-width: 1320px;
+    max-width: var(--content-w);
     margin: 0 auto;
     padding: clamp(24px, 3vw, 48px) var(--gutter) clamp(64px, 8vw, 120px);
   }

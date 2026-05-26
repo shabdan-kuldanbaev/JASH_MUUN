@@ -104,7 +104,7 @@
 
 <style>
   .article {
-    max-width: 900px;
+    max-width: var(--article-w);
     margin: 0 auto;
     padding: clamp(48px, 6vw, 80px) var(--gutter) clamp(80px, 10vw, 140px);
   }

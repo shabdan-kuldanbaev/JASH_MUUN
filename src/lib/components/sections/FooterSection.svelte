@@ -65,7 +65,7 @@
 
   .footer-inner {
     width: 100%;
-    max-width: 1320px;
+    max-width: var(--content-w);
     margin: 0 auto;
     display: grid;
     grid-template-rows: 1fr auto;
