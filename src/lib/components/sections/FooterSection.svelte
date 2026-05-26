@@ -11,6 +11,14 @@
   data-scroll-screen
   aria-label={m.footer_aria_section()}
 >
+  <!-- Petroglyph accent -->
+  <img
+    src={asset('/assets/petroglyphs/1.svg')}
+    aria-hidden="true"
+    class="petroglyph footer-petro"
+    alt=""
+  />
+
   <div class="footer-inner">
     <div class="footer-grid">
       <aside class="partners" aria-label="Supporters">
@@ -64,6 +72,8 @@
   }
 
   .footer-inner {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: var(--content-w);
     margin: 0 auto;
@@ -136,6 +146,13 @@
     gap: 24px;
   }
 
+  .footer-petro {
+    top: 12%;
+    right: 6%;
+    width: clamp(140px, 12vw, 200px);
+    transform: rotate(12deg);
+  }
+
   .mark {
     font-family: 'Figtree', sans-serif;
     font-size: 13px;
@@ -151,6 +168,7 @@
       flex-direction: column;
       height: auto;
       width: 100%;
+      padding-bottom: clamp(32px, 4vw, 48px);
     }
 
     .footer-inner {

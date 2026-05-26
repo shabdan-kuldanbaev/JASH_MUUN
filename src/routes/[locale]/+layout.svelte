@@ -22,13 +22,11 @@
     if (!document.startViewTransition) return;
 
     const direction = getTransitionDirection(navigation);
-    // Set before startViewTransition so CSS selectors match the old snapshot
     document.documentElement.dataset.transitionDir = direction;
 
     return new Promise<void>((done) => {
       const transition = document.startViewTransition(async () => {
         done();
-        // Wait for SvelteKit to finish DOM update
         await navigation.complete;
       });
 
@@ -73,26 +71,6 @@
       </nav>
     </div>
   {/snippet}
-
-  {#snippet practices()}
-    <div class="panel-section">
-      <nav class="practices-list" aria-label={m.nav_practices()}>
-        <a href={resolve(`/${localeState.current}/practices/`)} onclick={() => panel.close()}>
-          {m.panel_all_practices()}
-        </a>
-      </nav>
-    </div>
-  {/snippet}
-
-  {#snippet archive()}
-    <div class="panel-section">
-      <nav class="practices-list" aria-label={m.panel_archive_aria()}>
-        <a href={resolve(`/${localeState.current}/gallery/`)} onclick={() => panel.close()}>
-          {m.panel_archive_link()}
-        </a>
-      </nav>
-    </div>
-  {/snippet}
 </SlidePanel>
 
 {@render children()}
@@ -110,31 +88,12 @@
     gap: 1.25rem;
   }
 
-  .practices-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
   .lang-list a {
     font-family: 'Figtree', sans-serif;
     font-size: clamp(1.5rem, 3vw, 2.25rem);
     font-weight: 400;
     text-decoration: none;
     transition: color 0.2s ease;
-  }
-
-  .practices-list a {
-    font-family: 'Figtree', sans-serif;
-    font-size: clamp(1.5rem, 3vw, 2.25rem);
-    font-weight: 400;
-    color: var(--ink-2);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  .practices-list a:hover {
-    color: var(--ink);
   }
 
   .lang-list a:hover,

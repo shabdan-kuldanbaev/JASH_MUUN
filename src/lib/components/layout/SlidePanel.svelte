@@ -1,38 +1,12 @@
 <script lang="ts">
   import { panel } from '$lib/panel.svelte';
-  import { cubicOut, cubicIn, cubicInOut } from 'svelte/easing';
+  import { cubicInOut } from 'svelte/easing';
   import { browser } from '$app/environment';
   import type { Snippet } from 'svelte';
 
-  let {
-    language,
-    practices,
-    archive
-  }: {
-    language?: Snippet;
-    practices?: Snippet;
-    archive?: Snippet;
-  } = $props();
+  let { language }: { language?: Snippet } = $props();
 
   const isOpen = $derived(panel.active !== null);
-
-  const activeSnippet = $derived(
-    panel.active === 'language'
-      ? language
-      : panel.active === 'practices'
-        ? practices
-        : panel.active === 'archive'
-          ? archive
-          : null
-  );
-
-  const inX = $derived(
-    panel.direction === 'right' ? '100%' : panel.direction === 'left' ? '-100%' : '0'
-  );
-  const outX = $derived(
-    panel.direction === 'right' ? '-100%' : panel.direction === 'left' ? '100%' : '0'
-  );
-  const duration = $derived(panel.direction !== null ? 320 : 0);
 
   function slideX(
     _node: Element,
@@ -40,7 +14,7 @@
   ) {
     return {
       duration: params.duration ?? 300,
-      easing: params.easing ?? cubicOut,
+      easing: params.easing ?? cubicInOut,
       css: (t: number) => `transform: translateX(calc(${params.x} * ${1 - t})); opacity: ${t}`
     };
   }
@@ -72,19 +46,10 @@
       in:slideX={{ x: '-100%', duration: 380, easing: cubicInOut }}
       out:slideX={{ x: '-100%', duration: 320, easing: cubicInOut }}
     >
-      <!-- Content area: position:relative + overflow:hidden clips the sliding content elements -->
       <div class="shell-body">
-        {#key panel.contentKey}
-          <div
-            class="content-slide"
-            in:slideX={{ x: inX, duration, easing: cubicOut }}
-            out:slideX={{ x: outX, duration, easing: cubicIn }}
-          >
-            {#if activeSnippet}
-              {@render activeSnippet()}
-            {/if}
-          </div>
-        {/key}
+        {#if language}
+          {@render language()}
+        {/if}
       </div>
     </div>
   </div>
@@ -107,17 +72,8 @@
     overflow: hidden;
   }
 
-  /* Clipping container — overflow:hidden creates the wipe effect during transitions */
   .shell-body {
     flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Absolute positioning allows old and new content to coexist during the transition */
-  .content-slide {
-    position: absolute;
-    inset: 0;
     overflow-y: auto;
     padding-top: clamp(1.5rem, 3vw, 2.5rem);
     padding-bottom: var(--gutter);
@@ -126,7 +82,7 @@
   }
 
   /* Mirror header's .nav-inner container for symmetric alignment */
-  .content-slide > :global(*) {
+  .shell-body > :global(*) {
     max-width: var(--content-w);
     margin-inline: auto;
     width: 100%;

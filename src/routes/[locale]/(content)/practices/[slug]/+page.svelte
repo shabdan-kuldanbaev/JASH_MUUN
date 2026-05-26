@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
+  import { asset, resolve } from '$app/paths';
   import type { PageData } from './$types';
   import type { GalleryItem } from '$lib/types/datocms';
   import { m, LOCALES } from '$i18n';
@@ -64,6 +64,14 @@
     {/if}
   </header>
 
+  <!-- Petroglyph accent — partial reveal from right edge -->
+  <img
+    src={asset('/assets/petroglyphs/7.svg')}
+    aria-hidden="true"
+    class="petroglyph detail-petro"
+    alt=""
+  />
+
   <!-- Cover image -->
   {#if data.practice.coverImage}
     <div class="article-cover">
@@ -104,12 +112,22 @@
 
 <style>
   .article {
+    position: relative;
     max-width: var(--article-w);
     margin: 0 auto;
     padding: clamp(48px, 6vw, 80px) var(--gutter) clamp(80px, 10vw, 140px);
   }
 
+  .detail-petro {
+    top: 40%;
+    right: -40px;
+    width: clamp(100px, 10vw, 150px);
+    transform: rotate(-10deg);
+  }
+
   .article-header {
+    position: relative;
+    z-index: 1;
     margin-bottom: clamp(32px, 4vw, 56px);
   }
 
@@ -150,6 +168,8 @@
   }
 
   .article-cover {
+    position: relative;
+    z-index: 1;
     margin: 0 calc(var(--gutter) * -1) clamp(40px, 5vw, 72px);
     overflow: hidden;
     max-height: 70vh;
@@ -163,6 +183,8 @@
   }
 
   .article-body {
+    position: relative;
+    z-index: 1;
     border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     padding-top: clamp(32px, 4vw, 56px);
     margin-bottom: clamp(56px, 7vw, 96px);
@@ -170,6 +192,8 @@
 
   .article-video,
   .article-gallery {
+    position: relative;
+    z-index: 1;
     border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     padding-top: clamp(32px, 4vw, 56px);
     margin-bottom: clamp(56px, 7vw, 96px);
@@ -185,6 +209,8 @@
   }
 
   .article-nav {
+    position: relative;
+    z-index: 1;
     border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     padding-top: 32px;
   }

@@ -1,9 +1,10 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
-  import { m } from '$i18n';
+  import { afterNavigate } from '$app/navigation';
+  import { m, LOCALES } from '$i18n';
   import type { Locale } from '$lib/i18n';
-  import { panel, type PanelId } from '$lib/panel.svelte';
+  import { panel } from '$lib/panel.svelte';
   import { fade } from 'svelte/transition';
 
   let { locale }: { locale: Locale } = $props();
@@ -12,6 +13,8 @@
   const isPractice = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
   const homeHref = $derived(resolve(`/${locale}/`));
+  const practicesHref = $derived(resolve(`/${locale}/practices/`));
+  const galleryHref = $derived(resolve(`/${locale}/gallery/`));
 
   const logos = $derived([
     { src: asset('/assets/main-logo.svg'), alt: 'Jash Muun', label: m.nav_brand_home() },
@@ -19,72 +22,104 @@
     { src: asset('/assets/eu-logo.svg'), alt: 'EU', label: m.nav_support_partner() }
   ]);
 
-  const isOpen = $derived(panel.active !== null);
+  const isPanelOpen = $derived(panel.active !== null);
 
-  function onHeaderClick(e: MouseEvent, id: PanelId) {
+  /* ── Mobile menu state ─────────────────────────────────────────────── */
+  let mobileOpen = $state(false);
+
+  function toggleMobile() {
+    mobileOpen = !mobileOpen;
+  }
+
+  function closeMobile() {
+    mobileOpen = false;
+  }
+
+  // Close mobile menu on navigation (mirrors panel.close() in layout)
+  afterNavigate(() => {
+    mobileOpen = false;
+  });
+
+  // Scroll-lock body when mobile menu is open
+  $effect(() => {
+    if (mobileOpen) {
+      document.body.dataset.mobileMenuOpen = 'true';
+    } else {
+      delete document.body.dataset.mobileMenuOpen;
+    }
+  });
+
+  /* ── Language toggle (desktop only) ────────────────────────────────── */
+  function toggleLangPanel(e: MouseEvent) {
     e.preventDefault();
-    if (!panel.active) {
-      panel.open(id as NonNullable<PanelId>);
-      return;
-    }
-    if (panel.active !== id) {
-      panel.switchTo(id as NonNullable<PanelId>);
-      return;
-    }
-    panel.close();
+    panel.toggle();
+  }
+
+  /* ── Mobile language helpers ───────────────────────────────────────── */
+  const pathFromLocale = $derived(path.slice(path.indexOf(`/${locale}`)));
+
+  function localePath(targetLocale: Locale): string {
+    const localized = pathFromLocale.replace(/^\/[^/]+(?=\/|$)/, `/${targetLocale}`);
+    return resolve((localized || `/${targetLocale}/`) as `/${string}`);
+  }
+
+  const localeLabels: Record<string, string> = {
+    ru: 'Русский',
+    ky: 'Кыргызча',
+    en: 'English',
+    fr: 'Français'
+  };
+
+  /* ── Keyboard ──────────────────────────────────────────────────────── */
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape' && mobileOpen) closeMobile();
   }
 </script>
 
+<svelte:window onkeydown={onKeydown} />
+
 <header class="nav">
   <div class="nav-inner">
+    <!-- Partner logos (mobile only — replaces brand text) -->
+    <div class="brand-mobile">
+      {#each logos as logo (logo.alt)}
+        <span class="brand-logo" aria-label={logo.label}>
+          <img src={logo.src} alt={logo.alt} />
+        </span>
+      {/each}
+    </div>
+
     <nav class="nav-left" aria-label="Primary">
       <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}>
         {m.nav_home()}
       </a>
 
-      <button
-        class="nav-item"
-        class:is-active={isPractice || panel.active === 'practices'}
-        onclick={(e) => onHeaderClick(e, 'practices')}
-        aria-expanded={panel.active === 'practices'}
-        aria-label={m.nav_practices()}>{m.nav_practices()}</button
-      >
+      <a class="nav-item" href={practicesHref} class:is-active={isPractice}>{m.nav_practices()}</a>
 
-      <button
-        class="nav-item"
-        class:is-active={isGallery}
-        onclick={(e) => onHeaderClick(e, 'archive')}
-        aria-expanded={panel.active === 'archive'}
-        aria-label={m.nav_archive()}>{m.nav_archive()}</button
-      >
+      <a class="nav-item" href={galleryHref} class:is-active={isGallery}>{m.nav_archive()}</a>
 
       <button
         class="nav-item"
         class:is-active={panel.active === 'language'}
-        onclick={(e) => onHeaderClick(e, 'language')}
+        onclick={toggleLangPanel}
         aria-expanded={panel.active === 'language'}
         aria-label={m.nav_language()}>{locale.toUpperCase()}</button
       >
     </nav>
 
     <div class="nav-right">
-      <!--
-      Logos stay in DOM at all times — CSS transitions handle enter/exit.
-      Removing from DOM via {#if} caused coexistence flicker with the close button.
-    -->
       {#each logos as logo, i (logo.alt)}
         <span
           class="logo"
-          class:logo--out={isOpen}
+          class:logo--out={isPanelOpen}
           aria-label={logo.label}
-          style="transition-delay: {isOpen ? `${i * 50}ms` : `${(2 - i) * 100}ms`}"
+          style="transition-delay: {isPanelOpen ? `${i * 50}ms` : `${(2 - i) * 100}ms`}"
         >
           <img src={logo.src} alt={logo.alt} />
         </span>
       {/each}
 
-      <!-- Close button overlays the logo area while panel is open -->
-      {#if isOpen}
+      {#if isPanelOpen}
         <button
           class="close-btn"
           onclick={() => panel.close()}
@@ -98,10 +133,78 @@
         </button>
       {/if}
     </div>
+
+    <!-- Hamburger button (mobile only) -->
+    <button class="burger" onclick={toggleMobile} aria-label={m.nav_menu()}>
+      {#if mobileOpen}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      {:else}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
+      {/if}
+    </button>
   </div>
 </header>
 
+<!-- Mobile menu overlay (rendered outside header for independent stacking context) -->
+{#if mobileOpen}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="mobile-overlay"
+    onclick={(e) => e.target === e.currentTarget && closeMobile()}
+    in:fade={{ duration: 220 }}
+    out:fade={{ duration: 180 }}
+  >
+    <div class="mobile-menu">
+      <nav class="mobile-nav" aria-label="Mobile navigation">
+        <a
+          href={homeHref}
+          class="mobile-link"
+          class:is-active={!isPractice && !isGallery}
+          onclick={closeMobile}
+        >
+          {m.nav_home()}
+        </a>
+        <a
+          href={practicesHref}
+          class="mobile-link"
+          class:is-active={isPractice}
+          onclick={closeMobile}
+        >
+          {m.nav_practices()}
+        </a>
+        <a href={galleryHref} class="mobile-link" class:is-active={isGallery} onclick={closeMobile}>
+          {m.nav_archive()}
+        </a>
+      </nav>
+
+      <div class="mobile-lang">
+        <span class="mobile-label">{m.nav_language()}</span>
+        <div class="mobile-lang-list">
+          {#each LOCALES as l (l)}
+            <a
+              href={localePath(l)}
+              class="mobile-lang-item"
+              class:is-current={l === locale}
+              onclick={closeMobile}
+            >
+              {localeLabels[l] ?? l.toUpperCase()}
+            </a>
+          {/each}
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
 <style>
+  /* ── Header bar ──────────────────────────────────────────────────── */
   .nav {
     position: fixed;
     top: 0;
@@ -153,7 +256,7 @@
     border-bottom-color: var(--ink);
   }
 
-  /* ── Logo area ──────────────────────────────────────────────────────── */
+  /* ── Logo area (desktop) ─────────────────────────────────────────── */
   .nav-right {
     position: relative;
     display: flex;
@@ -183,7 +286,7 @@
     pointer-events: none;
   }
 
-  /* ── Close button ───────────────────────────────────────────────────── */
+  /* ── Close button (desktop panel) ────────────────────────────────── */
   .close-btn {
     position: absolute;
     right: 0;
@@ -208,5 +311,147 @@
   .close-btn svg {
     width: 100%;
     height: 100%;
+  }
+
+  /* ── Brand logos + hamburger — hidden on desktop ─────────────────── */
+  .brand-mobile {
+    display: none;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-logo {
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .brand-logo img {
+    height: 100%;
+    width: auto;
+    display: block;
+  }
+
+  .burger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink);
+    padding: 0;
+  }
+
+  .burger svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* ── Mobile overlay — hidden on desktop as safety net ────────────── */
+  .mobile-overlay {
+    display: none;
+  }
+
+  /* ── Mobile (< 768px) ────────────────────────────────────────────── */
+  @media (max-width: 767px) {
+    .nav-left {
+      display: none;
+    }
+
+    .nav-right {
+      display: none;
+    }
+
+    .brand-mobile {
+      display: flex;
+    }
+
+    .burger {
+      display: flex;
+    }
+
+    .mobile-overlay {
+      display: flex;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 39;
+      background: var(--paper);
+      flex-direction: column;
+      overflow-y: auto;
+    }
+  }
+
+  /* ── Mobile menu content ─────────────────────────────────────────── */
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: clamp(32px, 6vw, 48px) var(--gutter);
+  }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: clamp(40px, 6vw, 56px);
+  }
+
+  .mobile-link {
+    font-family: 'Figtree', sans-serif;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 400;
+    color: var(--ink-2);
+    transition: color 0.2s ease;
+  }
+
+  .mobile-link.is-active {
+    color: var(--ink);
+  }
+
+  .mobile-link:hover {
+    color: var(--ink);
+  }
+
+  /* ── Mobile language selector ────────────────────────────────────── */
+  .mobile-lang {
+    margin-bottom: auto;
+  }
+
+  .mobile-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .mobile-lang-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+  }
+
+  .mobile-lang-item {
+    font-family: 'Figtree', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--muted);
+    transition: color 0.2s ease;
+  }
+
+  .mobile-lang-item:hover,
+  .mobile-lang-item.is-current {
+    color: var(--ink);
+  }
+
+  .mobile-lang-item.is-current {
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 </style>
