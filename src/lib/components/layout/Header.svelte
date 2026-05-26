@@ -110,10 +110,11 @@
     height: var(--nav-h);
     z-index: 40;
     background: var(--paper);
+    view-transition-name: header;
   }
 
   .nav-inner {
-    max-width: 1320px;
+    max-width: var(--content-w);
     margin: 0 auto;
     height: 100%;
     display: flex;

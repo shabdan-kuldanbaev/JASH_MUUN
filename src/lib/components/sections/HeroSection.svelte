@@ -57,13 +57,15 @@
     grid-template-columns: minmax(420px, 560px) 1fr;
     gap: clamp(48px, 6vw, 120px);
     align-items: end;
-    min-height: calc(100dvh - var(--nav-h) - 16px - var(--ui-bottom));
+    height: calc(100dvh - var(--nav-h) - 16px - var(--ui-bottom));
     margin-right: 48px;
   }
 
   .hero-text {
     align-self: center;
     max-width: 500px;
+    min-height: 0;
+    overflow: hidden;
   }
 
   h1 {

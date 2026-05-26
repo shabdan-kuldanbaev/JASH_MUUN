@@ -127,7 +127,7 @@
 
   /* Mirror header's .nav-inner container for symmetric alignment */
   .content-slide > :global(*) {
-    max-width: 1320px;
+    max-width: var(--content-w);
     margin-inline: auto;
     width: 100%;
     padding-inline: var(--gutter);
