@@ -85,7 +85,7 @@
   }
 
   h1 {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-weight: 700;
     font-size: clamp(40px, 4vw, 64px);
     line-height: 1.08;

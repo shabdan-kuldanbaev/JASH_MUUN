@@ -46,7 +46,7 @@ html,
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Figtree', system-ui, sans-serif;
+  font-family: 'Jost', system-ui, sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }

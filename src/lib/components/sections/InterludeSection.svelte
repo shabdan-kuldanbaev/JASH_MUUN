@@ -118,7 +118,7 @@
   }
 
   h2 {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-weight: 700;
     font-size: clamp(40px, 3.8vw, 64px);
     line-height: 1.04;
@@ -139,7 +139,7 @@
     margin-top: 28px;
     padding-left: 20px;
     border-left: 2px solid var(--ochre-2);
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-style: italic;
     font-weight: 400;
     font-size: 19px;
@@ -151,7 +151,7 @@
     display: block;
     margin-top: 10px;
     font-style: normal;
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;

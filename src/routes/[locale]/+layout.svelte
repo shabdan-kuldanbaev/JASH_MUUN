@@ -89,7 +89,7 @@
   }
 
   .lang-list a {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: clamp(1.5rem, 3vw, 2.25rem);
     font-weight: 400;
     text-decoration: none;
