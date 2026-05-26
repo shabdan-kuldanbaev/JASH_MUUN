@@ -4,18 +4,20 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Noto Sans', 'system-ui', 'sans-serif'],
-        serif: ['Noto Serif Display', 'Georgia', 'serif']
+        sans: ['Figtree', 'system-ui', 'sans-serif'],
+        serif: ['Figtree', 'system-ui', 'sans-serif']
       },
       colors: {
-        paper: '#f1ebe0',
-        'paper-2': '#e9e1d3',
-        ink: '#1d1b16',
-        'ink-2': '#3a362c',
-        muted: '#7a7264',
-        ochre: '#8a4a18',
-        madder: '#9a2f1c',
-        moss: '#39472e'
+        paper: '#FAFAF7',
+        'paper-2': '#F0EEEA',
+        ink: '#1A1A1A',
+        'ink-2': '#444444',
+        muted: '#888888',
+        shyrdak: '#C84B31',
+        indigo: '#3A5BA0',
+        steppe: '#C49A2A',
+        valley: '#2A7A6A',
+        clay: '#A0522D'
       }
     }
   },

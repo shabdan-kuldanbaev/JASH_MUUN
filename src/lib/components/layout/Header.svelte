@@ -13,11 +13,11 @@
   const isGallery = $derived(path.includes('/gallery'));
   const homeHref = $derived(resolve(`/${locale}/`));
 
-  const logos = [
+  const logos = $derived([
     { src: asset('/assets/main-logo.svg'), alt: 'Jash Muun', label: m.nav_brand_home() },
     { src: asset('/assets/supporting-logo.svg'), alt: 'ALIPH', label: m.nav_support_partner() },
     { src: asset('/assets/eu-logo.svg'), alt: 'EU', label: m.nav_support_partner() }
-  ];
+  ]);
 
   const isOpen = $derived(panel.active !== null);
 
@@ -36,66 +36,68 @@
 </script>
 
 <header class="nav">
-  <nav class="nav-left" aria-label="Primary">
-    <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}>
-      {m.nav_home()}
-    </a>
+  <div class="nav-inner">
+    <nav class="nav-left" aria-label="Primary">
+      <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}>
+        {m.nav_home()}
+      </a>
 
-    <button
-      class="nav-item"
-      class:is-active={isPractice || panel.active === 'practices'}
-      onclick={(e) => onHeaderClick(e, 'practices')}
-      aria-expanded={panel.active === 'practices'}
-      aria-label={m.nav_practices()}>{m.nav_practices()}</button
-    >
+      <button
+        class="nav-item"
+        class:is-active={isPractice || panel.active === 'practices'}
+        onclick={(e) => onHeaderClick(e, 'practices')}
+        aria-expanded={panel.active === 'practices'}
+        aria-label={m.nav_practices()}>{m.nav_practices()}</button
+      >
 
-    <button
-      class="nav-item"
-      class:is-active={isGallery}
-      onclick={(e) => onHeaderClick(e, 'archive')}
-      aria-expanded={panel.active === 'archive'}
-      aria-label={m.nav_archive()}>{m.nav_archive()}</button
-    >
+      <button
+        class="nav-item"
+        class:is-active={isGallery}
+        onclick={(e) => onHeaderClick(e, 'archive')}
+        aria-expanded={panel.active === 'archive'}
+        aria-label={m.nav_archive()}>{m.nav_archive()}</button
+      >
 
-    <button
-      class="nav-item"
-      class:is-active={panel.active === 'language'}
-      onclick={(e) => onHeaderClick(e, 'language')}
-      aria-expanded={panel.active === 'language'}
-      aria-label={m.nav_language()}>{locale.toUpperCase()}</button
-    >
-  </nav>
+      <button
+        class="nav-item"
+        class:is-active={panel.active === 'language'}
+        onclick={(e) => onHeaderClick(e, 'language')}
+        aria-expanded={panel.active === 'language'}
+        aria-label={m.nav_language()}>{locale.toUpperCase()}</button
+      >
+    </nav>
 
-  <div class="nav-right">
-    <!--
+    <div class="nav-right">
+      <!--
       Logos stay in DOM at all times — CSS transitions handle enter/exit.
       Removing from DOM via {#if} caused coexistence flicker with the close button.
     -->
-    {#each logos as logo, i (logo.alt)}
-      <span
-        class="logo"
-        class:logo--out={isOpen}
-        aria-label={logo.label}
-        style="transition-delay: {isOpen ? `${i * 50}ms` : `${(2 - i) * 100}ms`}"
-      >
-        <img src={logo.src} alt={logo.alt} />
-      </span>
-    {/each}
+      {#each logos as logo, i (logo.alt)}
+        <span
+          class="logo"
+          class:logo--out={isOpen}
+          aria-label={logo.label}
+          style="transition-delay: {isOpen ? `${i * 50}ms` : `${(2 - i) * 100}ms`}"
+        >
+          <img src={logo.src} alt={logo.alt} />
+        </span>
+      {/each}
 
-    <!-- Close button overlays the logo area while panel is open -->
-    {#if isOpen}
-      <button
-        class="close-btn"
-        onclick={() => panel.close()}
-        aria-label="Закрыть"
-        in:fade={{ duration: 280, delay: 200 }}
-        out:fade={{ duration: 180 }}
-      >
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2">
-          <path d="M3 3l10 10M13 3L3 13" />
-        </svg>
-      </button>
-    {/if}
+      <!-- Close button overlays the logo area while panel is open -->
+      {#if isOpen}
+        <button
+          class="close-btn"
+          onclick={() => panel.close()}
+          aria-label={m.panel_close()}
+          in:fade={{ duration: 280, delay: 200 }}
+          out:fade={{ duration: 180 }}
+        >
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M3 3l10 10M13 3L3 13" />
+          </svg>
+        </button>
+      {/if}
+    </div>
   </div>
 </header>
 
@@ -106,12 +108,18 @@
     left: 0;
     right: 0;
     height: var(--nav-h);
+    z-index: 40;
+    background: var(--paper);
+  }
+
+  .nav-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 var(--gutter);
-    z-index: 40;
-    background: var(--paper);
   }
 
   .nav-left {

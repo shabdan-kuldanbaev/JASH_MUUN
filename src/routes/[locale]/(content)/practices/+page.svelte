@@ -3,10 +3,19 @@
   import type { PageData } from './$types';
   import { m, LOCALES } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
-  import PracticeCard from '$cms/PracticeCard.svelte';
   import { reveal } from '$lib/actions/reveal';
+  import CmsImage from '$cms/CmsImage.svelte';
 
   let { data }: { data: PageData } = $props();
+
+  const ACCENTS = [
+    'var(--shyrdak)',
+    'var(--indigo)',
+    'var(--steppe)',
+    'var(--valley)',
+    'var(--clay)'
+  ] as const;
+  const href = (slug: string) => resolve(`/${data.locale}/practices/${slug}/`);
 </script>
 
 <SeoHead
@@ -20,24 +29,35 @@
 />
 
 <div class="page">
-  <header class="page-header">
-    <p class="page-sup">{m.practices_kicker()}</p>
-    <h1 class="page-title">{m.practices_title()}</h1>
-    <div class="page-rule" aria-hidden="true"></div>
-  </header>
+  <h1 class="page-title">{m.practices_title()}</h1>
 
   {#if data.practices.length === 0}
-    <div class="empty-state">
+    <div class="empty">
       <p>{m.practices_empty()}</p>
     </div>
   {:else}
-    <section class="practice-list" aria-label={m.practices_list_aria()}>
+    <div class="grid" aria-label={m.practices_list_aria()}>
       {#each data.practices as practice, i (practice.id)}
-        <div use:reveal={i * 120}>
-          <PracticeCard {practice} locale={data.locale} />
-        </div>
+        {@const accent = ACCENTS[i % ACCENTS.length]}
+        <a href={href(practice.slug)} class="item" style="--accent: {accent}" use:reveal={i * 40}>
+          <div class="card">
+            {#if practice.coverImage}
+              <CmsImage
+                image={practice.coverImage}
+                sizes="(min-width: 1200px) 30vw, (min-width: 700px) 45vw, 90vw"
+              />
+            {/if}
+          </div>
+
+          <div class="item-body">
+            <h2 class="item-title">{practice.title}</h2>
+            {#if practice.excerpt}
+              <p class="item-excerpt">{practice.excerpt}</p>
+            {/if}
+          </div>
+        </a>
       {/each}
-    </section>
+    </div>
   {/if}
 </div>
 
@@ -45,61 +65,138 @@
   .page {
     max-width: 1320px;
     margin: 0 auto;
-    padding: clamp(48px, 6vw, 96px) var(--gutter) clamp(64px, 8vw, 128px);
-  }
-
-  .page-header {
-    margin-bottom: clamp(48px, 6vw, 80px);
-  }
-
-  .page-sup {
-    font-size: 11px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 16px;
+    padding: clamp(24px, 3vw, 48px) var(--gutter) clamp(64px, 8vw, 120px);
   }
 
   .page-title {
-    font-size: clamp(36px, 6vw, 80px);
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    line-height: 1;
+    font-weight: 600;
+    font-size: clamp(28px, 3vw, 40px);
     color: var(--ink);
-    margin-bottom: 32px;
+    margin-bottom: clamp(24px, 3vw, 40px);
   }
 
-  .page-rule {
-    width: 100%;
-    height: 1px;
-    background: color-mix(in srgb, var(--ink) 15%, transparent);
+  .empty {
+    padding: 120px 0;
+    color: var(--muted);
+    font-size: 16px;
   }
 
-  .practice-list {
-    display: flex;
-    flex-direction: column;
+  /* ── Grid ───────────────────────────────────── */
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
   }
 
-  /* Reveal animation: slides in from right */
-  .practice-list :global([data-reveal='pending']) {
+  /* ── Item (link wrapper) ────────────────────── */
+
+  .item {
+    display: block;
+  }
+
+  /* ── Card (image = the card) ────────────────── */
+
+  .card {
+    aspect-ratio: 4 / 3;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: var(--paper-2);
+    position: relative;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(15, 12, 6, 0) 30%,
+      rgba(15, 12, 6, 0.25) 55%,
+      rgba(15, 12, 6, 0.85) 100%
+    );
+    pointer-events: none;
     opacity: 0;
-    transform: translateY(40px);
-    transition:
-      opacity 0.65s ease,
-      transform 0.65s ease;
+    transition: opacity 0.4s ease;
   }
 
-  .practice-list :global([data-reveal='done']) {
+  .item:hover .card::after {
+    opacity: 1;
+  }
+
+  .card :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .item:hover .card :global(img) {
+    transform: scale(1.03);
+  }
+
+  /* ── Text below card ────────────────────────── */
+
+  .item-body {
+    padding-top: 14px;
+  }
+
+  .item-title {
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.4;
+    height: calc(18px * 1.4 * 2); /* ровно 2 строки */
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .item-excerpt {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    height: calc(13px * 1.5 * 2); /* ровно 2 строки */
+    color: var(--muted);
+    margin-top: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Reveal ─────────────────────────────────── */
+
+  .page :global([data-reveal='pending']) {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.45s ease,
+      transform 0.45s ease;
+  }
+
+  .page :global([data-reveal='done']) {
     opacity: 1;
     transform: translateY(0);
     transition:
-      opacity 0.65s ease,
-      transform 0.65s ease;
+      opacity 0.45s ease,
+      transform 0.45s ease;
   }
 
-  .empty-state {
-    padding: 80px 0;
-    font-size: 16px;
-    color: var(--muted);
+  /* ── Responsive ─────────────────────────────── */
+
+  @media (max-width: 1024px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
   }
 </style>

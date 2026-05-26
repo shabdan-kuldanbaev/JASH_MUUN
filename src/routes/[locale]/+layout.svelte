@@ -3,7 +3,7 @@
   import { resolve } from '$app/paths';
   import { afterNavigate } from '$app/navigation';
   import { localeState } from '$lib/locale.svelte.js';
-  import { isValidLocale, DEFAULT_LOCALE, LOCALES } from '$i18n';
+  import { isValidLocale, DEFAULT_LOCALE, LOCALES, m } from '$i18n';
   import type { Locale } from '$i18n';
   import SlidePanel from '$components/layout/SlidePanel.svelte';
   import { panel } from '$lib/panel.svelte';
@@ -39,7 +39,7 @@
 <SlidePanel>
   {#snippet language()}
     <div class="panel-section">
-      <nav class="lang-list" aria-label="Выбор языка">
+      <nav class="lang-list" aria-label={m.panel_language_aria()}>
         {#each LOCALES as l (l)}
           <a
             href={resolve(localePath(l))}
@@ -55,9 +55,9 @@
 
   {#snippet practices()}
     <div class="panel-section">
-      <nav class="practices-list" aria-label="Практики">
+      <nav class="practices-list" aria-label={m.nav_practices()}>
         <a href={resolve(`/${localeState.current}/practices/`)} onclick={() => panel.close()}>
-          Все практики →
+          {m.panel_all_practices()}
         </a>
       </nav>
     </div>
@@ -65,9 +65,9 @@
 
   {#snippet archive()}
     <div class="panel-section">
-      <nav class="practices-list" aria-label="Практики">
+      <nav class="practices-list" aria-label={m.panel_archive_aria()}>
         <a href={resolve(`/${localeState.current}/gallery/`)} onclick={() => panel.close()}>
-          Архив →
+          {m.panel_archive_link()}
         </a>
       </nav>
     </div>
@@ -96,7 +96,7 @@
   }
 
   .lang-list a {
-    font-family: 'Noto Serif Display', serif;
+    font-family: 'Figtree', sans-serif;
     font-size: clamp(1.5rem, 3vw, 2.25rem);
     font-weight: 400;
     text-decoration: none;
@@ -104,7 +104,7 @@
   }
 
   .practices-list a {
-    font-family: 'Noto Serif Display', serif;
+    font-family: 'Figtree', sans-serif;
     font-size: clamp(1.5rem, 3vw, 2.25rem);
     font-weight: 400;
     color: var(--ink-2);
