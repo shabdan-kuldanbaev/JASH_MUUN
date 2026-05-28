@@ -27,5 +27,6 @@
     padding-top: var(--nav-h);
     min-height: 100vh;
     background: var(--paper);
+    overflow-x: hidden;
   }
 </style>
