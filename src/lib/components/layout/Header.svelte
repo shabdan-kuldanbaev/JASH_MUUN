@@ -12,8 +12,10 @@
   const path = $derived(page.url.pathname);
   const isPractice = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
+  const isArticle = $derived(path.includes('/articles'));
   const homeHref = $derived(resolve(`/${locale}/`));
   const practicesHref = $derived(resolve(`/${locale}/practices/`));
+  const articlesHref = $derived(resolve(`/${locale}/articles/`));
   const galleryHref = $derived(resolve(`/${locale}/gallery/`));
 
   const logos = $derived([
@@ -90,11 +92,13 @@
     </div>
 
     <nav class="nav-left" aria-label="Primary">
-      <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery}>
+      <a class="nav-item" href={homeHref} class:is-active={!isPractice && !isGallery && !isArticle}>
         {m.nav_home()}
       </a>
 
       <a class="nav-item" href={practicesHref} class:is-active={isPractice}>{m.nav_practices()}</a>
+
+      <a class="nav-item" href={articlesHref} class:is-active={isArticle}>{m.nav_articles()}</a>
 
       <a class="nav-item" href={galleryHref} class:is-active={isGallery}>{m.nav_archive()}</a>
 
@@ -166,7 +170,7 @@
         <a
           href={homeHref}
           class="mobile-link"
-          class:is-active={!isPractice && !isGallery}
+          class:is-active={!isPractice && !isGallery && !isArticle}
           onclick={closeMobile}
         >
           {m.nav_home()}
@@ -178,6 +182,14 @@
           onclick={closeMobile}
         >
           {m.nav_practices()}
+        </a>
+        <a
+          href={articlesHref}
+          class="mobile-link"
+          class:is-active={isArticle}
+          onclick={closeMobile}
+        >
+          {m.nav_articles()}
         </a>
         <a href={galleryHref} class="mobile-link" class:is-active={isGallery} onclick={closeMobile}>
           {m.nav_archive()}

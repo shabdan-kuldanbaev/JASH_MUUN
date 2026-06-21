@@ -16,7 +16,8 @@
     DastSpan,
     CustomBlock,
     ImageBlock,
-    QuoteBlock
+    QuoteBlock,
+    AssetBlock
   } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
@@ -125,6 +126,10 @@
     return block.__typename === 'QuoteBlockRecord';
   }
 
+  function isAssetBlock(block: CustomBlock): block is AssetBlock {
+    return block.__typename === 'AssetRecord';
+  }
+
   // Render inline children (spans and links) to an HTML string.
   function inlineHtml(children: DastNode[]): string {
     return children
@@ -221,7 +226,13 @@
     {:else if node.type === 'block'}
       {@const block = blockMap.get(node.item)}
       {#if block}
-        {#if isImageBlock(block)}
+        {#if isAssetBlock(block)}
+          {#if block.image}
+            <figure class="block-image">
+              <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
+            </figure>
+          {/if}
+        {:else if isImageBlock(block)}
           <figure class="block-image">
             <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
             {#if block.caption}
