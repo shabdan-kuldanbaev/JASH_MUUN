@@ -43,6 +43,26 @@ export interface Practice extends PracticeSummary {
   youtubeUrl?: string | null;
 }
 
+// ── Article ───────────────────────────────────────────────────────────────────
+
+// Fields that exist on the DatoCMS article model:
+//   title, slug, excerpt, coverImage, content, publishedDate, seo, featured
+
+export interface ArticleSummary {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  coverImage?: DatoImage | null;
+  publishedDate?: string | null;
+  featured?: boolean | null;
+  seo?: DatoSeo | null;
+}
+
+export interface Article extends ArticleSummary {
+  content: StructuredTextContent | null;
+}
+
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
 // Derived from gallery images on practice records.
@@ -155,7 +175,15 @@ export interface DastBlock {
 // These types exist for when DatoCMS has block types configured on the content field.
 // Currently no blocks are configured — content.blocks will be undefined at runtime.
 
-export type CustomBlock = ImageBlock | QuoteBlock;
+export type CustomBlock = ImageBlock | QuoteBlock | AssetBlock;
+
+// DatoCMS "Asset" block (api key `asset` → __typename `AssetRecord`).
+// Used inside Structured Text to embed a single image. No caption field.
+export interface AssetBlock {
+  __typename: 'AssetRecord';
+  id: string;
+  image: DatoImage | null;
+}
 
 export interface ImageBlock {
   __typename: 'ImageBlockRecord';
