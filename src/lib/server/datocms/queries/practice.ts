@@ -21,6 +21,19 @@ const POST_QUERY = /* GraphQL */ `
       featured
       content {
         value
+        blocks {
+          __typename
+          ... on AssetRecord {
+            id
+            image {
+              url
+              alt
+              width
+              height
+              blurUpThumb
+            }
+          }
+        }
       }
       gallery {
         url
