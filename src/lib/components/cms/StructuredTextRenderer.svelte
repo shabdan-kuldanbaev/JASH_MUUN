@@ -232,6 +232,15 @@
               <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
             </figure>
           {/if}
+          {#if block.images?.length}
+            <div class="block-gallery" class:is-single={block.images.length === 1}>
+              {#each block.images as galleryImage, galleryIndex (galleryImage.url + galleryIndex)}
+                <figure class="block-gallery-item">
+                  <CmsImage image={galleryImage} sizes="(min-width: 900px) 360px, 100vw" />
+                </figure>
+              {/each}
+            </div>
+          {/if}
         {:else if isImageBlock(block)}
           <figure class="block-image">
             <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
@@ -381,6 +390,36 @@
     font-size: 13px;
     color: var(--muted);
     letter-spacing: 0.02em;
+  }
+
+  /* Asset block "images" pack — responsive grid */
+  .block-gallery {
+    margin: 2.4em 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .block-gallery.is-single {
+    grid-template-columns: 1fr;
+  }
+
+  .block-gallery-item {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .block-gallery-item :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    .block-gallery {
+      grid-template-columns: 1fr;
+    }
   }
 
   .block-quote {
