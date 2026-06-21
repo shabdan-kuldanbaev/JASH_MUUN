@@ -32,6 +32,13 @@ const ARTICLE_QUERY = /* GraphQL */ `
               height
               blurUpThumb
             }
+            images {
+              url
+              alt
+              width
+              height
+              blurUpThumb
+            }
           }
         }
       }
