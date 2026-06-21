@@ -178,11 +178,13 @@ export interface DastBlock {
 export type CustomBlock = ImageBlock | QuoteBlock | AssetBlock;
 
 // DatoCMS "Asset" block (api key `asset` → __typename `AssetRecord`).
-// Used inside Structured Text to embed a single image. No caption field.
+// Used inside Structured Text to embed images. `image` is a single optional
+// image; `images` is a gallery (pack) of images. Either or both may be present.
 export interface AssetBlock {
   __typename: 'AssetRecord';
   id: string;
   image: DatoImage | null;
+  images: DatoImage[];
 }
 
 export interface ImageBlock {
