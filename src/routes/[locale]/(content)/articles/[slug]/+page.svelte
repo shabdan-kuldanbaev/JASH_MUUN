@@ -70,7 +70,6 @@
 
 <style>
   .article {
-    position: relative;
     max-width: var(--article-w);
     margin: 0 auto;
     /* No big bottom padding — ContentFooter already provides its own top margin,
@@ -123,10 +122,6 @@
     height: clamp(340px, 62vh, 720px);
     object-fit: cover;
     display: block;
-  }
-
-  .article-body {
-    position: relative;
   }
 
   .article-nav {

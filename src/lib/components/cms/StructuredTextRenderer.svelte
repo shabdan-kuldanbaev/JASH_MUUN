@@ -235,7 +235,11 @@
             <figure class="block-image" class:is-portrait={portrait}>
               <CmsImage
                 image={block.image}
-                sizes={portrait ? '(min-width: 900px) 620px, 100vw' : '100vw'}
+                sizes={variant === 'cinematic'
+                  ? portrait
+                    ? '(min-width: 900px) 620px, 100vw'
+                    : '100vw'
+                  : '(min-width: 900px) 720px, 100vw'}
               />
             </figure>
           {/if}
@@ -461,8 +465,13 @@
     max-width: 100vw;
   }
 
-  :global(.structured-text--cinematic .block-image) {
+  /* Every image/gallery starts on its own line, clearing any prior portrait float. */
+  :global(.structured-text--cinematic .block-image),
+  :global(.structured-text--cinematic .block-gallery) {
     clear: both;
+  }
+
+  :global(.structured-text--cinematic .block-image) {
     margin-top: clamp(48px, 6vw, 88px);
     margin-bottom: clamp(48px, 6vw, 88px);
   }
@@ -492,16 +501,22 @@
 
   /* The trailing image often precedes only a short closing section — don't float
      it (that would leave a big empty band beside it); center it and let the text
-     stack below. */
-  :global(.structured-text--cinematic .block-image.is-portrait:last-of-type) {
-    float: none;
-    width: min(560px, 100%);
-    margin-left: auto;
-    margin-right: auto;
+     stack below. Heuristic: applies to the last portrait figure. Desktop-only —
+     on mobile every portrait is full-width (rule below), which must not lose to
+     this higher-specificity selector. */
+  @media (min-width: 701px) {
+    :global(.structured-text--cinematic .block-image.is-portrait:last-of-type) {
+      float: none;
+      width: min(560px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
   }
 
-  /* First paragraph = lede / standfirst */
-  :global(.structured-text--cinematic > p:first-of-type) {
+  /* Lede / standfirst — only when the article actually opens with a paragraph
+     (first-child, not first-of-type, so a body paragraph after a leading
+     heading/image is never mis-styled). */
+  :global(.structured-text--cinematic > p:first-child) {
     font-size: clamp(19px, 2.1vw, 23px);
     font-weight: 300;
     line-height: 1.6;
