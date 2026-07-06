@@ -21,7 +21,10 @@
   } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
-  let { content }: { content: StructuredTextContent } = $props();
+  let {
+    content,
+    variant = 'default'
+  }: { content: StructuredTextContent; variant?: 'default' | 'cinematic' } = $props();
 
   // Build a lookup map from block id → block record for O(1) access.
   const blockMap = $derived(
@@ -151,7 +154,7 @@
   Inline content uses the inlineHtml helper above.
 -->
 
-<div class="structured-text">
+<div class="structured-text" class:structured-text--cinematic={variant === 'cinematic'}>
   {#each content.value.document.children as node, nodeIndex (nodeKey(node, nodeIndex))}
     {#if node.type === 'paragraph'}
       <!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -228,8 +231,12 @@
       {#if block}
         {#if isAssetBlock(block)}
           {#if block.image}
-            <figure class="block-image">
-              <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
+            {@const portrait = (block.image.height ?? 0) > (block.image.width ?? 0)}
+            <figure class="block-image" class:is-portrait={portrait}>
+              <CmsImage
+                image={block.image}
+                sizes={portrait ? '(min-width: 900px) 620px, 100vw' : '100vw'}
+              />
             </figure>
           {/if}
           {#if block.images?.length}
@@ -430,5 +437,95 @@
     font-style: italic;
     color: var(--ink-2);
     line-height: 1.6;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Cinematic variant (article A) — opt-in via .structured-text--cinematic.
+     Photography-led: landscape images go full-bleed; portrait images stay
+     contained + centered (auto-detected from intrinsic width/height).
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Full-bleed breakout from the centered article column to the viewport edges.
+     Landscape scenes + galleries only — portraits are handled below. */
+  :global(.structured-text--cinematic .block-image:not(.is-portrait)),
+  :global(.structured-text--cinematic .block-gallery) {
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    max-width: 100vw;
+  }
+
+  :global(.structured-text--cinematic .block-image) {
+    margin-top: clamp(48px, 6vw, 88px);
+    margin-bottom: clamp(48px, 6vw, 88px);
+  }
+
+  :global(.structured-text--cinematic .block-image:not(.is-portrait) img) {
+    width: 100%;
+    height: clamp(320px, 58vh, 720px);
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Portrait — contained, centered, natural aspect (never a cropped sliver). */
+  :global(.structured-text--cinematic .block-image.is-portrait) {
+    max-width: min(620px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  :global(.structured-text--cinematic .block-image.is-portrait img) {
+    width: 100%;
+    height: auto;
+    max-height: 84vh;
+    object-fit: cover;
+    display: block;
+  }
+
+  :global(.structured-text--cinematic .block-gallery) {
+    gap: 4px;
+  }
+
+  /* Larger editorial headings + centered pull-quote (rendered only if present). */
+  :global(.structured-text--cinematic h2) {
+    font-size: clamp(28px, 3.4vw, 44px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin: clamp(48px, 6vw, 80px) 0 0.6em;
+  }
+
+  :global(.structured-text--cinematic h3) {
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 600;
+  }
+
+  :global(.structured-text--cinematic blockquote) {
+    border-left: none;
+    padding: clamp(28px, 4vw, 56px) 0;
+    margin: clamp(40px, 5vw, 72px) auto;
+    max-width: 24ch;
+    text-align: center;
+    font-size: clamp(24px, 3.2vw, 40px);
+    font-weight: 300;
+    font-style: normal;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  :global(.structured-text--cinematic blockquote::before) {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 3px;
+    background: var(--madder);
+    margin: 0 auto clamp(20px, 3vw, 32px);
+  }
+
+  :global(.structured-text--cinematic blockquote cite) {
+    text-align: center;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--madder);
   }
 </style>
