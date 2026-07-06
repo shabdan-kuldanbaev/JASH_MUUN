@@ -90,12 +90,12 @@
   }
 
   .hero-title {
-    font-size: clamp(32px, 4.4vw, 56px);
+    font-size: clamp(32px, 4.4vw, 52px);
     font-weight: 600;
     letter-spacing: -0.025em;
-    line-height: 1.06;
+    line-height: 1.08;
     color: var(--ink);
-    max-width: 20ch;
+    max-width: 100%;
   }
 
   .hero-excerpt {
