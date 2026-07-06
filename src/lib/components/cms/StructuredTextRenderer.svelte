@@ -21,7 +21,10 @@
   } from '$lib/types/datocms';
   import CmsImage from './CmsImage.svelte';
 
-  let { content }: { content: StructuredTextContent } = $props();
+  let {
+    content,
+    variant = 'default'
+  }: { content: StructuredTextContent; variant?: 'default' | 'cinematic' } = $props();
 
   // Build a lookup map from block id → block record for O(1) access.
   const blockMap = $derived(
@@ -151,7 +154,7 @@
   Inline content uses the inlineHtml helper above.
 -->
 
-<div class="structured-text">
+<div class="structured-text" class:structured-text--cinematic={variant === 'cinematic'}>
   {#each content.value.document.children as node, nodeIndex (nodeKey(node, nodeIndex))}
     {#if node.type === 'paragraph'}
       <!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -228,8 +231,16 @@
       {#if block}
         {#if isAssetBlock(block)}
           {#if block.image}
-            <figure class="block-image">
-              <CmsImage image={block.image} sizes="(min-width: 900px) 720px, 100vw" />
+            {@const portrait = (block.image.height ?? 0) > (block.image.width ?? 0)}
+            <figure class="block-image" class:is-portrait={portrait}>
+              <CmsImage
+                image={block.image}
+                sizes={variant === 'cinematic'
+                  ? portrait
+                    ? '(min-width: 900px) 620px, 100vw'
+                    : '100vw'
+                  : '(min-width: 900px) 720px, 100vw'}
+              />
             </figure>
           {/if}
           {#if block.images?.length}
@@ -430,5 +441,142 @@
     font-style: italic;
     color: var(--ink-2);
     line-height: 1.6;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Cinematic variant (article A) — opt-in via .structured-text--cinematic.
+     Photography-led: landscape images go full-bleed; portrait images stay
+     contained + centered (auto-detected from intrinsic width/height).
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Contain the portrait floats so they never bleed past the body into the
+     footer, and so a short final section doesn't leave a gap before it. */
+  :global(.structured-text--cinematic) {
+    display: flow-root;
+  }
+
+  /* Full-bleed breakout from the centered article column to the viewport edges.
+     Landscape scenes + galleries only — portraits are handled below. */
+  :global(.structured-text--cinematic .block-image:not(.is-portrait)),
+  :global(.structured-text--cinematic .block-gallery) {
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    max-width: 100vw;
+  }
+
+  /* Every image/gallery starts on its own line, clearing any prior portrait float. */
+  :global(.structured-text--cinematic .block-image),
+  :global(.structured-text--cinematic .block-gallery) {
+    clear: both;
+  }
+
+  :global(.structured-text--cinematic .block-image) {
+    margin-top: clamp(48px, 6vw, 88px);
+    margin-bottom: clamp(48px, 6vw, 88px);
+  }
+
+  :global(.structured-text--cinematic .block-image:not(.is-portrait) img) {
+    width: 100%;
+    height: clamp(320px, 58vh, 720px);
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Portrait — floated so the section's heading + text wrap alongside it
+     (side-by-side), never cropped into a thin band. */
+  :global(.structured-text--cinematic .block-image.is-portrait) {
+    float: left;
+    width: min(45%, 520px);
+    margin: 0.2em clamp(28px, 3vw, 48px) 1.4em 0;
+  }
+
+  :global(.structured-text--cinematic .block-image.is-portrait img) {
+    width: 100%;
+    height: auto;
+    max-height: min(52vh, 460px);
+    object-fit: cover;
+    display: block;
+  }
+
+  /* The trailing image often precedes only a short closing section — don't float
+     it (that would leave a big empty band beside it); center it and let the text
+     stack below. Heuristic: applies to the last portrait figure. Desktop-only —
+     on mobile every portrait is full-width (rule below), which must not lose to
+     this higher-specificity selector. */
+  @media (min-width: 701px) {
+    :global(.structured-text--cinematic .block-image.is-portrait:last-of-type) {
+      float: none;
+      width: min(560px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  /* Lede / standfirst — only when the article actually opens with a paragraph
+     (first-child, not first-of-type, so a body paragraph after a leading
+     heading/image is never mis-styled). */
+  :global(.structured-text--cinematic > p:first-child) {
+    font-size: clamp(19px, 2.1vw, 23px);
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 60ch;
+    margin-bottom: 1.8em;
+  }
+
+  @media (max-width: 700px) {
+    :global(.structured-text--cinematic .block-image.is-portrait) {
+      float: none;
+      width: 100%;
+      margin: clamp(32px, 8vw, 48px) 0;
+    }
+  }
+
+  :global(.structured-text--cinematic .block-gallery) {
+    gap: 4px;
+  }
+
+  /* Larger editorial headings + centered pull-quote (rendered only if present). */
+  :global(.structured-text--cinematic h2) {
+    font-size: clamp(28px, 3.4vw, 44px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin: clamp(48px, 6vw, 80px) 0 0.6em;
+  }
+
+  :global(.structured-text--cinematic h3) {
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 600;
+  }
+
+  :global(.structured-text--cinematic blockquote) {
+    border-left: none;
+    padding: clamp(28px, 4vw, 56px) 0;
+    margin: clamp(40px, 5vw, 72px) auto;
+    max-width: 24ch;
+    text-align: center;
+    font-size: clamp(24px, 3.2vw, 40px);
+    font-weight: 300;
+    font-style: normal;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  :global(.structured-text--cinematic blockquote::before) {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 3px;
+    background: var(--madder);
+    margin: 0 auto clamp(20px, 3vw, 32px);
+  }
+
+  :global(.structured-text--cinematic blockquote cite) {
+    text-align: center;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--madder);
   }
 </style>
