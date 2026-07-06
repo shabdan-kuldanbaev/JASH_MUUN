@@ -73,7 +73,9 @@
     position: relative;
     max-width: var(--article-w);
     margin: 0 auto;
-    padding: clamp(40px, 5vw, 72px) var(--gutter) clamp(80px, 10vw, 140px);
+    /* No big bottom padding — ContentFooter already provides its own top margin,
+       so stacking both left a huge empty band above the footer. */
+    padding: clamp(40px, 5vw, 72px) var(--gutter) clamp(16px, 2vw, 28px);
   }
 
   /* ── Hero ── */
