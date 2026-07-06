@@ -128,6 +128,7 @@
   }
 
   .article-nav {
+    clear: both;
     border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     padding-top: 32px;
     margin-top: clamp(48px, 6vw, 80px);
