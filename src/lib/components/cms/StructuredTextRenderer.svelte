@@ -485,9 +485,19 @@
   :global(.structured-text--cinematic .block-image.is-portrait img) {
     width: 100%;
     height: auto;
-    max-height: min(56vh, 520px);
+    max-height: min(52vh, 460px);
     object-fit: cover;
     display: block;
+  }
+
+  /* The trailing image often precedes only a short closing section — don't float
+     it (that would leave a big empty band beside it); center it and let the text
+     stack below. */
+  :global(.structured-text--cinematic .block-image.is-portrait:last-of-type) {
+    float: none;
+    width: min(560px, 100%);
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* First paragraph = lede / standfirst */
