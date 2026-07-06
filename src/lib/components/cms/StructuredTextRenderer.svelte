@@ -456,6 +456,7 @@
   }
 
   :global(.structured-text--cinematic .block-image) {
+    clear: both;
     margin-top: clamp(48px, 6vw, 88px);
     margin-bottom: clamp(48px, 6vw, 88px);
   }
@@ -467,19 +468,38 @@
     display: block;
   }
 
-  /* Portrait — contained, centered, natural aspect (never a cropped sliver). */
+  /* Portrait — floated so the section's heading + text wrap alongside it
+     (side-by-side), never cropped into a thin band. */
   :global(.structured-text--cinematic .block-image.is-portrait) {
-    max-width: min(620px, 100%);
-    margin-left: auto;
-    margin-right: auto;
+    float: left;
+    width: min(45%, 520px);
+    margin: 0.2em clamp(28px, 3vw, 48px) 1.4em 0;
   }
 
   :global(.structured-text--cinematic .block-image.is-portrait img) {
     width: 100%;
     height: auto;
-    max-height: 84vh;
+    max-height: 78vh;
     object-fit: cover;
     display: block;
+  }
+
+  /* First paragraph = lede / standfirst */
+  :global(.structured-text--cinematic > p:first-of-type) {
+    font-size: clamp(19px, 2.1vw, 23px);
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 60ch;
+    margin-bottom: 1.8em;
+  }
+
+  @media (max-width: 700px) {
+    :global(.structured-text--cinematic .block-image.is-portrait) {
+      float: none;
+      width: 100%;
+      margin: clamp(32px, 8vw, 48px) 0;
+    }
   }
 
   :global(.structured-text--cinematic .block-gallery) {
