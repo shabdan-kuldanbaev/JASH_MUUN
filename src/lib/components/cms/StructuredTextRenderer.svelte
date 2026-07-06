@@ -445,6 +445,12 @@
      contained + centered (auto-detected from intrinsic width/height).
      ───────────────────────────────────────────────────────────────────────── */
 
+  /* Contain the portrait floats so they never bleed past the body into the
+     footer, and so a short final section doesn't leave a gap before it. */
+  :global(.structured-text--cinematic) {
+    display: flow-root;
+  }
+
   /* Full-bleed breakout from the centered article column to the viewport edges.
      Landscape scenes + galleries only — portraits are handled below. */
   :global(.structured-text--cinematic .block-image:not(.is-portrait)),
@@ -479,7 +485,7 @@
   :global(.structured-text--cinematic .block-image.is-portrait img) {
     width: 100%;
     height: auto;
-    max-height: 78vh;
+    max-height: min(56vh, 520px);
     object-fit: cover;
     display: block;
   }
