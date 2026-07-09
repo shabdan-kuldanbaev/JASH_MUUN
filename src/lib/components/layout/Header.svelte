@@ -200,6 +200,7 @@
         <span class="mobile-label">{m.nav_language()}</span>
         <div class="mobile-lang-list">
           {#each LOCALES as l (l)}
+            <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() already returns a resolve()'d path -->
             <a
               href={localePath(l)}
               class="mobile-lang-item"
@@ -208,6 +209,7 @@
             >
               {localeLabels[l] ?? l.toUpperCase()}
             </a>
+            <!-- eslint-enable svelte/no-navigation-without-resolve -->
           {/each}
         </div>
       </div>

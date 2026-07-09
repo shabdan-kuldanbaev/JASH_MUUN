@@ -24,6 +24,7 @@ const QUERY = /* GraphQL */ `
       }
       publishedDate
       featured
+      category
     }
   }
 `;
@@ -43,6 +44,7 @@ interface RawData {
     } | null;
     publishedDate: string;
     featured: boolean;
+    category: string | null;
   }>;
 }
 
