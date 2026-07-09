@@ -91,12 +91,6 @@
     height: 100%;
     width: auto;
     display: block;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-  }
-
-  .logo:hover img {
-    opacity: 1;
   }
 
   .note {
