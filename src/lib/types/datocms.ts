@@ -26,6 +26,8 @@ export interface DatoSeo {
 //   title, slug, excerpt, content, coverImage, gallery,
 //   youtubeUrl, publishedDate, seo, featured
 
+export type PracticeCategory = 'crafts' | 'music' | 'rituals' | 'cuisine' | 'games';
+
 export interface PracticeSummary {
   id: string;
   title: string;
@@ -34,6 +36,8 @@ export interface PracticeSummary {
   coverImage?: DatoImage | null;
   publishedDate?: string | null;
   featured?: boolean | null;
+  // Single-select category (DatoCMS). `string` tolerated: CMS may hold an unknown value.
+  category?: PracticeCategory | string | null;
   seo?: DatoSeo | null;
 }
 
