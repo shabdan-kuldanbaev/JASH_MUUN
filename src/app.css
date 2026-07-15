@@ -32,6 +32,11 @@
   --panel-pad: clamp(32px, 4vw, 72px);
   --content-w: 1320px;
   --article-w: 900px;
+
+  /* Shared vertical rhythm for content section blocks (lede, timeline, quote,
+     ingredients, ritual). Single source of truth — fluid 32px (mobile) → 64px
+     (desktop), same clamp idiom as --gutter. */
+  --section-py: clamp(32px, 5vw, 64px);
 }
 
 *,
