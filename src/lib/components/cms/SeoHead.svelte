@@ -7,7 +7,7 @@
     description = null,
     seo = null,
     canonicalUrl = null,
-    locale = 'ru',
+    locale = 'ky',
     alternateLocales = []
   }: {
     title: string;
