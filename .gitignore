@@ -35,3 +35,17 @@ dist/
 CLAUDE.md
 claude-design
 jash-muun-design-system
+.agents/
+skills-lock.json
+
+# Local design mockups (Pencil .pen + exported refs/images) — not part of the app
+design/
+
+# Local DatoCMS tooling + generated material (not part of the app)
+datocms.config.json
+scripts/datocms-*.mjs
+docs/datocms-*.md
+
+# Content source material (used verbatim into CMS/components, kept local)
+sumolo-practice.md
+*.docx
