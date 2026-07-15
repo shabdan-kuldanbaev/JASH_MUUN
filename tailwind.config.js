@@ -1,25 +1,16 @@
+import { fontFamily } from 'tailwindcss/defaultTheme';
+
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Jost', 'system-ui', 'sans-serif'],
-        serif: ['Jost', 'system-ui', 'sans-serif']
-      },
-      colors: {
-        paper: '#FAFAF7',
-        'paper-2': '#F0EEEA',
-        ink: '#1A1A1A',
-        'ink-2': '#444444',
-        muted: '#888888',
-        shyrdak: '#C84B31',
-        indigo: '#3A5BA0',
-        steppe: '#C49A2A',
-        valley: '#2A7A6A',
-        clay: '#A0522D'
+        sans: ['Jost', ...fontFamily.sans]
       }
     }
   },
   plugins: []
 };
+
+export default config;
