@@ -68,6 +68,66 @@ export interface Article extends ArticleSummary {
   content: StructuredTextContent | null;
 }
 
+// ── Practice page sections (modular `page_sections`) ──────────────────────────
+// Normalized section model the immersive practice page renders from. DatoCMS
+// `page_sections` map to it, discriminated by `type` (mirrors the CMS
+// `section_type` select). See server/datocms/queries/practiceSections.ts.
+
+export interface TimelineStep {
+  time: string;
+  label: string;
+}
+
+export interface IngredientRow {
+  name: string;
+  qty: string;
+}
+
+/** One checklist row inside a ritual step (icon is a lucide icon name). */
+export interface ChecklistItem {
+  icon: string;
+  term: string;
+  desc: string;
+}
+
+/** A single ritual step rendered in the sticky-scroll block. */
+export interface RitualStep {
+  /** Step heading — the "Шаг N" prefix is intentionally dropped. */
+  title: string;
+  /** Full narrative, one entry per paragraph. */
+  narrative: string[];
+  /** Heading for the how-to checklist (e.g. "Проращивание пшеницы (3–5 дней)"). */
+  checklistTitle?: string;
+  /** Optional intro line under the checklist heading. */
+  checklistIntro?: string;
+  /** How-to rows with lucide icons. */
+  checklist?: ChecklistItem[];
+  image: string;
+  imageAlt: string;
+}
+
+export type PracticeSection =
+  | {
+      type: 'hero';
+      /** The large silent poster word (e.g. "СҮМӨЛӨК"). */
+      word: string;
+      subtitle: string;
+      image: string;
+      imageAlt: string;
+    }
+  | { type: 'lede'; kicker: string; body: string }
+  | { type: 'timeline'; title: string; steps: TimelineStep[] }
+  | { type: 'ritual'; items: RitualStep[] }
+  | { type: 'quote'; quote: string; attribution: string }
+  | {
+      type: 'ingredients';
+      kicker: string;
+      title: string;
+      note: string;
+      footnote: string;
+      items: IngredientRow[];
+    };
+
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
 // Derived from gallery images on practice records.

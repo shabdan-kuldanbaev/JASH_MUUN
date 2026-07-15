@@ -1,7 +1,7 @@
 import { datoRequest, DatoLocaleError } from '../client';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
-import type { PracticeSection } from '$lib/content/sumolok';
+import type { PracticeSection } from '$lib/types/datocms';
 
 /** Raw shapes returned by the modular `page_sections` query. */
 interface DatoImage {

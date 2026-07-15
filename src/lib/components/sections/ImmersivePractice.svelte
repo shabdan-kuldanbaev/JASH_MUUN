@@ -1,6 +1,6 @@
 <script lang="ts">
   import { asset } from '$app/paths';
-  import type { PracticeSection } from '$lib/content/sumolok';
+  import type { PracticeSection } from '$lib/types/datocms';
   import SilentHero from '$components/sections/SilentHero.svelte';
   import MilestoneTimeline from '$components/ui/MilestoneTimeline.svelte';
   import StickyScrollReveal from '$components/ui/StickyScrollReveal.svelte';
