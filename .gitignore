@@ -30,14 +30,6 @@ src/lib/paraglide/
 # Production build output
 dist/
 
-# Claude / AI artifacts
-.claude/
-CLAUDE.md
-claude-design
-jash-muun-design-system
-.agents/
-skills-lock.json
-
 # Local design mockups (Pencil .pen + exported refs/images) — not part of the app
 design/
 
