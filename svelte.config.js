@@ -1,8 +1,5 @@
 import adapter from '@sveltejs/adapter-static';
 
-const repoName = 'JASH_MUUN';
-const isGithubPages = process.env.GITHUB_ACTIONS === 'true';
-
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   kit: {
@@ -14,9 +11,6 @@ const config = {
       $i18n: 'src/lib/i18n',
       $components: 'src/lib/components',
       $cms: 'src/lib/components/cms'
-    },
-    paths: {
-      base: isGithubPages ? `/${repoName}` : ''
     },
     prerender: {
       handleMissingId: 'warn',
