@@ -6,7 +6,7 @@ import type { Locale } from '$lib/i18n';
 // tracks it as a dependency and re-renders automatically on locale change.
 
 class LocaleState {
-  current = $state<Locale>('ru');
+  current = $state<Locale>('ky');
 }
 
 export const localeState = new LocaleState();

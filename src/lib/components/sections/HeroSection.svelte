@@ -6,7 +6,7 @@
   import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
-  let { practices = [], locale = 'ru' }: { practices?: PracticeSummary[]; locale?: Locale } =
+  let { practices = [], locale = 'ky' }: { practices?: PracticeSummary[]; locale?: Locale } =
     $props();
 </script>
 

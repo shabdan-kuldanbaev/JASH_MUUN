@@ -19,7 +19,7 @@ export const LOCALES = ['ky', 'fr', 'en', 'ru'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /** Locale shown to users when no valid locale segment is found in the URL. */
-export const DEFAULT_LOCALE: Locale = 'ru';
+export const DEFAULT_LOCALE: Locale = 'ky';
 
 /** Locale used as DatoCMS fallback when a field has no translation. */
 export const CMS_FALLBACK_LOCALE: Locale = 'fr';
