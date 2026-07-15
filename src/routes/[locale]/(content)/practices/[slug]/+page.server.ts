@@ -1,6 +1,8 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getPracticeBySlug, getAllPracticeSlugs } from '$lib/server/datocms/queries/practice';
+import { getPracticeSections } from '$lib/server/datocms/queries/practiceSections';
+import { sumolokFallbackSections } from '$lib/content/sumolok';
 
 export const prerender = true;
 
@@ -26,9 +28,23 @@ export const load: PageServerLoad = async ({ params, parent }) => {
     throw error(404, `Practice not found: ${slug}`);
   }
 
+  // Practices render strictly through modular `page_sections`. Sumolok keeps a static
+  // fallback so it renders even before the CMS is reachable.
+  let sections = await getPracticeSections(parentData.locale, slug).catch(() => null);
+  if (!sections && slug === 'sumolok') {
+    sections = sumolokFallbackSections;
+  }
+
+  // No sections → the practice has no valid presentation. 404 rather than render
+  // an empty immersive shell. (Narrows `sections` to a non-null array for the page.)
+  if (!sections || sections.length === 0) {
+    throw error(404, `Practice has no page sections: ${slug}`);
+  }
+
   return {
     locale: parentData.locale,
     siteSettings: parentData.siteSettings,
-    practice
+    practice,
+    sections
   };
 };

@@ -23,8 +23,14 @@ export interface DatoSeo {
 // ── Practice ──────────────────────────────────────────────────────────────────
 
 // Fields that exist on the DatoCMS practice model:
-//   title, slug, excerpt, content, coverImage, gallery,
-//   youtubeUrl, publishedDate, seo, featured
+//   title, slug, excerpt, category, coverImage, gallery,
+//   page_sections, publishedDate, seo, featured
+//
+// The practice DETAIL page renders strictly through `page_sections` (see
+// queries/practiceSections.ts), so `getPracticeBySlug` fetches only what SeoHead
+// needs. `PracticeSummary` still carries cover/date/featured for the index.
+
+export type PracticeCategory = 'crafts' | 'music' | 'rituals' | 'cuisine' | 'games';
 
 export interface PracticeSummary {
   id: string;
@@ -34,14 +40,13 @@ export interface PracticeSummary {
   coverImage?: DatoImage | null;
   publishedDate?: string | null;
   featured?: boolean | null;
+  // Single-select category (DatoCMS). `string` tolerated: CMS may hold an unknown value.
+  category?: PracticeCategory | string | null;
   seo?: DatoSeo | null;
 }
 
-export interface Practice extends PracticeSummary {
-  content: StructuredTextContent | null;
-  gallery: DatoImage[];
-  youtubeUrl?: string | null;
-}
+// The detail page needs only SEO-relevant fields; presentation comes from page_sections.
+export type Practice = Pick<PracticeSummary, 'id' | 'title' | 'slug' | 'excerpt' | 'seo'>;
 
 // ── Article ───────────────────────────────────────────────────────────────────
 

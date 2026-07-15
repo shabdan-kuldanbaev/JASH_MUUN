@@ -1,6 +1,6 @@
 <script lang="ts">
   import { asset } from '$app/paths';
-  import PracticeCard from '$components/ui/PracticeCard.svelte';
+  import ExhibitionCard from '$components/ui/ExhibitionCard.svelte';
   import { reveal } from '$lib/actions/reveal';
   import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
@@ -26,7 +26,7 @@
       <div class="cards-row">
         {#each practices as practice, i (practice.id)}
           <div use:reveal={i * 120} class="reveal">
-            <PracticeCard {practice} {locale} />
+            <ExhibitionCard {practice} {locale} />
           </div>
         {/each}
       </div>

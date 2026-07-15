@@ -10,46 +10,6 @@ const POST_QUERY = /* GraphQL */ `
       title
       slug
       excerpt
-      coverImage {
-        url
-        alt
-        width
-        height
-        blurUpThumb
-      }
-      publishedDate
-      featured
-      content {
-        value
-        blocks {
-          __typename
-          ... on AssetRecord {
-            id
-            image {
-              url
-              alt
-              width
-              height
-              blurUpThumb
-            }
-            images {
-              url
-              alt
-              width
-              height
-              blurUpThumb
-            }
-          }
-        }
-      }
-      gallery {
-        url
-        alt
-        width
-        height
-        blurUpThumb
-      }
-      youtubeUrl
       seo {
         title
         description

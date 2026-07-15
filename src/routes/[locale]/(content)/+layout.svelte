@@ -27,6 +27,8 @@
     padding-top: var(--nav-h);
     min-height: 100vh;
     background: var(--paper);
-    overflow-x: hidden;
+    /* `clip` (not `hidden`) so it doesn't become a scroll container — keeps
+       horizontal full-bleed contained while letting `position: sticky` work. */
+    overflow-x: clip;
   }
 </style>
