@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import type { PageData } from './$types';
-  import { m, LOCALES } from '$i18n';
+  import { m } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
   import GalleryGrid from '$cms/GalleryGrid.svelte';
 
@@ -12,10 +11,6 @@
   title={m.gallery_meta_title()}
   description={m.gallery_meta_description()}
   locale={data.locale}
-  alternateLocales={LOCALES.map((locale) => ({
-    locale,
-    url: resolve(`/${locale}/gallery/`)
-  }))}
 />
 
 <div class="page">

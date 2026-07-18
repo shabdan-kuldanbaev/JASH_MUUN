@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import type { PageData } from './$types';
-  import { m, LOCALES } from '$i18n';
+  import { m } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
   import ArticleSections from '$components/sections/ArticleSections.svelte';
 
@@ -13,10 +13,7 @@
   description={data.article.seo?.description ?? data.article.excerpt}
   seo={data.article.seo}
   locale={data.locale}
-  alternateLocales={LOCALES.map((locale) => ({
-    locale,
-    url: resolve(`/${locale}/articles/${data.article.slug}/`)
-  }))}
+  type="article"
 />
 
 <ArticleSections sections={data.sections} />
