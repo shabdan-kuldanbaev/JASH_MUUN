@@ -14,7 +14,9 @@ const config = {
     },
     prerender: {
       handleMissingId: 'warn',
-      handleUnseenRoutes: 'warn'
+      handleUnseenRoutes: 'warn',
+      // Sectionless articles 404 during the content-migration window; log, don't fail.
+      handleHttpError: 'warn'
     }
   }
 };
