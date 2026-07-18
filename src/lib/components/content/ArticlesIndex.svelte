@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve, asset } from '$app/paths';
   import { navigating } from '$app/state';
-  import { m, LOCALES } from '$i18n';
+  import { m } from '$i18n';
   import type { Locale } from '$i18n';
   import type { ArticleSummary } from '$lib/types/datocms';
   import SeoHead from '$cms/SeoHead.svelte';
@@ -48,12 +48,7 @@
   });
 </script>
 
-<SeoHead
-  title={m.articles_meta_title()}
-  description={m.articles_meta_description()}
-  {locale}
-  alternateLocales={LOCALES.map((l) => ({ locale: l, url: resolve(`/${l}/articles/`) }))}
-/>
+<SeoHead title={m.articles_meta_title()} description={m.articles_meta_description()} {locale} />
 
 <div class="page">
   <img
