@@ -51,7 +51,11 @@ export type Practice = Pick<PracticeSummary, 'id' | 'title' | 'slug' | 'excerpt'
 // ── Article ───────────────────────────────────────────────────────────────────
 
 // Fields that exist on the DatoCMS article model:
-//   title, slug, excerpt, coverImage, content, publishedDate, seo, featured
+//   title, slug, excerpt, coverImage, page_sections, publishedDate, seo, featured
+//
+// The article DETAIL page renders strictly through `page_sections` (see
+// queries/articleSections.ts), so `getArticleBySlug` fetches only what SeoHead
+// needs. `ArticleSummary` still carries cover/date/featured for the index.
 
 export interface ArticleSummary {
   id: string;
@@ -64,9 +68,42 @@ export interface ArticleSummary {
   seo?: DatoSeo | null;
 }
 
-export interface Article extends ArticleSummary {
-  content: StructuredTextContent | null;
+// The detail page needs only SEO-relevant fields; presentation comes from page_sections.
+export type Article = Pick<ArticleSummary, 'id' | 'title' | 'slug' | 'excerpt' | 'seo'>;
+
+// ── Article page sections (modular `page_sections`) ───────────────────────────
+// The article detail page renders from these (mirrors the practice pipeline).
+// DatoCMS `SectionRecord` blocks map here, discriminated by `type` (from the CMS
+// `section_type` select). `night` comes from the `kicker` variant channel —
+// consecutive night sections render as one dark band (dusk → night → dawn).
+// See server/datocms/queries/articleSections.ts.
+
+/** Presentation variants shared by every article section (parsed from `kicker`). */
+export interface SectionMood {
+  /** Renders inside the dark night band (dusk/dawn edges, grain, ember accents). */
+  night: boolean;
 }
+
+export type ArticleSection = SectionMood &
+  (
+    | { type: 'hero'; title: string; lede: string; image: DatoImage | null }
+    | {
+        type: 'photo';
+        image: DatoImage | null;
+        /** Second frame → the photo renders as a diptych with one shared caption. */
+        imageSecondary: DatoImage | null;
+        caption: string;
+      }
+    | { type: 'text'; heading: string; body: string }
+    | {
+        type: 'photoText';
+        image: DatoImage | null;
+        side: 'left' | 'right';
+        heading: string;
+        body: string;
+      }
+    | { type: 'quote'; quote: string; attribution: string }
+  );
 
 // ── Practice page sections (modular `page_sections`) ──────────────────────────
 // Normalized section model the immersive practice page renders from. DatoCMS
@@ -145,129 +182,4 @@ export interface GalleryItem {
 export interface SiteSettings {
   siteName: string;
   defaultSeo: DatoSeo | null;
-}
-
-// ── Structured Text (DAST) ────────────────────────────────────────────────────
-// DatoCMS Structured Text fields return: { value: DastDocument, blocks: [...], links: [...] }
-
-export interface StructuredTextContent {
-  value: DastDocument;
-  blocks?: CustomBlock[];
-  links?: LinkedRecord[];
-}
-
-export interface DastDocument {
-  schema: 'dast';
-  document: DastRoot;
-}
-
-export type DastNode =
-  | DastRoot
-  | DastParagraph
-  | DastHeading
-  | DastList
-  | DastListItem
-  | DastLink
-  | DastBlockquote
-  | DastCode
-  | DastSpan
-  | DastInlineItem
-  | DastBlock;
-
-export interface DastRoot {
-  type: 'root';
-  children: DastNode[];
-}
-
-export interface DastParagraph {
-  type: 'paragraph';
-  children: DastNode[];
-}
-
-export interface DastHeading {
-  type: 'heading';
-  level: 1 | 2 | 3 | 4 | 5 | 6;
-  children: DastNode[];
-}
-
-export interface DastList {
-  type: 'list';
-  style: 'bulleted' | 'numbered';
-  children: DastNode[];
-}
-
-export interface DastListItem {
-  type: 'listItem';
-  children: DastNode[];
-}
-
-export interface DastLink {
-  type: 'link';
-  url: string;
-  meta?: { id: string; value: string }[];
-  children: DastNode[];
-}
-
-export interface DastBlockquote {
-  type: 'blockquote';
-  attribution?: string;
-  children: DastNode[];
-}
-
-export interface DastCode {
-  type: 'code';
-  language?: string;
-  code: string;
-}
-
-export interface DastSpan {
-  type: 'span';
-  value: string;
-  marks?: ('strong' | 'emphasis' | 'underline' | 'strikethrough' | 'code' | 'highlight')[];
-}
-
-export interface DastInlineItem {
-  type: 'inlineItem';
-  item: string;
-}
-
-export interface DastBlock {
-  type: 'block';
-  item: string;
-}
-
-// ── Custom blocks inside Structured Text ──────────────────────────────────────
-// These types exist for when DatoCMS has block types configured on the content field.
-// Currently no blocks are configured — content.blocks will be undefined at runtime.
-
-export type CustomBlock = ImageBlock | QuoteBlock | AssetBlock;
-
-// DatoCMS "Asset" block (api key `asset` → __typename `AssetRecord`).
-// Used inside Structured Text to embed images. `image` is a single optional
-// image; `images` is a gallery (pack) of images. Either or both may be present.
-export interface AssetBlock {
-  __typename: 'AssetRecord';
-  id: string;
-  image: DatoImage | null;
-  images: DatoImage[];
-}
-
-export interface ImageBlock {
-  __typename: 'ImageBlockRecord';
-  id: string;
-  image: DatoImage;
-  caption: string | null;
-}
-
-export interface QuoteBlock {
-  __typename: 'QuoteBlockRecord';
-  id: string;
-  quote: string;
-  attribution: string | null;
-}
-
-export interface LinkedRecord {
-  __typename: string;
-  id: string;
-  [key: string]: unknown;
 }

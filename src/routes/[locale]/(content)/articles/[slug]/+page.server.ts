@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getArticleBySlug, getAllArticleSlugs } from '$lib/server/datocms/queries/article';
+import { getArticleSections } from '$lib/server/datocms/queries/articleSections';
 
 export const prerender = true;
 
@@ -26,9 +27,19 @@ export const load: PageServerLoad = async ({ params, parent }) => {
     throw error(404, `Article not found: ${slug}`);
   }
 
+  // Articles render strictly through modular `page_sections` from DatoCMS.
+  const sections = await getArticleSections(parentData.locale, slug).catch(() => null);
+
+  // No sections → the article has no valid presentation. 404 rather than render
+  // an empty shell. (Narrows `sections` to a non-null array for the page.)
+  if (!sections || sections.length === 0) {
+    throw error(404, `Article has no page sections: ${slug}`);
+  }
+
   return {
     locale: parentData.locale,
     siteSettings: parentData.siteSettings,
-    article
+    article,
+    sections
   };
 };
