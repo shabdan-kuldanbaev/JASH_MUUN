@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import type { PracticeSummary } from '$lib/types/datocms';
 
@@ -33,7 +34,7 @@
         <p>{truncatedExcerpt}</p>
       {/if}
       <div class="row">
-        <span class="explore">Explore <span aria-hidden="true">→</span></span>
+        <span class="explore">{m.home_card_explore()} <span aria-hidden="true">→</span></span>
       </div>
     </div>
   </article>
