@@ -1,15 +1,25 @@
 <script lang="ts">
   /**
-   * ArticleSections — modular article renderer (final "day → night → dawn" design).
+   * ArticleSections — modular article renderer.
    *
    * Fully block-driven flow layout (no pinning): the `hero` block renders the
    * masthead (title + ornament + lede) and the uncropped lead photo; body blocks
-   * follow in normal document flow. Consecutive sections flagged `night` (via the
-   * CMS `kicker` variant channel) are wrapped into a single dark band with dusk
-   * and dawn gradient edges, film grain, drifting ember sparks and an
-   * ember-accented pullquote.
+   * follow in normal document flow.
+   *
+   * Presentation variants come from the CMS `kicker` channel (parsed centrally
+   * in server/datocms/sectionVariants.ts). Consecutive same-mood sections merge
+   * into one band:
+   * - `night` — dark band with dusk/dawn gradient edges, film grain, drifting
+   *   ember sparks and an ember-accented pullquote ("day → night → dawn").
+   * - `dye`   — warm dye-vat band: one seamless paper → vat → paper gradient
+   *   (no separate edge elements — no seams), felt-fiber grain fading at the
+   *   edges, slow steam wisps and a simmer glow on photos.
+   * Consecutive `strip` photos cluster into a contact sheet; `even` makes a
+   * diptych equal-column; `coda` styles a closing envoi; `petroglyph:<n>` puts
+   * a rock-art watermark in the side margin (wide viewports only).
    */
-  import type { ArticleSection } from '$lib/types/datocms';
+  import type { ArticleSection, SectionMood } from '$lib/types/datocms';
+  import { asset } from '$app/paths';
   import CmsImage from '$cms/CmsImage.svelte';
   import { reveal } from '$lib/actions/reveal';
 
@@ -23,19 +33,34 @@
       .filter(Boolean);
   }
 
-  /** Consecutive same-mood sections collapse into one band (night → dark). */
+  interface Item {
+    section: ArticleSection;
+    index: number;
+  }
+  /** A run of consecutive `strip` photos (sheet) or a single section. */
+  interface Group {
+    sheet: boolean;
+    items: Item[];
+  }
+  /** Consecutive same-mood sections collapse into one band. */
   interface Band {
-    night: boolean;
-    items: { section: ArticleSection; index: number }[];
+    mood: SectionMood;
+    groups: Group[];
   }
 
   const bands = $derived(
     sections.reduce<Band[]>((acc, section, index) => {
-      const last = acc.at(-1);
-      if (last && last.night === section.night) {
-        last.items.push({ section, index });
+      let band = acc.at(-1);
+      if (!band || band.mood !== section.mood) {
+        band = { mood: section.mood, groups: [] };
+        acc.push(band);
+      }
+      const isStrip = section.type === 'photo' && section.strip;
+      const lastGroup = band.groups.at(-1);
+      if (isStrip && lastGroup?.sheet) {
+        lastGroup.items.push({ section, index });
       } else {
-        acc.push({ night: section.night, items: [{ section, index }] });
+        band.groups.push({ sheet: isStrip, items: [{ section, index }] });
       }
       return acc;
     }, [])
@@ -45,113 +70,143 @@
   const firstTextIndex = $derived(sections.findIndex((s) => s.type === 'text'));
 </script>
 
+{#snippet sectionBlock(section: ArticleSection, index: number)}
+  {#if section.type === 'hero'}
+    <header class="masthead">
+      <h1 class="masthead-title">{section.title}</h1>
+      <svg class="ornament" viewBox="0 0 150 18" fill="none" aria-hidden="true">
+        <path
+          d="M2 9 H52 M148 9 H98 M52 9 C60 9 64 3.6 59.4 2 C55.6 0.7 53 5 57.6 6.4 M98 9 C90 9 86 3.6 90.6 2 C94.4 0.7 97 5 92.4 6.4"
+          stroke="currentColor"
+          stroke-width="1.1"
+          stroke-linecap="round"
+        />
+        <path d="M75 4.4 L79.6 9 L75 13.6 L70.4 9 Z" stroke="currentColor" stroke-width="1.1" />
+      </svg>
+    </header>
+    {#if section.image}
+      <figure class="plate plate--lead">
+        <CmsImage image={section.image} sizes="(min-width: 1200px) 1152px, 100vw" eager={true} />
+      </figure>
+    {/if}
+    {#if section.lede}
+      <div class="lede" use:reveal>
+        <p>{section.lede}</p>
+      </div>
+    {/if}
+  {:else if section.type === 'photo'}
+    <figure
+      class="plate"
+      class:plate--pair={section.imageSecondary}
+      class:pair--even={section.even}
+      use:reveal
+    >
+      {#if section.imageSecondary}
+        <div class="pair">
+          {#if section.image}
+            <CmsImage image={section.image} sizes="(min-width: 1200px) 640px, 100vw" />
+          {/if}
+          <CmsImage image={section.imageSecondary} sizes="(min-width: 1200px) 470px, 100vw" />
+        </div>
+      {:else if section.image}
+        <CmsImage image={section.image} sizes="(min-width: 1200px) 1152px, 100vw" />
+      {/if}
+      {#if section.caption}<figcaption>{section.caption}</figcaption>{/if}
+    </figure>
+  {:else if section.type === 'text'}
+    <section
+      class="text"
+      class:text--intro={index === firstTextIndex}
+      class:text--coda={section.coda}
+      use:reveal
+    >
+      {#if section.petroglyph}
+        <img
+          class="petroglyph glyph"
+          class:petroglyph--heritage={section.petroglyph.heritage}
+          class:glyph--left={section.side === 'left'}
+          src={asset(`/assets/petroglyphs/${section.petroglyph.id}.svg`)}
+          alt=""
+          aria-hidden="true"
+        />
+      {/if}
+      <div class="text-inner">
+        {#if section.heading}<h2 class="text-heading">{section.heading}</h2>{/if}
+        {#each paragraphs(section.body) as p, pi (pi)}
+          <p class="text-body">{p}</p>
+        {/each}
+      </div>
+    </section>
+  {:else if section.type === 'photoText'}
+    <section class="photo-text" class:is-right={section.side === 'right'} use:reveal>
+      <div class="pt-inner">
+        <div class="pt-media">
+          {#if section.image}
+            <CmsImage image={section.image} sizes="(min-width: 900px) 50vw, 100vw" />
+          {/if}
+        </div>
+        <div class="pt-copy">
+          {#if section.heading}<h2 class="pt-heading">{section.heading}</h2>{/if}
+          {#each paragraphs(section.body) as p, pi (pi)}
+            <p class="pt-body">{p}</p>
+          {/each}
+        </div>
+      </div>
+    </section>
+  {:else if section.type === 'quote'}
+    <section class="quote" use:reveal>
+      <div class="quote-inner">
+        <span class="quote-mark" aria-hidden="true"></span>
+        <blockquote class="quote-text">{section.quote}</blockquote>
+        {#if section.attribution}<p class="quote-by">{section.attribution}</p>{/if}
+      </div>
+    </section>
+  {/if}
+{/snippet}
+
 <div class="article-sections">
   {#each bands as band, b (b)}
-    {#if band.night}
+    {#if band.mood === 'night'}
       <div class="dusk" aria-hidden="true"></div>
     {/if}
 
-    <div class="band" class:night={band.night}>
-      {#if band.night}
+    <div class="band" class:night={band.mood === 'night'} class:dye={band.mood === 'dye'}>
+      {#if band.mood === 'night'}
         <div class="sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       {/if}
+      {#if band.mood === 'dye'}
+        <div class="steam" aria-hidden="true"><i></i><i></i><i></i></div>
+      {/if}
 
-      {#each band.items as { section, index } (index)}
-        {#if section.type === 'hero'}
-          <header class="masthead">
-            <h1 class="masthead-title">{section.title}</h1>
-            <svg class="ornament" viewBox="0 0 150 18" fill="none" aria-hidden="true">
-              <path
-                d="M2 9 H52 M148 9 H98 M52 9 C60 9 64 3.6 59.4 2 C55.6 0.7 53 5 57.6 6.4 M98 9 C90 9 86 3.6 90.6 2 C94.4 0.7 97 5 92.4 6.4"
-                stroke="currentColor"
-                stroke-width="1.1"
-                stroke-linecap="round"
-              />
-              <path
-                d="M75 4.4 L79.6 9 L75 13.6 L70.4 9 Z"
-                stroke="currentColor"
-                stroke-width="1.1"
-              />
-            </svg>
-          </header>
-          {#if section.image}
-            <figure class="plate plate--lead">
-              <CmsImage
-                image={section.image}
-                sizes="(min-width: 1200px) 1152px, 100vw"
-                eager={true}
-              />
-            </figure>
-          {/if}
-          {#if section.lede}
-            <div class="lede" use:reveal>
-              <p>{section.lede}</p>
-            </div>
-          {/if}
-        {:else if section.type === 'photo'}
-          <figure class="plate" class:plate--pair={section.imageSecondary} use:reveal>
-            {#if section.imageSecondary}
-              <div class="pair">
-                {#if section.image}
-                  <CmsImage image={section.image} sizes="(min-width: 1200px) 640px, 100vw" />
-                {/if}
-                <CmsImage image={section.imageSecondary} sizes="(min-width: 1200px) 470px, 100vw" />
-              </div>
-            {:else if section.image}
-              <CmsImage image={section.image} sizes="(min-width: 1200px) 1152px, 100vw" />
-            {/if}
-            {#if section.caption}<figcaption>{section.caption}</figcaption>{/if}
-          </figure>
-        {:else if section.type === 'text'}
-          <section class="text" class:text--intro={index === firstTextIndex} use:reveal>
-            <div class="text-inner">
-              {#if section.heading}<h2 class="text-heading">{section.heading}</h2>{/if}
-              {#each paragraphs(section.body) as p, pi (pi)}
-                <p class="text-body">{p}</p>
-              {/each}
-            </div>
-          </section>
-        {:else if section.type === 'photoText'}
-          <section class="photo-text" class:is-right={section.side === 'right'} use:reveal>
-            <div class="pt-inner">
-              <div class="pt-media">
-                {#if section.image}
-                  <CmsImage image={section.image} sizes="(min-width: 900px) 50vw, 100vw" />
-                {/if}
-              </div>
-              <div class="pt-copy">
-                {#if section.heading}<h2 class="pt-heading">{section.heading}</h2>{/if}
-                {#each paragraphs(section.body) as p, pi (pi)}
-                  <p class="pt-body">{p}</p>
-                {/each}
-              </div>
-            </div>
-          </section>
-        {:else if section.type === 'quote'}
-          <section class="quote" use:reveal>
-            <div class="quote-inner">
-              <span class="quote-mark" aria-hidden="true"></span>
-              <blockquote class="quote-text">{section.quote}</blockquote>
-              {#if section.attribution}<p class="quote-by">{section.attribution}</p>{/if}
-            </div>
-          </section>
+      {#each band.groups as group, g (g)}
+        {#if group.sheet}
+          <div class="sheet">
+            {#each group.items as { section, index } (index)}
+              {@render sectionBlock(section, index)}
+            {/each}
+          </div>
+        {:else}
+          {#each group.items as { section, index } (index)}
+            {@render sectionBlock(section, index)}
+          {/each}
         {/if}
       {/each}
     </div>
 
-    {#if band.night}
+    {#if band.mood === 'night'}
       <div class="dawn" aria-hidden="true"></div>
     {/if}
   {/each}
 </div>
 
 <style>
-  /* Local night palette (component-scoped; day side uses global tokens). */
+  /* Local band palettes (component-scoped; day side uses global tokens). */
   .article-sections {
     --night: #151109;
     --night-text: #ece4d2;
     --night-muted: #a89d86;
     --ember: var(--steppe);
+    --vat: color-mix(in srgb, var(--steppe) 8%, var(--paper));
     --media-w: 1152px;
   }
 
@@ -199,7 +254,7 @@
   /* ── Photos (plates) — minimal, uncropped ───────────────────────────── */
   .plate {
     max-width: var(--media-w);
-    margin: clamp(32px, 5vw, 52px) auto;
+    margin: clamp(20px, 3vw, 36px) auto;
     padding: 0 var(--gutter);
     text-align: center;
   }
@@ -230,7 +285,7 @@
     opacity: 0.6;
   }
 
-  /* Diptych — landscape scene + portrait detail, bottoms flush */
+  /* Diptych — scene + detail (1.35fr/1fr), bottoms flush */
   .plate--pair .pair {
     display: grid;
     grid-template-columns: 1.35fr 1fr;
@@ -241,11 +296,29 @@
     width: 100%;
     max-height: none;
   }
+  /* `even` — equal columns for same-orientation pairs */
+  .pair--even .pair {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  /* `strip` — consecutive strip photos cluster into one contact sheet */
+  .sheet {
+    max-width: var(--media-w);
+    margin: clamp(20px, 3vw, 36px) auto;
+    padding: 0 var(--gutter);
+    display: grid;
+    gap: clamp(12px, 1.8vw, 26px);
+  }
+  .sheet .plate {
+    margin: 0;
+    padding: 0;
+  }
 
   /* ── Lede ───────────────────────────────────────────────────────────── */
   .lede {
     max-width: 740px;
-    margin: clamp(48px, 7vw, 80px) auto clamp(16px, 3vw, 32px);
+    margin: clamp(28px, 4vw, 48px) auto clamp(12px, 2vw, 24px);
     padding: 0 var(--gutter);
     text-align: center;
   }
@@ -261,7 +334,8 @@
 
   /* ── Text ───────────────────────────────────────────────────────────── */
   .text {
-    padding-block: clamp(28px, 4vw, 48px);
+    position: relative;
+    padding-block: clamp(16px, 2.5vw, 28px);
   }
   .text-inner {
     max-width: 680px;
@@ -296,9 +370,49 @@
     color: var(--ink);
   }
 
+  /* `coda` — closing envoi: short centered italic line, generous air */
+  .text--coda {
+    padding-block: clamp(36px, 6vw, 72px) clamp(44px, 7vw, 88px);
+    text-align: center;
+  }
+  .text--coda .text-inner {
+    max-width: none;
+  }
+  .text--coda .text-body {
+    font-size: clamp(19px, 2.2vw, 24px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 32ch;
+    margin-inline: auto;
+  }
+
+  /* ── Margin petroglyphs (base .petroglyph styles live in app.css) ───── */
+  .glyph {
+    width: clamp(120px, 13vw, 190px);
+    right: clamp(16px, 3vw, 56px);
+    top: 8%;
+  }
+  .glyph--left {
+    width: clamp(130px, 14vw, 200px);
+    left: clamp(24px, 5vw, 88px);
+    right: auto;
+  }
+  .text--coda .glyph {
+    top: auto;
+    bottom: 12%;
+  }
+  /* Petroglyphs live in the side margins only — no margins, no petroglyphs */
+  @media (max-width: 1199px) {
+    .glyph {
+      display: none;
+    }
+  }
+
   /* ── Photo + text ───────────────────────────────────────────────────── */
   .photo-text {
-    padding-block: clamp(40px, 6vw, 80px);
+    padding-block: clamp(24px, 4vw, 48px);
   }
   .pt-inner {
     max-width: var(--content-w);
@@ -339,7 +453,7 @@
 
   /* ── Quote ──────────────────────────────────────────────────────────── */
   .quote {
-    padding-block: clamp(40px, 6vw, 72px);
+    padding-block: clamp(24px, 4vw, 44px);
     text-align: center;
   }
   .quote-inner {
@@ -368,6 +482,11 @@
     margin-top: clamp(20px, 3vh, 32px);
     font-size: 15px;
     color: var(--muted);
+  }
+
+  /* ── Bands ──────────────────────────────────────────────────────────── */
+  .band {
+    position: relative;
   }
 
   /* ── Dusk / night / dawn ────────────────────────────────────────────── */
@@ -400,9 +519,6 @@
     );
   }
 
-  .band {
-    position: relative;
-  }
   .band.night {
     background: var(--night);
     padding-block: clamp(40px, 6vw, 72px);
@@ -530,9 +646,122 @@
     }
   }
 
+  /* ── Dye band — one seamless gradient: paper → vat → paper ──────────── */
+  /* No separate edge elements, so there is physically no seam. */
+  .band.dye {
+    --edge: clamp(90px, 12vh, 160px);
+    padding-block: calc(var(--edge) + clamp(8px, 2vw, 24px));
+    background: linear-gradient(
+      180deg,
+      var(--paper) 0px,
+      color-mix(in srgb, var(--steppe) 2%, var(--paper)) calc(var(--edge) * 0.35),
+      color-mix(in srgb, var(--steppe) 5%, var(--paper)) calc(var(--edge) * 0.7),
+      var(--vat) var(--edge),
+      var(--vat) calc(100% - var(--edge)),
+      color-mix(in srgb, var(--steppe) 5%, var(--paper)) calc(100% - var(--edge) * 0.7),
+      color-mix(in srgb, var(--steppe) 2%, var(--paper)) calc(100% - var(--edge) * 0.35),
+      var(--paper) 100%
+    );
+  }
+  /* Grain reads as felt fiber on warm paper; dissolves at the edges with the color */
+  .band.dye::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      transparent 0,
+      #000 var(--edge),
+      #000 calc(100% - var(--edge)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      180deg,
+      transparent 0,
+      #000 var(--edge),
+      #000 calc(100% - var(--edge)),
+      transparent 100%
+    );
+  }
+  .band.dye > :global(*) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Steam over the cauldron — the dye band's ember sparks */
+  .steam {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .steam i {
+    position: absolute;
+    width: 220px;
+    height: 340px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255, 253, 247, 0.28), transparent 70%);
+    filter: blur(22px);
+    opacity: 0;
+    animation: steam linear infinite;
+  }
+  .steam i:nth-child(1) {
+    left: 14%;
+    top: 12%;
+    animation-duration: 26s;
+  }
+  .steam i:nth-child(2) {
+    left: 48%;
+    top: 44%;
+    animation-duration: 34s;
+    animation-delay: 9s;
+  }
+  .steam i:nth-child(3) {
+    left: 74%;
+    top: 74%;
+    animation-duration: 38s;
+    animation-delay: 4s;
+  }
+  @keyframes steam {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    18% {
+      opacity: 0.3;
+    }
+    60% {
+      transform: translateY(-30vh) translateX(16px);
+      opacity: 0.2;
+    }
+    100% {
+      transform: translateY(-52vh) translateX(-12px);
+      opacity: 0;
+    }
+  }
+
+  /* Simmer — warm glow breathing on plates inside the vat */
+  .band.dye .plate :global(img) {
+    box-shadow: 0 0 120px color-mix(in srgb, var(--steppe) 16%, transparent);
+    animation: simmer 9s ease-in-out infinite;
+  }
+  @keyframes simmer {
+    0%,
+    100% {
+      box-shadow: 0 0 100px color-mix(in srgb, var(--steppe) 10%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 150px color-mix(in srgb, var(--steppe) 20%, transparent);
+    }
+  }
+
   /* ── Mobile ─────────────────────────────────────────────────────────── */
   @media (max-width: 720px) {
-    .plate--pair .pair {
+    .plate--pair .pair,
+    .pair--even .pair {
       grid-template-columns: 1fr;
       align-items: start;
     }
@@ -543,6 +772,10 @@
     .photo-text.is-right .pt-media {
       order: 0;
     }
+    .steam i:nth-child(1),
+    .steam i:nth-child(3) {
+      display: none;
+    }
   }
 
   /* ── Reduced motion ─────────────────────────────────────────────────── */
@@ -550,7 +783,12 @@
     .band.night .plate :global(img) {
       animation: none;
     }
-    .sparks i {
+    .band.dye .plate :global(img) {
+      animation: none;
+      box-shadow: 0 0 120px color-mix(in srgb, var(--steppe) 12%, transparent);
+    }
+    .sparks i,
+    .steam i {
       animation: none;
       display: none;
     }

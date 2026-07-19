@@ -1,4 +1,5 @@
 import { datoRequest, DatoLocaleError } from '../client';
+import { parseSectionVariants } from '../sectionVariants';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
 import type { ArticleSection, DatoImage } from '$lib/types/datocms';
@@ -46,53 +47,50 @@ const QUERY = /* GraphQL */ `
   }
 `;
 
-/**
- * `kicker` is a variant channel: a whitespace/comma-separated token list.
- * Known tokens: `night` (dark-band mood, any block), `right`/`left`
- * (photo_text side). Unknown tokens are ignored — forward-compatible.
- */
-function variants(kicker: string | null): { night: boolean; side: 'left' | 'right' } {
-  const tokens = new Set(
-    (kicker ?? '')
-      .toLowerCase()
-      .split(/[\s,]+/)
-      .filter(Boolean)
-  );
-  return { night: tokens.has('night'), side: tokens.has('right') ? 'right' : 'left' };
-}
-
+// `kicker` parsing is centralized in ../sectionVariants.ts (token registry
+// documented there). Every normalized section carries the full SectionVariants.
 function normalize(sections: DatoSection[]): ArticleSection[] {
   const out: ArticleSection[] = [];
   for (const s of sections) {
-    const { night, side } = variants(s.kicker);
+    const variants = parseSectionVariants(s.kicker);
     switch (s.sectionType) {
       case 'hero':
-        out.push({ type: 'hero', night, title: s.title ?? '', lede: s.body ?? '', image: s.image });
+        out.push({
+          ...variants,
+          type: 'hero',
+          title: s.title ?? '',
+          lede: s.body ?? '',
+          image: s.image
+        });
         break;
       case 'photo':
         out.push({
+          ...variants,
           type: 'photo',
-          night,
           image: s.image,
           imageSecondary: s.imageSecondary,
           caption: s.caption ?? ''
         });
         break;
       case 'text':
-        out.push({ type: 'text', night, heading: s.title ?? '', body: s.body ?? '' });
+        out.push({ ...variants, type: 'text', heading: s.title ?? '', body: s.body ?? '' });
         break;
       case 'photo_text':
         out.push({
+          ...variants,
           type: 'photoText',
-          night,
           image: s.image,
-          side,
           heading: s.title ?? '',
           body: s.body ?? ''
         });
         break;
       case 'quote':
-        out.push({ type: 'quote', night, quote: s.body ?? '', attribution: s.caption ?? '' });
+        out.push({
+          ...variants,
+          type: 'quote',
+          quote: s.body ?? '',
+          attribution: s.caption ?? ''
+        });
         break;
     }
   }
