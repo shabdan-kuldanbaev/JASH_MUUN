@@ -158,9 +158,21 @@ export interface RitualStep {
   checklistIntro?: string;
   /** How-to rows with lucide icons. */
   checklist?: ChecklistItem[];
+  /** Empty string → the pinned frame shows the duotone préfelt placeholder. */
   image: string;
   imageAlt: string;
+  /** Second frame — the pinned visual pages through the stage's photos by scroll progress. */
+  imageSecondary?: string;
+  imageSecondaryAlt?: string;
 }
+
+// Practice presentation variants come from the same kicker token channel as
+// articles, but with a practice-specific registry (parsed in
+// queries/practiceSections.ts): `duotone` on the hero kicker themes the whole
+// page (alternating steppe/shyrdak accents, ornament, numbered stages);
+// `silk` on a ritual stage kicker starts the pearl zone (the section
+// background soaks as that stage activates); `silk` on a photo kicker closes
+// the zone with a spatial gradient back to paper. Unknown tokens are ignored.
 
 export type PracticeSection =
   | {
@@ -171,10 +183,25 @@ export type PracticeSection =
       image: string;
       imageAlt: string;
     }
-  | { type: 'lede'; kicker: string; body: string }
-  | { type: 'timeline'; title: string; steps: TimelineStep[] }
-  | { type: 'ritual'; items: RitualStep[] }
+  | { type: 'lede'; kicker: string; body: string; ornament?: boolean }
+  | { type: 'timeline'; title: string; steps: TimelineStep[]; duotone?: boolean }
+  | {
+      type: 'ritual';
+      items: RitualStep[];
+      duotone?: boolean;
+      /** Index of the first silk stage — from it on, the section soaks in pearl. */
+      silkFrom?: number;
+    }
   | { type: 'quote'; quote: string; attribution: string }
+  | {
+      type: 'photo';
+      image: string;
+      imageAlt: string;
+      width?: number;
+      height?: number;
+      /** Pearl-zone member — renders on the silk-close band (gradient back to paper). */
+      silk?: boolean;
+    }
   | {
       type: 'ingredients';
       kicker: string;
