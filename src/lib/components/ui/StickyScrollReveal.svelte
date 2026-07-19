@@ -39,8 +39,7 @@
    * the page — no nested scrollbar. Collapses to a single column with inline
    * media on mobile.
    *
-   * `duotone` themes the stages (alternating steppe/shyrdak accents, big stage
-   * numerals, warn treatment for triangle-alert checklist rows). `silkFrom` +
+   * `duotone` themes the stages (alternating steppe/shyrdak accents, warn treatment for triangle-alert checklist rows). `silkFrom` +
    * `onSilkChange` let the parent soak the section background once the first
    * silk stage activates.
    *
@@ -157,9 +156,6 @@
         data-active={active === i}
         data-accent={accent(i)}
       >
-        {#if duotone}
-          <span class="ssr-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-        {/if}
         <h2 class="ssr-title">{it.title}</h2>
 
         {#each it.narrative ?? [] as para (para)}
@@ -287,15 +283,6 @@
     --ssr-acc: var(--shyrdak);
   }
 
-  .ssr-no {
-    display: block;
-    font-size: clamp(44px, 4.6vw, 72px);
-    font-weight: 200;
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    color: var(--ssr-acc, var(--shyrdak));
-    margin-bottom: clamp(12px, 1.6vw, 20px);
-  }
 
   .ssr-title {
     font-size: clamp(26px, 3vw, 40px);
@@ -541,9 +528,6 @@
       object-fit: unset;
     }
 
-    .ssr-no {
-      font-size: clamp(40px, 9vw, 56px);
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
