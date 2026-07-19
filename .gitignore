@@ -41,3 +41,5 @@ docs/datocms-*.md
 # Content source material (used verbatim into CMS/components, kept local)
 sumolo-practice.md
 *.docx
+kiiz_assets/
+kiiz-article-design.html
