@@ -4,6 +4,7 @@
   import Header from '$components/layout/Header.svelte';
   import ContentFooter from '$components/layout/ContentFooter.svelte';
   import { initSmoothScroll, type SmoothScroll } from '$lib/smoothScroll';
+  import { headerReveal, initHeaderReveal } from '$lib/headerReveal.svelte';
 
   let { children, data } = $props();
 
@@ -15,9 +16,12 @@
     document.body.style.overflow = 'auto';
     // Momentum smooth-scroll (Lenis) lives here, not on the horizontal homepage.
     smooth = initSmoothScroll();
+    // Auto-hide header follows the vertical scroll (content pages only).
+    const stopHeaderReveal = initHeaderReveal();
     return () => {
       smooth?.destroy();
       smooth = null;
+      stopHeaderReveal();
       document.body.style.overflow = '';
     };
   });
@@ -25,7 +29,10 @@
   // This layout persists across content→content navigation, so Lenis keeps its
   // offset — jump instantly to the top instead of smooth-scrolling up through
   // the whole previous page. (afterNavigate must be registered at init time.)
-  afterNavigate(() => smooth?.scrollToTop());
+  afterNavigate(() => {
+    smooth?.scrollToTop();
+    headerReveal.show();
+  });
 </script>
 
 <Header locale={data.locale} />

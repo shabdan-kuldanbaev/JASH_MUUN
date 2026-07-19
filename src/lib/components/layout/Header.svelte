@@ -5,6 +5,7 @@
   import { m, LOCALES } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import { panel } from '$lib/panel.svelte';
+  import { headerReveal } from '$lib/headerReveal.svelte';
   import { fade } from 'svelte/transition';
 
   let { locale }: { locale: Locale } = $props();
@@ -80,7 +81,7 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<header class="nav">
+<header class="nav" class:nav--hidden={headerReveal.hidden}>
   <div class="nav-inner">
     <!-- Partner logos (mobile only — replaces brand text) -->
     <div class="brand-mobile">
@@ -228,6 +229,23 @@
     z-index: 40;
     background: var(--paper);
     view-transition-name: header;
+    transition: transform 0.32s ease;
+  }
+
+  /* Auto-hide (content pages): slides away on scroll down, returns on scroll up. */
+  .nav--hidden {
+    transform: translateY(-100%);
+  }
+
+  /* Keyboard access: tabbing into the hidden header brings it back. */
+  .nav--hidden:focus-within {
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav {
+      transition: none;
+    }
   }
 
   .nav-inner {
