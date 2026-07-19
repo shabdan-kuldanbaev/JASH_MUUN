@@ -21,19 +21,25 @@
     active?: number;
     /** [top-right, bottom-left] corner petroglyphs; null disables them. */
     petroglyphs?: [string, string] | null;
+    /**
+     * Duotone theme: milestones alternate the two contrast-wool accents
+     * (steppe/shyrdak) and the rail flows between them instead of --madder.
+     */
+    duotone?: boolean;
   }
 
   let {
     title,
     steps,
     active,
-    petroglyphs = ['/assets/petroglyphs/4.svg', '/assets/petroglyphs/9.svg']
+    petroglyphs = ['/assets/petroglyphs/4.svg', '/assets/petroglyphs/9.svg'],
+    duotone = false
   }: Props = $props();
 
   const reached = $derived(active ?? steps.length);
 </script>
 
-<section class="timeline">
+<section class="timeline" class:timeline--duotone={duotone}>
   {#if petroglyphs}
     <img class="petroglyph pg-a" src={asset(petroglyphs[0])} alt="" aria-hidden="true" />
     <img class="petroglyph pg-b" src={asset(petroglyphs[1])} alt="" aria-hidden="true" />
@@ -72,9 +78,11 @@
 <style>
   .timeline {
     position: relative;
+
     /* Contain the decoration stacking so it never leaks into an outer parallax layer. */
     isolation: isolate;
     width: 100%;
+
     /* No fixed height — the timeline sizes to its content. */
     display: grid;
     place-items: center;
@@ -82,6 +90,7 @@
     background: var(--paper);
     padding: var(--section-py) 0;
   }
+
   .petroglyph {
     position: absolute;
     z-index: 0;
@@ -89,11 +98,13 @@
     opacity: 0.06;
     pointer-events: none;
   }
+
   .pg-a {
     top: 8%;
     right: 2%;
     transform: rotate(-8deg);
   }
+
   .pg-b {
     bottom: 8%;
     left: 2%;
@@ -108,6 +119,7 @@
     margin-inline: auto;
     padding-inline: var(--gutter);
   }
+
   .tl-title {
     text-align: center;
     font-size: clamp(34px, 5vw, 58px);
@@ -125,6 +137,7 @@
     display: flex;
     width: 100%;
   }
+
   .tl-item {
     position: relative;
     flex: 1 1 0;
@@ -134,6 +147,7 @@
     gap: 2px;
     padding-inline: clamp(6px, 1vw, 16px);
     text-align: center;
+
     /* Room above the content for the rail + indicator, which sit at top: -24px. */
     margin-top: clamp(40px, 6vh, 64px);
   }
@@ -155,9 +169,11 @@
     width: 100%;
     height: 2px;
     transform: translateY(-50%);
+
     /* origin-ui: bg-primary/10 base → bg-primary when the next item is completed. */
     background: color-mix(in srgb, var(--madder) 12%, transparent);
   }
+
   .tl-separator.on {
     background: var(--madder);
   }
@@ -176,6 +192,7 @@
     transform: translate(-50%, -50%);
     transition: border-color 0.3s;
   }
+
   .completed .tl-indicator {
     border-color: var(--madder);
   }
@@ -188,6 +205,7 @@
     text-transform: uppercase;
     color: var(--muted);
   }
+
   .tl-name {
     margin: 0;
     font-size: clamp(15px, 1.5vw, 19px);
@@ -196,6 +214,7 @@
     line-height: 1.3;
     color: var(--ink);
   }
+
   .tl-content {
     margin: 6px 0 0;
     font-size: clamp(13px, 1.1vw, 15px);
@@ -203,23 +222,48 @@
     color: var(--muted);
   }
 
+  /* Duotone theme: milestones alternate the two contrast-wool accents and the
+     rail gradient flows between them. */
+  .timeline--duotone .tl-item:nth-child(odd) {
+    --tl-acc: var(--steppe);
+  }
+
+  .timeline--duotone .tl-item:nth-child(even) {
+    --tl-acc: var(--shyrdak);
+  }
+
+  .timeline--duotone .completed .tl-indicator {
+    border-color: var(--tl-acc);
+  }
+
+  .timeline--duotone .tl-item:nth-child(odd) .tl-separator.on {
+    background: linear-gradient(90deg, var(--steppe), var(--shyrdak));
+  }
+
+  .timeline--duotone .tl-item:nth-child(even) .tl-separator.on {
+    background: linear-gradient(90deg, var(--shyrdak), var(--steppe));
+  }
+
   /* Mobile: origin-ui's vertical orientation — rail + indicators run down the left. */
   @media (max-width: 720px) {
     .tl {
       flex-direction: column;
     }
+
     .tl-item {
       flex: 0 0 auto;
       align-items: flex-start;
       text-align: left;
       margin-top: 0;
-      padding-inline: 0 0;
+      padding-inline: 0;
       padding-left: 32px;
       padding-bottom: clamp(24px, 4.5vh, 40px);
     }
+
     .tl-item:last-child {
       padding-bottom: 0;
     }
+
     .tl-separator {
       top: 16px;
       left: 8px;
@@ -227,10 +271,19 @@
       height: calc(100% - 16px);
       transform: translateX(-50%);
     }
+
     .tl-indicator {
       top: 2px;
       left: 0;
       transform: none;
+    }
+
+    .timeline--duotone .tl-item:nth-child(odd) .tl-separator.on {
+      background: linear-gradient(180deg, var(--steppe), var(--shyrdak));
+    }
+
+    .timeline--duotone .tl-item:nth-child(even) .tl-separator.on {
+      background: linear-gradient(180deg, var(--shyrdak), var(--steppe));
     }
   }
 
