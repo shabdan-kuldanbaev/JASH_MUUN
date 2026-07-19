@@ -208,9 +208,8 @@
     <div class="ssr-frame">
       {#each frames as f, i (i)}
         {#if f.placeholder}
-          <!-- Préfelt placeholder: the two contrast wools laid in perpendicular
-               layers, felt grain on top — a stage without a photo. -->
-          <div class="ssr-visual ssr-prefelt" data-active={frame === i}><i></i><i></i></div>
+          <!-- A stage without a photo keeps a quiet paper frame. -->
+          <div class="ssr-visual" data-active={frame === i}></div>
         {:else}
           <img
             class="ssr-visual"
@@ -456,52 +455,6 @@
   .ssr-visual[data-active='true'] {
     opacity: 1;
     transform: scale(1);
-  }
-
-  /* Préfelt placeholder — the two wools laid in perpendicular strips (the
-     step's «первый слой по длине, второй — поперёк»), soft-felted with a
-     vignette and felt grain. Structured on purpose: a blurred blob reads as
-     a broken image. */
-  .ssr-prefelt {
-    background: var(--paper-2);
-  }
-
-  .ssr-prefelt i {
-    position: absolute;
-    inset: -6%;
-    filter: blur(10px);
-  }
-
-  .ssr-prefelt i:nth-child(1) {
-    background: repeating-linear-gradient(
-      180deg,
-      transparent 0 34px,
-      color-mix(in srgb, var(--steppe) 50%, transparent) 62px 106px,
-      transparent 134px 168px
-    );
-    opacity: 0.85;
-    mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 92%);
-    mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 92%);
-  }
-
-  .ssr-prefelt i:nth-child(2) {
-    background: repeating-linear-gradient(
-      90deg,
-      transparent 0 38px,
-      color-mix(in srgb, var(--shyrdak) 40%, transparent) 66px 110px,
-      transparent 138px 176px
-    );
-    opacity: 0.75;
-    mask-image: radial-gradient(120% 120% at 50% 50%, #000 50%, transparent 90%);
-    mask-image: radial-gradient(120% 120% at 50% 50%, #000 50%, transparent 90%);
-  }
-
-  .ssr-prefelt::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.8;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .ssr-dots {
