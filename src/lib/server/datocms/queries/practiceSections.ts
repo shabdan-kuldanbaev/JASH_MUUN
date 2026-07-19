@@ -10,6 +10,8 @@ interface DatoImage {
 }
 interface DatoStageBlock {
   __typename: 'StageBlockRecord';
+  /** Variant token channel (not rendered): `silk` marks the pearl-zone start. */
+  kicker: string | null;
   title: string;
   body: string | null;
   checklistTitle: string | null;
@@ -17,6 +19,8 @@ interface DatoStageBlock {
   /** One "icon|term|desc" row per line (flat text — DatoCMS forbids blocks this deep). */
   checklist: string | null;
   image: DatoImage | null;
+  /** Second frame — the pinned visual pages through the stage's photos on scroll. */
+  imageSecondary: DatoImage | null;
 }
 type DatoItem =
   | DatoStageBlock
@@ -29,7 +33,7 @@ interface DatoSection {
   title: string | null;
   body: string | null;
   caption: string | null;
-  image: DatoImage | null;
+  image: (DatoImage & { width?: number | null; height?: number | null }) | null;
   items: DatoItem[];
 }
 
@@ -47,16 +51,23 @@ const QUERY = /* GraphQL */ `
           image {
             url
             alt
+            width
+            height
           }
           items {
             __typename
             ... on StageBlockRecord {
+              kicker
               title
               body
               checklistTitle
               checklistIntro
               checklist
               image {
+                url
+                alt
+              }
+              imageSecondary {
                 url
                 alt
               }
@@ -103,7 +114,31 @@ function checklistRows(text: string | null): { icon: string; term: string; desc:
     .filter((r): r is { icon: string; term: string; desc: string } => r !== null);
 }
 
+/**
+ * Practice kicker token channel (mirrors the article registry in
+ * sectionVariants.ts, but practice-specific — see the note in types/datocms.ts):
+ * - hero section kicker `duotone`  — themes the page (alternating steppe/shyrdak
+ *   accents on ritual stages and timeline, lede ornament, numbered stages);
+ * - ritual STAGE kicker `silk`     — the pearl zone starts at this stage (the
+ *   section background soaks as it activates);
+ * - photo section kicker `silk`    — the photo closes the pearl zone (spatial
+ *   gradient back to paper).
+ * The hero/photo section kickers and the stage kicker are not rendered as copy
+ * anywhere in the practice pipeline, so the channel is free. Unknown tokens are
+ * ignored — forward-compatible. (The lede/ingredients kickers stay display copy.)
+ */
+function tokens(kicker: string | null): Set<string> {
+  return new Set(
+    (kicker ?? '')
+      .toLowerCase()
+      .split(/[\s,]+/)
+      .filter(Boolean)
+  );
+}
+
 function normalize(sections: DatoSection[]): PracticeSection[] {
+  const duotone = sections.some((s) => s.sectionType === 'hero' && tokens(s.kicker).has('duotone'));
+
   const out: PracticeSection[] = [];
   for (const s of sections) {
     const items = s.items ?? [];
@@ -121,6 +156,7 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
         out.push({
           type: 'timeline',
           title: s.title ?? '',
+          duotone,
           steps: items
             .filter(
               (i): i is Extract<DatoItem, { __typename: 'StepBlockRecord' }> =>
@@ -129,27 +165,48 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
             .map((i) => ({ time: i.time, label: i.label }))
         });
         break;
-      case 'ritual':
+      case 'ritual': {
+        const stages = items.filter(
+          (i): i is DatoStageBlock => i.__typename === 'StageBlockRecord'
+        );
+        const firstSilk = stages.findIndex((i) => tokens(i.kicker).has('silk'));
         out.push({
           type: 'ritual',
-          items: items
-            .filter((i): i is DatoStageBlock => i.__typename === 'StageBlockRecord')
-            .map((i) => ({
-              title: i.title,
-              narrative: paragraphs(i.body),
-              checklistTitle: i.checklistTitle ?? undefined,
-              checklistIntro: i.checklistIntro ?? undefined,
-              checklist: checklistRows(i.checklist),
-              image: i.image?.url ?? '',
-              imageAlt: i.image?.alt ?? ''
-            }))
+          duotone,
+          silkFrom: firstSilk === -1 ? undefined : firstSilk,
+          items: stages.map((i) => ({
+            title: i.title,
+            narrative: paragraphs(i.body),
+            checklistTitle: i.checklistTitle ?? undefined,
+            checklistIntro: i.checklistIntro ?? undefined,
+            checklist: checklistRows(i.checklist),
+            image: i.image?.url ?? '',
+            imageAlt: i.image?.alt ?? '',
+            imageSecondary: i.imageSecondary?.url ?? undefined,
+            imageSecondaryAlt: i.imageSecondary?.alt ?? undefined
+          }))
         });
         break;
+      }
       case 'lede':
-        out.push({ type: 'lede', kicker: s.kicker ?? '', body: s.body ?? '' });
+        out.push({ type: 'lede', kicker: s.kicker ?? '', body: s.body ?? '', ornament: duotone });
         break;
       case 'quote':
         out.push({ type: 'quote', quote: s.body ?? '', attribution: s.caption ?? '' });
+        break;
+      case 'photo':
+        out.push({
+          type: 'photo',
+          image: s.image?.url ?? '',
+          imageAlt: s.image?.alt ?? '',
+          width: s.image?.width ?? undefined,
+          height: s.image?.height ?? undefined,
+          silk: tokens(s.kicker).has('silk')
+        });
+        break;
+      case 'video':
+        // Pending media: the record carries the source URL in `body`, but there is
+        // no playable file yet — skipped until playback is wired.
         break;
       case 'ingredients':
         out.push({

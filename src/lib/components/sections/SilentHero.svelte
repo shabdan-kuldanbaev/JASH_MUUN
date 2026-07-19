@@ -19,7 +19,9 @@
   <img class="hero-img" src={src(image)} alt={imageAlt} fetchpriority="high" />
   <span class="hero-ov" aria-hidden="true"></span>
   <div class="hero-inner">
-    <h1 class="hero-word">{word}</h1>
+    <!-- Long poster words (e.g. «НУНО-ВОЙЛОК», ~11.8em with tracking) need a
+         smaller fluid size to stay on one line down to 320px. -->
+    <h1 class="hero-word" class:hero-word--long={word.length > 8}>{word}</h1>
     {#if subtitle}<p class="hero-sub">{subtitle}</p>{/if}
   </div>
 </div>
@@ -33,6 +35,7 @@
     overflow: hidden;
     background: #12100e;
   }
+
   .hero-img {
     position: absolute;
     inset: 0;
@@ -41,11 +44,13 @@
     object-fit: cover;
     display: block;
   }
+
   .hero-ov {
     position: absolute;
     inset: 0;
     background: rgba(18, 16, 14, 0.4);
   }
+
   .hero-inner {
     position: absolute;
     inset: 0;
@@ -56,6 +61,7 @@
     text-align: center;
     padding: 0 var(--gutter);
   }
+
   .hero-word {
     font-size: clamp(48px, 9vw, 132px);
     font-weight: 700;
@@ -63,6 +69,11 @@
     line-height: 1;
     color: #f6f1e7;
   }
+
+  .hero-word--long {
+    font-size: clamp(20px, 6.6vw, 104px);
+  }
+
   .hero-sub {
     margin-top: clamp(20px, 3vh, 40px);
     max-width: 42ch;
