@@ -74,17 +74,42 @@ export type Article = Pick<ArticleSummary, 'id' | 'title' | 'slug' | 'excerpt' |
 // ── Article page sections (modular `page_sections`) ───────────────────────────
 // The article detail page renders from these (mirrors the practice pipeline).
 // DatoCMS `SectionRecord` blocks map here, discriminated by `type` (from the CMS
-// `section_type` select). `night` comes from the `kicker` variant channel —
-// consecutive night sections render as one dark band (dusk → night → dawn).
-// See server/datocms/queries/articleSections.ts.
+// `section_type` select). Presentation variants come from the `kicker` variant
+// channel, parsed centrally in server/datocms/sectionVariants.ts (token
+// registry documented there). Consecutive same-mood sections render as one
+// band: `night` → dark band (dusk/dawn edges, grain, ember sparks), `dye` →
+// warm dye-vat band (seamless gradient, felt grain, steam, simmer glow).
 
-/** Presentation variants shared by every article section (parsed from `kicker`). */
-export interface SectionMood {
-  /** Renders inside the dark night band (dusk/dawn edges, grain, ember accents). */
-  night: boolean;
+/** Mood of a section band — consecutive same-mood sections merge into one band. */
+export type SectionMood = 'day' | 'night' | 'dye';
+
+/** Margin petroglyph watermark, requested via the `petroglyph:<n>[:heritage]` token. */
+export interface SectionPetroglyph {
+  /** Numbered SVG in static/assets/petroglyphs/ (1–12). */
+  id: number;
+  /** Warm clay tint (`.petroglyph--heritage` in app.css). */
+  heritage: boolean;
 }
 
-export type ArticleSection = SectionMood &
+/**
+ * Presentation variants shared by every article section (parsed from `kicker`).
+ * Every flag is orthogonal and optional — the parser defaults to a plain day
+ * section, so existing content is untouched by new tokens.
+ */
+export interface SectionVariants {
+  mood: SectionMood;
+  /** Media side for photo_text; margin side for petroglyphs. */
+  side: 'left' | 'right';
+  /** Consecutive strip photos collapse into one contact-sheet cluster. */
+  strip: boolean;
+  /** Diptych renders as equal 1fr/1fr columns (same-orientation pairs). */
+  even: boolean;
+  /** Closing envoi treatment for a text section. */
+  coda: boolean;
+  petroglyph: SectionPetroglyph | null;
+}
+
+export type ArticleSection = SectionVariants &
   (
     | { type: 'hero'; title: string; lede: string; image: DatoImage | null }
     | {
@@ -95,13 +120,7 @@ export type ArticleSection = SectionMood &
         caption: string;
       }
     | { type: 'text'; heading: string; body: string }
-    | {
-        type: 'photoText';
-        image: DatoImage | null;
-        side: 'left' | 'right';
-        heading: string;
-        body: string;
-      }
+    | { type: 'photoText'; image: DatoImage | null; heading: string; body: string }
     | { type: 'quote'; quote: string; attribution: string }
   );
 
