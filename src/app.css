@@ -87,6 +87,28 @@ body[data-mobile-menu-open] {
 }
 
 /* =====================================================================
+   SMOOTH SCROLL — Lenis (content pages only)
+   Class hooks added by the Lenis instance in the (content) layout. The
+   horizontal homepage never mounts Lenis, so `html` keeps its 100% height.
+   ===================================================================== */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* =====================================================================
    PAGE TRANSITIONS — View Transition API
    Soft crossfade with subtle directional shift (editorial feel)
    ===================================================================== */
