@@ -458,41 +458,50 @@
     transform: scale(1);
   }
 
-  /* Préfelt placeholder — perpendicular layers of the two wools + felt grain. */
+  /* Préfelt placeholder — the two wools laid in perpendicular strips (the
+     step's «первый слой по длине, второй — поперёк»), soft-felted with a
+     vignette and felt grain. Structured on purpose: a blurred blob reads as
+     a broken image. */
   .ssr-prefelt {
     background: var(--paper-2);
   }
 
   .ssr-prefelt i {
     position: absolute;
-    border-radius: 40%;
-    filter: blur(46px);
+    inset: -6%;
+    filter: blur(10px);
   }
 
   .ssr-prefelt i:nth-child(1) {
-    left: -12%;
-    right: -12%;
-    top: 20%;
-    height: 32%;
-    background: var(--steppe);
-    opacity: 0.5;
+    background: repeating-linear-gradient(
+      180deg,
+      transparent 0 34px,
+      color-mix(in srgb, var(--steppe) 50%, transparent) 62px 106px,
+      transparent 134px 168px
+    );
+    opacity: 0.85;
+    mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 92%);
+    mask-image: radial-gradient(120% 120% at 50% 50%, #000 55%, transparent 92%);
   }
 
   .ssr-prefelt i:nth-child(2) {
-    top: -10%;
-    bottom: -10%;
-    left: 32%;
-    width: 32%;
-    background: var(--shyrdak);
-    opacity: 0.4;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0 38px,
+      color-mix(in srgb, var(--shyrdak) 40%, transparent) 66px 110px,
+      transparent 138px 176px
+    );
+    opacity: 0.75;
+    mask-image: radial-gradient(120% 120% at 50% 50%, #000 50%, transparent 90%);
+    mask-image: radial-gradient(120% 120% at 50% 50%, #000 50%, transparent 90%);
   }
 
   .ssr-prefelt::after {
     content: '';
     position: absolute;
     inset: 0;
-    opacity: 0.5;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.8;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .ssr-dots {
