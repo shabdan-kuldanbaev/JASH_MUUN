@@ -33,6 +33,7 @@
   width={image.width}
   height={image.height}
   loading={eager ? 'eager' : 'lazy'}
+  fetchpriority={eager ? 'high' : undefined}
   decoding="async"
   style={image.blurUpThumb
     ? `background-image: url('${image.blurUpThumb}'); background-size: cover;`
