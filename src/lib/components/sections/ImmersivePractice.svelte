@@ -11,10 +11,11 @@
   // Everything after the hero flows normally over the pinned hero.
   const rest = $derived(sections.filter((s) => s.type !== 'hero'));
 
-  // Pearl zone: once the ritual's first silk stage activates, the section
-  // background soaks (temporal counterpart of the article dye band; a silk
-  // photo below closes the zone with a spatial gradient back to paper).
-  let silk = $state(false);
+  // Zone mood: the ritual reflects the ACTIVE stage's mood (`silk`, `ember`, …),
+  // rendered as `.ritual.is-<mood>`. The zone can start AND end mid-ritual —
+  // the temporal counterpart of the article dye band. A `photo` section with a
+  // mood closes a zone spatially (`photo--<mood>`). Registry: the CSS below.
+  let ritualMood = $state<string | null>(null);
 </script>
 
 <div class="immersive">
@@ -32,30 +33,29 @@
   <div class="flow">
     {#each rest as section, i (i)}
       {#if section.type === 'lede'}
-        <section class="sec lede">
+        <section class="sec lede {section.theme ? `lede--theme-${section.theme}` : ''}">
           <div class="sec-inner">
             {#if section.kicker}<p class="kicker">{section.kicker}</p>{/if}
             <p class="lede-body">{section.body}</p>
-            {#if section.ornament}
-              <!-- Duotone kyial: the two contrast wools of one ornament -->
+            {#if section.theme}
+              <!-- Kyial ornament — theme marker; strokes coloured per theme via CSS vars -->
               <svg class="ornament" viewBox="0 0 150 18" fill="none" aria-hidden="true">
                 <path
                   d="M2 9 H52 M52 9 C60 9 64 3.6 59.4 2 C55.6 0.7 53 5 57.6 6.4"
-                  stroke="var(--steppe)"
+                  stroke="var(--orn-a)"
                   stroke-width="1.1"
                   stroke-linecap="round"
                 />
                 <path
                   d="M148 9 H98 M98 9 C90 9 86 3.6 90.6 2 C94.4 0.7 97 5 92.4 6.4"
-                  stroke="var(--shyrdak)"
+                  stroke="var(--orn-b)"
                   stroke-width="1.1"
                   stroke-linecap="round"
                 />
                 <path
                   d="M75 4.4 L79.6 9 L75 13.6 L70.4 9 Z"
-                  stroke="var(--ink)"
+                  stroke="var(--orn-c)"
                   stroke-width="1.1"
-                  opacity="0.55"
                 />
               </svg>
             {/if}
@@ -63,23 +63,18 @@
         </section>
       {:else if section.type === 'timeline'}
         <section class="sec arc">
-          <MilestoneTimeline
-            title={section.title}
-            steps={section.steps}
-            duotone={section.duotone}
-          />
+          <MilestoneTimeline title={section.title} steps={section.steps} theme={section.theme} />
         </section>
       {:else if section.type === 'ritual'}
-        <section class="sec ritual" class:is-silk={silk}>
+        <section class="sec ritual {ritualMood ? `is-${ritualMood}` : ''}">
           <StickyScrollReveal
             items={section.items}
-            duotone={section.duotone}
-            silkFrom={section.silkFrom}
-            onSilkChange={(v) => (silk = v)}
+            theme={section.theme}
+            onMoodChange={(m) => (ritualMood = m)}
           />
         </section>
       {:else if section.type === 'photo'}
-        <section class="sec photo" class:photo--silk={section.silk}>
+        <section class="sec photo {section.mood ? `photo--${section.mood}` : ''}">
           <figure class="plate">
             <img
               src={section.image}
@@ -198,36 +193,47 @@
     max-width: 40ch;
   }
 
-  /* Duotone kyial divider — first statement of the two-wool theme */
+  /* Kyial ornament — theme marker. Stroke colours come from per-theme vars
+     (registry below); default is a single earthy accent. */
   .ornament {
     display: block;
     width: 150px;
     margin: clamp(32px, 5vw, 52px) auto 0;
+    --orn-a: var(--clay);
+    --orn-b: var(--clay);
+    --orn-c: var(--clay);
+  }
+
+  .lede--theme-duotone .ornament {
+    --orn-a: var(--steppe);
+    --orn-b: var(--shyrdak);
+    --orn-c: color-mix(in srgb, var(--ink) 55%, transparent);
+  }
+
+  .lede--theme-ember .ornament {
+    --orn-a: var(--clay);
+    --orn-b: var(--clay);
+    --orn-c: var(--clay);
   }
 
   /* Timeline / ritual keep their own component styling; no fixed height —
      the timeline sizes to its content (its own 32px block padding). */
 
-  /* Ritual pearl zone: the section soaks in silk once the first silk stage
-     activates (temporal counterpart of the article dye band). No animations
-     beyond the soak — silk is still. */
+  /* Ritual mood-zone registry: the section background reflects the active
+     stage's mood (StickyScrollReveal → onMoodChange). Add a mood = add its
+     `.ritual.is-<mood>` pair below; the renderer sets the class generically.
+     `silk` — cool pearl + diagonal weave; `ember` — warm clay + heat haze. */
   .ritual {
     background: var(--paper);
     transition: background-color 1.1s ease;
   }
 
   .ritual::after {
-    /* silk weave — surfaces together with the pearl */
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     opacity: 0;
-    background: repeating-linear-gradient(
-      115deg,
-      color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
-      transparent 1px 9px
-    );
     transition: opacity 1.1s ease;
   }
 
@@ -237,6 +243,24 @@
 
   .ritual.is-silk::after {
     opacity: 0.4;
+    background: repeating-linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
+      transparent 1px 9px
+    );
+  }
+
+  .ritual.is-ember {
+    background: color-mix(in srgb, var(--clay) 5%, var(--paper));
+  }
+
+  .ritual.is-ember::after {
+    opacity: 1;
+    background: radial-gradient(
+      130% 90% at 50% 35%,
+      color-mix(in srgb, var(--clay) 9%, transparent),
+      transparent 72%
+    );
   }
 
   .ritual :global(.ssr) {
@@ -290,7 +314,7 @@
       color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
       transparent 1px 9px
     );
-    mask-image: linear-gradient(
+    -webkit-mask-image: linear-gradient(
       180deg,
       #000 0,
       #000 calc(100% - var(--edge)),
@@ -396,6 +420,16 @@
     font-weight: 600;
     line-height: 1.45;
     letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  /* Bare-name ledger (no detail on any row, e.g. base felt): drop the empty
+     value cell so the name reads as a clean single-column ruled list. */
+  .ledger-row dd:empty {
+    display: none;
+  }
+
+  .ledger-row:has(dd:empty) dt {
     color: var(--ink);
   }
 

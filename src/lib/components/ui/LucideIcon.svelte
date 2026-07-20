@@ -6,11 +6,13 @@
    */
   import {
     Blend,
+    ChevronsDown,
     CircleCheck,
     CookingPot,
     Droplet,
     Droplets,
     Flame,
+    Footprints,
     Hand,
     Hourglass,
     Layers,
@@ -19,6 +21,7 @@
     Palette,
     Pencil,
     Recycle,
+    Repeat,
     RotateCw,
     Scissors,
     Shapes,
@@ -32,11 +35,13 @@
 
   const ICONS = {
     blend: Blend,
+    'chevrons-down': ChevronsDown,
     'circle-check': CircleCheck,
     'cooking-pot': CookingPot,
     droplet: Droplet,
     droplets: Droplets,
     flame: Flame,
+    footprints: Footprints,
     hand: Hand,
     hourglass: Hourglass,
     layers: Layers,
@@ -45,6 +50,7 @@
     palette: Palette,
     pencil: Pencil,
     recycle: Recycle,
+    repeat: Repeat,
     'rotate-cw': RotateCw,
     scissors: Scissors,
     shapes: Shapes,

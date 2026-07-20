@@ -158,21 +158,33 @@ export interface RitualStep {
   checklistIntro?: string;
   /** How-to rows with lucide icons. */
   checklist?: ChecklistItem[];
-  /** Empty string → the pinned frame shows the duotone préfelt placeholder. */
+  /** Empty string → the pinned frame keeps a quiet paper placeholder. */
   image: string;
   imageAlt: string;
   /** Second frame — the pinned visual pages through the stage's photos by scroll progress. */
   imageSecondary?: string;
   imageSecondaryAlt?: string;
+  /**
+   * Zone mood (from the stage kicker) — the ritual background reflects the
+   * ACTIVE stage's mood, so a zone can both start and end mid-ritual. Rendered
+   * as `.ritual.is-<mood>`; registry lives in queries/practiceSections.ts +
+   * ImmersivePractice CSS. Known: `silk` (pearl), `ember` (warm). Undefined → paper.
+   */
+  mood?: string;
 }
 
-// Practice presentation variants come from the same kicker token channel as
-// articles, but with a practice-specific registry (parsed in
-// queries/practiceSections.ts): `duotone` on the hero kicker themes the whole
-// page (alternating steppe/shyrdak accents, ornament, numbered stages);
-// `silk` on a ritual stage kicker starts the pearl zone (the section
-// background soaks as that stage activates); `silk` on a photo kicker closes
-// the zone with a spatial gradient back to paper. Unknown tokens are ignored.
+// Practice presentation is driven by two token registries (parsed in
+// queries/practiceSections.ts from the kicker channel; unknown tokens ignored —
+// forward-compatible):
+//
+//   THEME  — one token on the HERO section kicker, applied page-wide to
+//            timeline / ritual / lede as `--theme-<name>`. Known: `duotone`
+//            (two alternating wool accents + two-colour ornament), `ember`
+//            (single clay accent + clay ornament). Add a theme = one CSS block
+//            per themed component, no component-logic change.
+//   MOOD   — one token per ritual STAGE kicker (zone soak) and on a `photo`
+//            section kicker (spatial close band), rendered as `is-<mood>` /
+//            `photo--<mood>`. Known: `silk`, `ember`.
 
 export type PracticeSection =
   | {
@@ -183,14 +195,13 @@ export type PracticeSection =
       image: string;
       imageAlt: string;
     }
-  | { type: 'lede'; kicker: string; body: string; ornament?: boolean }
-  | { type: 'timeline'; title: string; steps: TimelineStep[]; duotone?: boolean }
+  | { type: 'lede'; kicker: string; body: string; theme?: string }
+  | { type: 'timeline'; title: string; steps: TimelineStep[]; theme?: string }
   | {
       type: 'ritual';
       items: RitualStep[];
-      duotone?: boolean;
-      /** Index of the first silk stage — from it on, the section soaks in pearl. */
-      silkFrom?: number;
+      /** Page theme token — accent palette for stages (see the registry note above). */
+      theme?: string;
     }
   | { type: 'quote'; quote: string; attribution: string }
   | {
@@ -199,8 +210,8 @@ export type PracticeSection =
       imageAlt: string;
       width?: number;
       height?: number;
-      /** Pearl-zone member — renders on the silk-close band (gradient back to paper). */
-      silk?: boolean;
+      /** Zone mood — renders the spatial close band `photo--<mood>` (e.g. `silk`). */
+      mood?: string;
     }
   | {
       type: 'ingredients';

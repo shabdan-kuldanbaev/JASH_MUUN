@@ -115,29 +115,25 @@ function checklistRows(text: string | null): { icon: string; term: string; desc:
 }
 
 /**
- * Practice kicker token channel (mirrors the article registry in
- * sectionVariants.ts, but practice-specific — see the note in types/datocms.ts):
- * - hero section kicker `duotone`  — themes the page (alternating steppe/shyrdak
- *   accents on ritual stages and timeline, lede ornament, numbered stages);
- * - ritual STAGE kicker `silk`     — the pearl zone starts at this stage (the
- *   section background soaks as it activates);
- * - photo section kicker `silk`    — the photo closes the pearl zone (spatial
- *   gradient back to paper).
- * The hero/photo section kickers and the stage kicker are not rendered as copy
- * anywhere in the practice pipeline, so the channel is free. Unknown tokens are
- * ignored — forward-compatible. (The lede/ingredients kickers stay display copy.)
+ * Practice kicker token channel — two registries (see the note in
+ * types/datocms.ts). One token per kicker; unknown tokens are simply passed
+ * through and stay inert until a matching CSS class exists (forward-compatible).
+ * The hero/photo section kickers and the ritual STAGE kicker are token channels
+ * (not rendered as copy); the lede/ingredients kickers stay display copy.
+ *
+ * - THEME: the first token of the HERO section kicker (e.g. `duotone`, `ember`).
+ * - MOOD:  the first token of each ritual STAGE kicker (zone soak) and of a
+ *   `photo` section kicker (spatial close band) — e.g. `silk`, `ember`.
  */
-function tokens(kicker: string | null): Set<string> {
-  return new Set(
-    (kicker ?? '')
-      .toLowerCase()
-      .split(/[\s,]+/)
-      .filter(Boolean)
-  );
+function firstToken(kicker: string | null): string | undefined {
+  return (kicker ?? '')
+    .toLowerCase()
+    .split(/[\s,]+/)
+    .filter(Boolean)[0];
 }
 
 function normalize(sections: DatoSection[]): PracticeSection[] {
-  const duotone = sections.some((s) => s.sectionType === 'hero' && tokens(s.kicker).has('duotone'));
+  const theme = firstToken(sections.find((s) => s.sectionType === 'hero')?.kicker ?? null);
 
   const out: PracticeSection[] = [];
   for (const s of sections) {
@@ -156,7 +152,7 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
         out.push({
           type: 'timeline',
           title: s.title ?? '',
-          duotone,
+          theme,
           steps: items
             .filter(
               (i): i is Extract<DatoItem, { __typename: 'StepBlockRecord' }> =>
@@ -169,11 +165,9 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
         const stages = items.filter(
           (i): i is DatoStageBlock => i.__typename === 'StageBlockRecord'
         );
-        const firstSilk = stages.findIndex((i) => tokens(i.kicker).has('silk'));
         out.push({
           type: 'ritual',
-          duotone,
-          silkFrom: firstSilk === -1 ? undefined : firstSilk,
+          theme,
           items: stages.map((i) => ({
             title: i.title,
             narrative: paragraphs(i.body),
@@ -183,13 +177,14 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
             image: i.image?.url ?? '',
             imageAlt: i.image?.alt ?? '',
             imageSecondary: i.imageSecondary?.url ?? undefined,
-            imageSecondaryAlt: i.imageSecondary?.alt ?? undefined
+            imageSecondaryAlt: i.imageSecondary?.alt ?? undefined,
+            mood: firstToken(i.kicker)
           }))
         });
         break;
       }
       case 'lede':
-        out.push({ type: 'lede', kicker: s.kicker ?? '', body: s.body ?? '', ornament: duotone });
+        out.push({ type: 'lede', kicker: s.kicker ?? '', body: s.body ?? '', theme });
         break;
       case 'quote':
         out.push({ type: 'quote', quote: s.body ?? '', attribution: s.caption ?? '' });
@@ -201,7 +196,7 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
           imageAlt: s.image?.alt ?? '',
           width: s.image?.width ?? undefined,
           height: s.image?.height ?? undefined,
-          silk: tokens(s.kicker).has('silk')
+          mood: firstToken(s.kicker)
         });
         break;
       case 'video':

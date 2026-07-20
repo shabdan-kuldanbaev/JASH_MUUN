@@ -11,18 +11,20 @@
     checklistTitle?: string;
     checklistIntro?: string;
     checklist?: StickyChecklistItem[];
-    /** Empty string → the pinned frame shows the duotone préfelt placeholder. */
+    /** Empty string → the pinned frame keeps a quiet paper placeholder. */
     image: string;
     imageAlt?: string;
     /** Second frame — the pinned visual pages through the stage's photos on scroll. */
     imageSecondary?: string;
     imageSecondaryAlt?: string;
+    /** Zone mood for this stage — surfaced to the parent via onMoodChange. */
+    mood?: string;
   }
 
   interface Frame {
     url: string;
     alt: string;
-    /** No photo for this stage — render the duotone préfelt placeholder. */
+    /** No photo for this stage — keep a quiet paper frame. */
     placeholder: boolean;
   }
 </script>
@@ -35,13 +37,15 @@
    * right crossfades to the active step as it reaches the viewport centre. A
    * stage may carry several photos (image + imageSecondary): the pinned frame
    * pages through them by scroll progress WITHIN the stage — no timers. A stage
-   * with no photo shows an abstract duotone préfelt placeholder. Scrolls with
-   * the page — no nested scrollbar. Collapses to a single column with inline
-   * media on mobile.
+   * with no photo keeps a quiet paper frame. Scrolls with the page — no nested
+   * scrollbar. Collapses to a single column with inline media on mobile.
    *
-   * `duotone` themes the stages (alternating steppe/shyrdak accents, warn treatment for triangle-alert checklist rows). `silkFrom` +
-   * `onSilkChange` let the parent soak the section background once the first
-   * silk stage activates.
+   * `theme` (any non-empty token) turns on the themed treatment — italic
+   * narrative, tinted `triangle-alert` warn rows, and a per-theme accent palette
+   * applied via the `.ssr--theme-<name>` class (steppe/shyrdak alternation for
+   * `duotone`, single clay for `ember`). Each stage may carry a `mood`; the
+   * active stage's mood is surfaced through `onMoodChange` so the parent can
+   * soak the section background (the mood zone can start AND end mid-ritual).
    *
    * Requires no ancestor to establish a scroll container (use `overflow: clip`,
    * not `hidden`, on wrappers) so `position: sticky` resolves against the viewport.
@@ -52,16 +56,16 @@
   let {
     items,
     petroglyphs = ['/assets/petroglyphs/4.svg', '/assets/petroglyphs/9.svg'],
-    duotone = false,
-    silkFrom = undefined,
-    onSilkChange = undefined
+    theme = undefined,
+    onMoodChange = undefined
   }: {
     items: StickyItem[];
     petroglyphs?: [string, string] | null;
-    duotone?: boolean;
-    silkFrom?: number;
-    onSilkChange?: (silk: boolean) => void;
+    theme?: string;
+    onMoodChange?: (mood: string | null) => void;
   } = $props();
+
+  const themed = $derived(Boolean(theme));
 
   let active = $state(0);
   let frame = $state(0);
@@ -94,16 +98,11 @@
     return Math.max(1, (it.image ? 1 : 0) + (it.imageSecondary ? 1 : 0));
   }
 
-  /** Per-stage duotone accent (steppe/shyrdak — the two contrast wools). */
-  const accent = (i: number) => (duotone ? (i % 2 === 0 ? 'steppe' : 'shyrdak') : undefined);
-
-  /** Warn rows (triangle-alert) get the tinted treatment under the duotone theme. */
+  /** Warn rows (triangle-alert) get the tinted treatment under any theme. */
   const plainRows = (it: StickyItem) =>
-    duotone
-      ? (it.checklist ?? []).filter((r) => r.icon !== 'triangle-alert')
-      : (it.checklist ?? []);
+    themed ? (it.checklist ?? []).filter((r) => r.icon !== 'triangle-alert') : (it.checklist ?? []);
   const warnRows = (it: StickyItem) =>
-    duotone ? (it.checklist ?? []).filter((r) => r.icon === 'triangle-alert') : [];
+    themed ? (it.checklist ?? []).filter((r) => r.icon === 'triangle-alert') : [];
 
   // Active stage: the last one whose top has crossed the viewport centre; the
   // pinned frame index derives from scroll progress within that stage.
@@ -124,7 +123,7 @@
       const count = frameCount(items[next]);
       active = next;
       frame = frameStart[next] + Math.min(count - 1, Math.floor(p * count));
-      onSilkChange?.(silkFrom !== undefined && next >= silkFrom);
+      onMoodChange?.(items[next]?.mood ?? null);
     };
     const onScroll = () => {
       if (!ticking) {
@@ -142,7 +141,7 @@
   });
 </script>
 
-<section class="ssr" class:ssr--duotone={duotone}>
+<section class="ssr {theme ? `ssr--theme-${theme}` : ''}" class:ssr--themed={themed}>
   {#if petroglyphs}
     <img class="petroglyph ssr-petro-a" src={asset(petroglyphs[0])} alt="" aria-hidden="true" />
     <img class="petroglyph ssr-petro-b" src={asset(petroglyphs[1])} alt="" aria-hidden="true" />
@@ -150,12 +149,7 @@
 
   <div class="ssr-track">
     {#each items as it, i (i)}
-      <article
-        class="ssr-stage"
-        bind:this={blocks[i]}
-        data-active={active === i}
-        data-accent={accent(i)}
-      >
+      <article class="ssr-stage" bind:this={blocks[i]} data-active={active === i}>
         <h2 class="ssr-title">{it.title}</h2>
 
         {#each it.narrative ?? [] as para (para)}
@@ -274,15 +268,20 @@
     opacity: 1;
   }
 
-  /* Duotone theme: stages alternate the two contrast-wool accents. */
-  .ssr-stage[data-accent='steppe'] {
+  /* Theme accent registry — add a theme = add one rule here; the parser passes
+     its hero-kicker token through as `.ssr--theme-<name>`. `duotone` alternates
+     the two contrast wools; `ember` is a single earthy accent. */
+  .ssr--theme-ember .ssr-stage {
+    --ssr-acc: var(--clay);
+  }
+
+  .ssr--theme-duotone .ssr-stage:nth-child(odd) {
     --ssr-acc: var(--steppe);
   }
 
-  .ssr-stage[data-accent='shyrdak'] {
+  .ssr--theme-duotone .ssr-stage:nth-child(even) {
     --ssr-acc: var(--shyrdak);
   }
-
 
   .ssr-title {
     font-size: clamp(26px, 3vw, 40px);
@@ -299,7 +298,7 @@
     color: var(--ink-2, #57534c);
   }
 
-  .ssr--duotone .ssr-body {
+  .ssr--themed .ssr-body {
     font-weight: 300;
     font-style: italic;
     line-height: 1.75;
@@ -320,7 +319,7 @@
     border-top: 1px solid var(--line);
   }
 
-  .ssr--duotone .ssr-check {
+  .ssr--themed .ssr-check {
     border-top-color: var(--ink);
   }
 
@@ -385,7 +384,7 @@
   }
 
   /* «Важно» — the triangle-alert checklist row gets a tinted left-rule block
-     under the duotone theme (its icon/term/desc stay verbatim CMS rows). */
+     under any theme (its icon/term/desc stay verbatim CMS rows). */
   .ssr-warn {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -517,17 +516,16 @@
       border-radius: 8px;
     }
 
-    /* Duotone: inline photos keep their natural aspect (uncropped plates). */
-    .ssr--duotone .ssr-inline {
+    /* Themed practices show inline photos at their natural aspect (uncropped). */
+    .ssr--themed .ssr-inline {
       aspect-ratio: auto;
       border-radius: 8px;
     }
 
-    .ssr--duotone .ssr-inline img {
+    .ssr--themed .ssr-inline img {
       height: auto;
       object-fit: unset;
     }
-
   }
 
   @media (prefers-reduced-motion: reduce) {
