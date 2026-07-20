@@ -174,6 +174,11 @@
   // URLs whose full-size source has finished decoding — the "warm" set. A
   // stepped-to image that is already warm renders at full opacity in the same
   // frame (instant swap); one that isn't gets the soft develop fade below.
+  // Deliberately a plain, non-reactive cache: reactivity is driven by `imgReady`
+  // and `openKey`, and this set is only ever read inside effects those already
+  // re-run. A SvelteSet would re-trigger the preload effect on every decode and
+  // spawn redundant Image() loads — so opt this one line out of the rule.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const warm = new Set<string>();
 
   // Prefetch the neighbours (±1, ±2 in both directions) so stepping is instant —
