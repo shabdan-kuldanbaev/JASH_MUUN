@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { LOCALES } from '$i18n';
-import type { GalleryItem } from '$lib/types/datocms';
-import { getGalleryItems } from '$lib/server/datocms/queries/gallery';
+import type { ArchiveItem } from '$lib/types/datocms';
+import { getArchiveItems } from '$lib/server/datocms/queries/archive';
 import { DatoLocaleError } from '$lib/server/datocms/client';
 
 export const prerender = true;
@@ -13,12 +13,12 @@ export function entries() {
 export const load: PageServerLoad = async ({ parent }) => {
   const parentData = await parent();
 
-  let items: GalleryItem[];
+  let items: ArchiveItem[];
   try {
-    items = await getGalleryItems(parentData.locale);
+    items = await getArchiveItems(parentData.locale);
   } catch (err) {
     if (!(err instanceof DatoLocaleError)) {
-      console.warn('[DatoCMS] getGalleryItems failed:', err);
+      console.warn('[DatoCMS] getArchiveItems failed:', err);
     }
     items = [];
   }
