@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { DatoImage } from '$lib/types/datocms';
+  import { datoImg } from '$lib/imgix';
 
   let {
     image,
@@ -13,16 +14,10 @@
     eager?: boolean;
   } = $props();
 
-  // DatoCMS image transformation parameters for responsive srcset.
-  // Uses DatoCMS Imgix integration — append params to the URL.
-  function imgUrl(url: string, width: number): string {
-    const base = url.split('?')[0];
-    return `${base}?w=${width}&auto=format`;
-  }
-
+  // Responsive srcset via the shared DatoCMS/Imgix URL builder ($lib/imgix).
   const widths = [320, 640, 960, 1280, 1920];
-  const srcset = $derived(widths.map((w) => `${imgUrl(image.url, w)} ${w}w`).join(', '));
-  const src = $derived(imgUrl(image.url, 960));
+  const srcset = $derived(widths.map((w) => `${datoImg(image.url, { w })} ${w}w`).join(', '));
+  const src = $derived(datoImg(image.url, { w: 960 }));
 </script>
 
 <img

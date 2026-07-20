@@ -74,6 +74,9 @@
   "gallery_title": "Archive",
   "gallery_description": "Photographs drawn from documented practices across Naryn, Issyk-Kul, and the Suusamyr Valley.",
   "gallery_empty": "No images in the archive yet.",
+  "gallery_view_close": "Close",
+  "gallery_view_prev": "Previous image",
+  "gallery_view_next": "Next image",
   "detail_video_aria": "Video",
   "detail_photo_gallery_aria": "Photo gallery",
   "detail_practice_navigation_aria": "Practice navigation"
