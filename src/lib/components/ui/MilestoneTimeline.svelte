@@ -22,10 +22,12 @@
     /** [top-right, bottom-left] corner petroglyphs; null disables them. */
     petroglyphs?: [string, string] | null;
     /**
-     * Duotone theme: milestones alternate the two contrast-wool accents
-     * (steppe/shyrdak) and the rail flows between them instead of --madder.
+     * Page theme token (from the hero kicker). A themed rail recolours the
+     * indicator + separator from the default --madder to the theme accent via
+     * `.timeline--theme-<name>`: `duotone` alternates the two wools (gradient
+     * rail), `ember` is a single clay rail. Undefined → default madder.
      */
-    duotone?: boolean;
+    theme?: string;
   }
 
   let {
@@ -33,13 +35,16 @@
     steps,
     active,
     petroglyphs = ['/assets/petroglyphs/4.svg', '/assets/petroglyphs/9.svg'],
-    duotone = false
+    theme = undefined
   }: Props = $props();
 
   const reached = $derived(active ?? steps.length);
 </script>
 
-<section class="timeline" class:timeline--duotone={duotone}>
+<section
+  class="timeline {theme ? `timeline--theme-${theme}` : ''}"
+  class:timeline--themed={Boolean(theme)}
+>
   {#if petroglyphs}
     <img class="petroglyph pg-a" src={asset(petroglyphs[0])} alt="" aria-hidden="true" />
     <img class="petroglyph pg-b" src={asset(petroglyphs[1])} alt="" aria-hidden="true" />
@@ -222,25 +227,36 @@
     color: var(--muted);
   }
 
-  /* Duotone theme: milestones alternate the two contrast-wool accents and the
-     rail gradient flows between them. */
-  .timeline--duotone .tl-item:nth-child(odd) {
+  /* Themed rail: recolour indicator + separator from --madder to the theme
+     accent (--tl-acc). Per-theme blocks below only set --tl-acc (+ any rail
+     override) — add a theme = one block, no logic change. */
+  .timeline--themed .completed .tl-indicator {
+    border-color: var(--tl-acc, var(--madder));
+  }
+
+  .timeline--themed .tl-separator.on {
+    background: var(--tl-acc, var(--madder));
+  }
+
+  /* `ember` — single clay rail */
+  .timeline--theme-ember .tl-item {
+    --tl-acc: var(--clay);
+  }
+
+  /* `duotone` — the two contrast wools, rail flows as a gradient between them */
+  .timeline--theme-duotone .tl-item:nth-child(odd) {
     --tl-acc: var(--steppe);
   }
 
-  .timeline--duotone .tl-item:nth-child(even) {
+  .timeline--theme-duotone .tl-item:nth-child(even) {
     --tl-acc: var(--shyrdak);
   }
 
-  .timeline--duotone .completed .tl-indicator {
-    border-color: var(--tl-acc);
-  }
-
-  .timeline--duotone .tl-item:nth-child(odd) .tl-separator.on {
+  .timeline--theme-duotone .tl-item:nth-child(odd) .tl-separator.on {
     background: linear-gradient(90deg, var(--steppe), var(--shyrdak));
   }
 
-  .timeline--duotone .tl-item:nth-child(even) .tl-separator.on {
+  .timeline--theme-duotone .tl-item:nth-child(even) .tl-separator.on {
     background: linear-gradient(90deg, var(--shyrdak), var(--steppe));
   }
 
@@ -278,11 +294,11 @@
       transform: none;
     }
 
-    .timeline--duotone .tl-item:nth-child(odd) .tl-separator.on {
+    .timeline--theme-duotone .tl-item:nth-child(odd) .tl-separator.on {
       background: linear-gradient(180deg, var(--steppe), var(--shyrdak));
     }
 
-    .timeline--duotone .tl-item:nth-child(even) .tl-separator.on {
+    .timeline--theme-duotone .tl-item:nth-child(even) .tl-separator.on {
       background: linear-gradient(180deg, var(--shyrdak), var(--steppe));
     }
   }
