@@ -84,7 +84,6 @@
   const isOpen = $derived(openItem !== null);
 
   let dialogEl = $state<HTMLElement>();
-  let closeBtn = $state<HTMLButtonElement>();
   let lastTrigger: HTMLElement | null = null;
 
   function openFrame(item: ArchiveItem, trigger: HTMLElement) {
@@ -129,13 +128,15 @@
 
   // Modal lifecycle: lock scroll (a body class that layers over the layout's
   // inline overflow), move focus into the dialog, restore focus to the trigger
-  // on close. Keyed on `isOpen` (a boolean) so stepping between images — which
-  // keeps isOpen true — does not re-fire and yank focus.
+  // on close. Focus lands on the dialog container (not the image/close button)
+  // so no focus ring is drawn around the photo on open. Keyed on `isOpen` (a
+  // boolean) so stepping between images — which keeps isOpen true — does not
+  // re-fire and yank focus.
   $effect(() => {
     if (!isOpen) return;
     const trigger = lastTrigger;
     document.body.classList.add('archive-lightbox-open');
-    closeBtn?.focus();
+    dialogEl?.focus();
     return () => {
       document.body.classList.remove('archive-lightbox-open');
       trigger?.focus();
@@ -144,6 +145,50 @@
 
   // Large, crisp lightbox source (shared DatoCMS/Imgix builder).
   const large = (url: string) => datoImg(url, { w: 1600, fit: 'max' });
+
+  // URLs whose full-size source has finished decoding — the "warm" set. A
+  // stepped-to image that is already warm renders at full opacity in the same
+  // frame (instant swap); one that isn't gets the soft develop fade below.
+  const warm = new Set<string>();
+
+  // Prefetch the neighbours (±1, ±2 in both directions) so stepping is instant —
+  // each finished decode joins `warm`. Re-runs on every openKey change, keeping
+  // the two photos on each side of the current one primed as you page through.
+  $effect(() => {
+    if (openKey === null || filtered.length < 2) return;
+    const i = filtered.findIndex((it) => it.key === openKey);
+    if (i === -1) return;
+    const n = filtered.length;
+    for (const delta of [1, -1, 2, -2]) {
+      const src = large(filtered[(i + delta + n) % n].imageUrl);
+      if (warm.has(src)) continue;
+      const img = new Image();
+      img.onload = () => warm.add(src);
+      img.src = src;
+      if (img.complete) warm.add(src);
+    }
+  });
+
+  // ── Load state of the CURRENTLY shown photo ──────────────────────────────
+  // `imgReady` drives the develop fade. It flips true synchronously for a warm
+  // photo (fast click that beat the preload still lands soft, not blank), and
+  // via onload otherwise. Element persists across steps, so a warm step never
+  // leaves the ready state → no fade, instant swap.
+  let imgEl = $state<HTMLImageElement>();
+  let imgReady = $state(false);
+
+  $effect(() => {
+    void openKey; // re-evaluate on every open / step
+    const el = imgEl;
+    if (openKey === null || !el) return;
+    const src = large(openItem!.imageUrl);
+    imgReady = warm.has(src) || (el.complete && el.naturalWidth > 0);
+  });
+
+  function onImgLoad() {
+    if (openItem) warm.add(large(openItem.imageUrl));
+    imgReady = true;
+  }
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -205,6 +250,7 @@
     role="dialog"
     aria-modal="true"
     aria-label={openItem.imageAlt}
+    tabindex="-1"
     bind:this={dialogEl}
   >
     <button
@@ -219,14 +265,25 @@
       aria-label={m.gallery_view_next()}
       onclick={() => step(1)}
     ></button>
+    {#if !imgReady}
+      <span class="lb-loading" aria-hidden="true"></span>
+    {/if}
     <button
       type="button"
       class="lb-close"
       aria-label={m.gallery_view_close()}
       onclick={() => (openKey = null)}
-      bind:this={closeBtn}
     >
-      <img class="lb-img" src={large(openItem.imageUrl)} alt={openItem.imageAlt} />
+      <img
+        class="lb-img"
+        class:is-ready={imgReady}
+        src={large(openItem.imageUrl)}
+        alt={openItem.imageAlt}
+        width={openItem.width}
+        height={openItem.height}
+        bind:this={imgEl}
+        onload={onImgLoad}
+      />
     </button>
   </div>
 {/if}
@@ -346,6 +403,9 @@
     justify-content: center;
     padding: clamp(12px, 2vw, 28px);
     background: var(--paper);
+    /* Entry only: the dialog mounts fresh per open, so the paper fades in once.
+       Stepping keeps it mounted (src swaps), so this never replays. */
+    animation: lb-backdrop 0.32s ease both;
   }
   .lb-zone {
     position: fixed;
@@ -391,9 +451,69 @@
     width: auto;
     height: auto;
     object-fit: contain;
+    /* Loading → ready: the photo resolves out of a soft, desaturated blur into
+       focus (a quiet "develop" fade). A warm image flips straight to .is-ready
+       in the same frame → no transition start → instant swap when stepping. */
+    opacity: 0;
+    transform: scale(0.965);
+    filter: saturate(0.55) brightness(1.05) blur(7px);
+    transition:
+      opacity 0.55s ease,
+      transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1),
+      filter 0.55s ease;
   }
-  .lb-zone:focus-visible,
+  .lb-img.is-ready {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  /* Soft loading cue for a cold image (fast-click that outran the preload) — a
+     low-contrast paper glow breathing in place, no hard skeleton bar. */
+  .lb-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+  .lb-loading::after {
+    content: '';
+    width: clamp(120px, 20vw, 260px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26, 26, 26, 0.11), rgba(26, 26, 26, 0) 68%);
+    animation: lb-breathe 1.7s ease-in-out infinite;
+  }
+
+  @keyframes lb-backdrop {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes lb-breathe {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scale(0.9);
+    }
+    50% {
+      opacity: 0.75;
+      transform: scale(1.06);
+    }
+  }
+  /* The dialog receives focus on open (for keyboard/scroll trapping) but must
+     not paint a ring around the photo. */
+  .lightbox:focus,
+  .lightbox:focus-visible,
   .lb-close:focus-visible {
+    outline: none;
+  }
+  .lb-zone:focus-visible {
     outline: 2px solid var(--shyrdak);
     outline-offset: -4px;
   }
@@ -407,6 +527,17 @@
       transition: none;
       opacity: 1;
       transform: none;
+    }
+    .lightbox {
+      animation: none;
+    }
+    .lb-img {
+      transition: none;
+      transform: none;
+      filter: none;
+    }
+    .lb-loading::after {
+      animation: none;
     }
   }
 </style>
