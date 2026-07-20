@@ -86,9 +86,34 @@
   let dialogEl = $state<HTMLElement>();
   let lastTrigger: HTMLElement | null = null;
 
+  // Closing plays an outro (backdrop fades, photo eases down + blurs — the mirror
+  // of the open "develop") before the dialog unmounts. `closing` gates that window.
+  let closing = $state(false);
+  let closeTimer: ReturnType<typeof setTimeout> | undefined;
+  const CLOSE_MS = 520;
+
   function openFrame(item: ArchiveItem, trigger: HTMLElement) {
+    clearTimeout(closeTimer); // abort a pending outro if reopened mid-close
+    closing = false;
     lastTrigger = trigger;
     openKey = item.key;
+    cursorVisible = false; // reveal on first pointer move, at the real position
+  }
+
+  function requestClose() {
+    if (openKey === null || closing) return;
+    cursorVisible = false;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      openKey = null; // no outro under reduced motion
+      return;
+    }
+    closing = true;
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      openKey = null;
+      closing = false;
+    }, CLOSE_MS);
   }
 
   function step(delta: number) {
@@ -102,8 +127,8 @@
   }
 
   function onKeydown(e: KeyboardEvent) {
-    if (!isOpen) return;
-    if (e.key === 'Escape') openKey = null;
+    if (!isOpen || closing) return;
+    if (e.key === 'Escape') requestClose();
     else if (e.key === 'ArrowLeft') step(-1);
     else if (e.key === 'ArrowRight') step(1);
     else if (e.key === 'Tab') trapTab(e);
@@ -189,6 +214,33 @@
     if (openItem) warm.add(large(openItem.imageUrl));
     imgReady = true;
   }
+
+  // ── Cursor (over the open image) ─────────────────────────────────────────
+  // A pixel glyph that follows the pointer — white × over the image, ink
+  // prev/next arrows on the paper margins. `cursorMode` picks the glyph.
+  let cursorX = $state(-100);
+  let cursorY = $state(-100);
+  let cursorVisible = $state(false);
+  let cursorMode = $state<'close' | 'prev' | 'next'>('close');
+
+  function onPointerMove(e: PointerEvent) {
+    if (e.pointerType === 'touch') return; // no hover cursor on touch
+    cursorX = e.clientX;
+    cursorY = e.clientY;
+    cursorVisible = true;
+    const r = imgEl?.getBoundingClientRect();
+    const overImage =
+      !!r &&
+      e.clientX >= r.left &&
+      e.clientX <= r.right &&
+      e.clientY >= r.top &&
+      e.clientY <= r.bottom;
+    cursorMode = overImage ? 'close' : e.clientX < window.innerWidth / 2 ? 'prev' : 'next';
+  }
+
+  function onPointerLeave() {
+    cursorVisible = false;
+  }
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -247,11 +299,14 @@
 {#if openItem}
   <div
     class="lightbox"
+    class:is-closing={closing}
     role="dialog"
     aria-modal="true"
     aria-label={openItem.imageAlt}
     tabindex="-1"
     bind:this={dialogEl}
+    onpointermove={onPointerMove}
+    onpointerleave={onPointerLeave}
   >
     <button
       type="button"
@@ -272,7 +327,7 @@
       type="button"
       class="lb-close"
       aria-label={m.gallery_view_close()}
-      onclick={() => (openKey = null)}
+      onclick={requestClose}
     >
       <img
         class="lb-img"
@@ -285,6 +340,42 @@
         onload={onImgLoad}
       />
     </button>
+
+    <!-- Cursor glyph — white × over the image, black arrows on the paper margins -->
+    <div
+      class="lb-cursor"
+      class:is-visible={cursorVisible}
+      class:is-nav={cursorMode !== 'close'}
+      style="left:{cursorX}px; top:{cursorY}px"
+      aria-hidden="true"
+    >
+      {#if cursorMode === 'close'}
+        <svg width="46" height="46" viewBox="0 0 100 100">
+          <g fill="currentColor">
+            <path
+              d="M4.882 25.05v-10h9.972v10zM14.882 15.05v-10h9.972v10zM24.882 25.05v-10h9.972v10zM34.882 35.05v-10h9.972v10zM34.864 75.05v-10h9.972v10zM24.854 85.05v-10h9.972v10zM14.882 95.05v-10h9.972v10zM44.882 45.05v-10h9.972v10zM54.882 35.05v-10h9.972v10zM64.854 25.05v-10h9.972v10zM74.882 15.05v-10h9.972v10zM14.882 35.05v-10h9.972v10zM24.882 45.05v-10h9.972v10zM54.882 75.05v-10h9.972v10z"
+            />
+            <path
+              d="M54.854 75.05v-10h9.972v10zM64.854 65.05v-10h10v10zM44.882 65.05v-10h9.972v10zM74.882 75.05v-10h9.972v10zM84.882 85.05v-10h9.972v10zM64.882 85.05v-10h9.972v10zM74.882 95.05v-10h9.972v10zM34.882 55.05v-10h9.972v10zM24.854 65.05v-10h9.972v10zM14.854 75.05v-10h9.972v10zM4.854 85.05v-10h9.972v10zM54.882 55.05v-10h9.972v10zM64.882 45.05v-10h9.972v10zM74.882 35.05v-10h9.972v10zM84.882 25.05v-10h9.972v10z"
+            />
+          </g>
+        </svg>
+      {:else if cursorMode === 'prev'}
+        <svg width="80" height="80" viewBox="0 0 100 100">
+          <path
+            fill="currentColor"
+            d="M32 44v12h12V44zm12 24h12V56H44zm24 0H56v12h12zM56 44V32H44v12zm0-12h12V20H56z"
+          />
+        </svg>
+      {:else}
+        <svg width="80" height="80" viewBox="0 0 100 100">
+          <path
+            fill="currentColor"
+            d="M56 68V56H44v12zm-24 0v12h12V68zm12-24h12V32H44zm24 0H56v12h12zM44 32V20H32v12z"
+          />
+        </svg>
+      {/if}
+    </div>
   </div>
 {/if}
 
@@ -345,26 +436,29 @@
     background: var(--paper-2);
     /* Pixel target.svg cursor — hover a photo to enlarge. */
     cursor:
-      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='30'%20height='30'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='%231a1a1a'%20d='M30%2087.2H12.8V70H5v25h25zM87.2%2070v17.2H70V95h25V70zM95%2030V5H70v7.8h17.2V30zM5%2030h7.8V12.8H30V5H5z'/%3E%3C/svg%3E")
-        15 15,
+      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='45'%20height='45'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='%23ffffff'%20d='M30%2087.2H12.8V70H5v25h25zM87.2%2070v17.2H70V95h25V70zM95%2030V5H70v7.8h17.2V30zM5%2030h7.8V12.8H30V5H5z'/%3E%3C/svg%3E")
+        22 22,
       zoom-in;
-    transition:
-      transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1),
-      box-shadow 0.28s ease;
   }
+  /* Hover treatment lives on the IMG, not the .frame — the frame carries the
+     reveal action's `[data-reveal='done'] { transform }`, which has equal
+     specificity and wins by source order, so a transform here never applies. */
   .frame :global(img) {
     width: 100%;
     height: auto;
     display: block;
     filter: saturate(0.96);
-    transition: filter 0.3s ease;
+    transition:
+      transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.28s ease,
+      filter 0.3s ease;
   }
   .frame:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 30px -14px rgba(26, 26, 26, 0.45);
     z-index: 3;
   }
   .frame:hover :global(img) {
+    transform: scale(1.1);
+    box-shadow: 0 18px 42px -16px rgba(26, 26, 26, 0.45);
     filter: saturate(1.06);
   }
   .frame:focus-visible {
@@ -406,6 +500,23 @@
     /* Entry only: the dialog mounts fresh per open, so the paper fades in once.
        Stepping keeps it mounted (src swaps), so this never replays. */
     animation: lb-backdrop 0.32s ease both;
+    /* Native cursor is hidden — the white .lb-cursor glyph replaces it. */
+    cursor: none;
+  }
+  /* Outro — mirror of the open develop: paper fades while the photo eases down a
+     touch and softens back into blur, then the dialog unmounts (JS, CLOSE_MS).
+     Same soft curve + reversed end-state as the open fade, so in and out read as
+     one gentle motion. Keep the 0.52s here in sync with CLOSE_MS. */
+  .lightbox.is-closing {
+    animation: lb-close 0.52s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+  .lightbox.is-closing .lb-img {
+    transition:
+      transform 0.52s cubic-bezier(0.2, 0.7, 0.2, 1),
+      filter 0.52s ease;
+    transform: scale(0.965);
+    filter: saturate(0.55) brightness(1.05) blur(7px);
   }
   .lb-zone {
     position: fixed;
@@ -419,17 +530,11 @@
   }
   .lb-prev {
     left: 0;
-    cursor:
-      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='80'%20height='80'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='%231a1a1a'%20d='M32%2044v12h12V44zm12%2024h12V56H44zm24%200H56v12h12zM56%2044V32H44v12zm0-12h12V20H56z'/%3E%3C/svg%3E")
-        40 40,
-      w-resize;
+    cursor: none;
   }
   .lb-next {
     right: 0;
-    cursor:
-      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='80'%20height='80'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='%231a1a1a'%20d='M56%2068V56H44v12zm-24%200v12h12V68zm12-24h12V32H44zm24%200H56v12h12zM44%2032V20H32v12z'/%3E%3C/svg%3E")
-        40 40,
-      e-resize;
+    cursor: none;
   }
   .lb-close {
     position: relative;
@@ -438,11 +543,30 @@
     padding: 0;
     border: 0;
     background: none;
-    /* Pixel close.svg cursor — click the image to close. */
-    cursor:
-      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='46'%20height='46'%20viewBox='0%200%20100%20100'%3E%3Cg%20fill='%231a1a1a'%3E%3Cpath%20d='M4.882%2025.05v-10h9.972v10zM14.882%2015.05v-10h9.972v10zM24.882%2025.05v-10h9.972v10zM34.882%2035.05v-10h9.972v10zM34.864%2075.05v-10h9.972v10zM24.854%2085.05v-10h9.972v10zM14.882%2095.05v-10h9.972v10zM44.882%2045.05v-10h9.972v10zM54.882%2035.05v-10h9.972v10zM64.854%2025.05v-10h9.972v10zM74.882%2015.05v-10h9.972v10zM14.882%2035.05v-10h9.972v10zM24.882%2045.05v-10h9.972v10zM54.882%2075.05v-10h9.972v10z'/%3E%3Cpath%20d='M54.854%2075.05v-10h9.972v10zM64.854%2065.05v-10h10v10zM44.882%2065.05v-10h9.972v10zM74.882%2075.05v-10h9.972v10zM84.882%2085.05v-10h9.972v10zM64.882%2085.05v-10h9.972v10zM74.882%2095.05v-10h9.972v10zM34.882%2055.05v-10h9.972v10zM24.854%2065.05v-10h9.972v10zM14.854%2075.05v-10h9.972v10zM4.854%2085.05v-10h9.972v10zM54.882%2055.05v-10h9.972v10zM64.882%2045.05v-10h9.972v10zM74.882%2035.05v-10h9.972v10zM84.882%2025.05v-10h9.972v10z'/%3E%3C/g%3E%3C/svg%3E")
-        23 23,
-      pointer;
+    cursor: none;
+  }
+
+  /* White cursor glyph following the pointer; painted last (top z),
+     `pointer-events: none` keeps clicks flowing to the zones. */
+  .lb-cursor {
+    position: fixed;
+    z-index: 10;
+    transform: translate(-50%, -50%);
+    line-height: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    color: #fff;
+  }
+  .lb-cursor.is-visible {
+    opacity: 1;
+  }
+  /* prev/next arrows sit on the light paper margins → keep them ink-black. */
+  .lb-cursor.is-nav {
+    color: var(--ink);
+  }
+  .lb-cursor svg {
+    display: block;
   }
   .lb-img {
     display: block;
@@ -495,6 +619,14 @@
       opacity: 1;
     }
   }
+  @keyframes lb-close {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
   @keyframes lb-breathe {
     0%,
     100% {
@@ -519,7 +651,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .frame {
+    .frame :global(img) {
       transition: none;
     }
     .page :global([data-reveal='pending']),
