@@ -74,6 +74,9 @@
   "gallery_title": "Архив",
   "gallery_description": "Фотографии, собранные из документированных практик Нарына, Иссык-Куля и Суусамырской долины.",
   "gallery_empty": "В архиве пока нет изображений.",
+  "gallery_view_close": "Закрыть",
+  "gallery_view_prev": "Предыдущее изображение",
+  "gallery_view_next": "Следующее изображение",
   "detail_video_aria": "Видео",
   "detail_photo_gallery_aria": "Фотогалерея",
   "detail_practice_navigation_aria": "Навигация по практикам"

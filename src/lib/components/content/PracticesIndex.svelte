@@ -9,6 +9,8 @@
   import Pagination from '$components/ui/Pagination.svelte';
   import BentoSkeleton from '$components/ui/BentoSkeleton.svelte';
   import { reveal } from '$lib/actions/reveal';
+  import FilterChips from '$components/ui/FilterChips.svelte';
+  import { PRACTICE_CATEGORIES, categoryLabel } from '$lib/categories';
   import {
     PRACTICES_PAGE_SIZE,
     computeTotalPages,
@@ -23,24 +25,7 @@
   }
   let { practices, page, locale }: Props = $props();
 
-  // Fixed filter vocabulary. Paraglide has no dynamic key lookup, so map explicitly.
-  const CATEGORIES: PracticeCategory[] = ['crafts', 'music', 'rituals', 'cuisine', 'games'];
-  function categoryLabel(c: string): string | null {
-    switch (c) {
-      case 'crafts':
-        return m.category_crafts();
-      case 'music':
-        return m.category_music();
-      case 'rituals':
-        return m.category_rituals();
-      case 'cuisine':
-        return m.category_cuisine();
-      case 'games':
-        return m.category_games();
-      default:
-        return null; // unknown CMS value → no badge (PR-006)
-    }
-  }
+  // Category vocabulary + label live in $lib/categories (shared with the archive).
 
   const href = (slug: string) => resolve(`/${locale}/practices/${slug}/`);
   const pageHref = (n: number) =>
@@ -52,7 +37,7 @@
   // Keeps the canonical order; hides dead filters (and hides ALL chips until the
   // CMS category field is populated).
   const availableCategories = $derived(
-    CATEGORIES.filter((c) => ordered.some((p) => p.category === c))
+    PRACTICE_CATEGORIES.filter((c) => ordered.some((p) => p.category === c))
   );
 
   // Client filter state (KD-1). 'all' → route pagination; a category → client pagination.
@@ -97,28 +82,13 @@
     <h1 class="page-title">{m.practices_title()}</h1>
     <p class="lede">{m.practices_lede()}</p>
 
-    <div class="filter" role="group" aria-label={m.practices_filter_aria()}>
-      <button
-        type="button"
-        class="chip"
-        class:active={activeCategory === 'all'}
-        aria-pressed={activeCategory === 'all'}
-        onclick={() => selectCategory('all')}
-      >
-        {m.practices_filter_all()}
-      </button>
-      {#each availableCategories as c (c)}
-        <button
-          type="button"
-          class="chip"
-          class:active={activeCategory === c}
-          aria-pressed={activeCategory === c}
-          onclick={() => selectCategory(c)}
-        >
-          {categoryLabel(c)}
-        </button>
-      {/each}
-    </div>
+    <FilterChips
+      options={availableCategories.map((c) => ({ value: c, label: categoryLabel(c) ?? c }))}
+      active={activeCategory}
+      allLabel={m.practices_filter_all()}
+      ariaLabel={m.practices_filter_aria()}
+      onselect={(v) => selectCategory(v as 'all' | PracticeCategory)}
+    />
   </header>
 
   {#if practices.length === 0}
@@ -192,39 +162,6 @@
     font-size: clamp(14px, 1.4vw, 16px);
     line-height: 1.6;
     color: var(--ink-2);
-  }
-
-  /* ── Filter chips (Material) ──────────────── */
-  .filter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 28px;
-  }
-  .chip {
-    height: 36px;
-    padding: 0 19px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: transparent;
-    color: var(--ink-2);
-    font-family: inherit;
-    font-size: 13px;
-    letter-spacing: 0.2px;
-    cursor: pointer;
-    transition:
-      background 0.2s ease,
-      color 0.2s ease,
-      border-color 0.2s ease;
-  }
-  .chip:hover:not(.active) {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-  .chip.active {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--paper);
   }
 
   .empty {

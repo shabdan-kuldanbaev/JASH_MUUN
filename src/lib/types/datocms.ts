@@ -1,5 +1,3 @@
-import type { Locale } from '$lib/i18n';
-
 // Shared TypeScript types for DatoCMS content.
 // Safe to import from both server files and Svelte components (types are erased at runtime).
 // Locale constants and helpers live in $i18n, not here.
@@ -222,16 +220,23 @@ export type PracticeSection =
       items: IngredientRow[];
     };
 
-// ── Gallery ───────────────────────────────────────────────────────────────────
+// ── Archive ─────────────────────────────────────────────────────────────────
 
-// Derived from gallery images on practice records.
-export interface GalleryItem {
+// The archive (`/[locale]/gallery`) flattens EVERY image asset across all
+// practices (coverImage + gallery + page_sections) and all articles (coverImage +
+// sections) into one mixed wall. Each item carries the category of its source
+// practice (null for articles) so the wall can filter by category — the same
+// vocabulary as the practices index.
+export interface ArchiveItem {
+  /** Base image URL — stable, unique after de-dup; the keyed-each + lightbox key. */
+  key: string;
   imageUrl: string;
   imageAlt: string;
-  postTitle: string;
-  postSlug: string;
-  locale: Locale;
-  publishedDate: string;
+  width: number;
+  height: number;
+  blurUpThumb: string | null;
+  /** Source practice category; null when the asset comes from an article. */
+  category: PracticeCategory | string | null;
 }
 
 // ── Site settings ─────────────────────────────────────────────────────────────

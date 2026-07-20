@@ -74,6 +74,9 @@
   "gallery_title": "Архив",
   "gallery_description": "Нарын, Ысык-Көл жана Суусамыр өрөөнүндөгү документтештирилген практикалардан алынган сүрөттөр.",
   "gallery_empty": "Архивде азырынча сүрөттөр жок.",
+  "gallery_view_close": "Жабуу",
+  "gallery_view_prev": "Мурунку сүрөт",
+  "gallery_view_next": "Кийинки сүрөт",
   "detail_video_aria": "Видео",
   "detail_photo_gallery_aria": "Сүрөт галереясы",
   "detail_practice_navigation_aria": "Практикалар навигациясы"
