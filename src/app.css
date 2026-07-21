@@ -37,6 +37,15 @@
      ingredients, ritual). Single source of truth — fluid 32px (mobile) → 64px
      (desktop), same clamp idiom as --gutter. */
   --section-py: clamp(32px, 5vw, 64px);
+
+  /* Editorial homepage rhythm — distinct from the content-page tokens above.
+     --home-w is the wider column the editorial redesign uses (hero title,
+     header, footer wordmark all share it); --section-pad is that page's larger
+     inter-section rhythm; --ease is its signature easing curve. These do not
+     replace --content-w / --section-py, which the content pages keep. */
+  --home-w: 1600px;
+  --section-pad: clamp(88px, 12vw, 200px);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 *,
@@ -196,5 +205,82 @@ html[data-transition-dir='back'] ::view-transition-new(root) {
 @media (max-width: 767px) {
   .petroglyph {
     display: none;
+  }
+}
+
+/* =====================================================================
+   EDITORIAL REVEAL — scroll-triggered entrance animations
+   Global primitives for the editorial homepage (and any future surface
+   that opts in). Toggled by $lib/actions/editorialReveal.ts, which adds
+   `.is-in` when the element enters the viewport. Two families:
+
+     [data-rise]  — masked "rise from below" (the .rise-inner wrapper,
+                    authored in markup, slides up from behind an
+                    overflow:hidden mask on its parent).
+     [data-rv]    — directional slide/scale (up | left | right | zoom).
+
+   The `--d` custom property staggers a group. Neutralized under
+   prefers-reduced-motion (block at the bottom of this section).
+   ===================================================================== */
+
+[data-rv] {
+  opacity: 0;
+  transition:
+    opacity 0.85s ease,
+    transform 0.95s var(--ease);
+  transition-delay: var(--d, 0s);
+  will-change: opacity, transform;
+}
+
+[data-rv='up'] {
+  transform: translateY(34px);
+}
+
+[data-rv='left'] {
+  transform: translateX(-56px);
+}
+
+[data-rv='right'] {
+  transform: translateX(56px);
+}
+
+[data-rv='zoom'] {
+  transform: scale(1.08);
+}
+
+[data-rv].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Masked "rise from below". The action does NOT mutate children — author the
+   .rise-inner wrapper in markup so Svelte keeps ownership of the DOM. */
+[data-rise] {
+  overflow: hidden;
+}
+
+.rise-inner {
+  display: block;
+  padding-bottom: 0.08em; /* room for descenders so the mask never clips them */
+  transform: translateY(120%);
+  transition: transform 0.9s var(--ease);
+  transition-delay: var(--d, 0s);
+  will-change: transform;
+}
+
+[data-rise].is-in .rise-inner {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-rv] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .rise-inner {
+    transform: none !important;
+    transition: none !important;
   }
 }
