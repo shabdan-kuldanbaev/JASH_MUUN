@@ -1,7 +1,7 @@
 import { datoRequest, DatoLocaleError } from '../client';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
-import type { PracticeSection } from '$lib/types/datocms';
+import type { PracticeSection, TableRow, RecRow } from '$lib/types/datocms';
 
 /** Raw shapes returned by the modular `page_sections` query. */
 interface DatoImage {
@@ -115,6 +115,52 @@ function checklistRows(text: string | null): { icon: string; term: string; desc:
 }
 
 /**
+ * Shades table (`section_type: table`): first body line = headers (4 cols); the
+ * rest are `raw|color|hexA-hexB|boil|dye`. Specialized to the 4-column shades
+ * schema — a differently-shaped table needs a parser change, not just CMS content.
+ * Swatch stops are split + `#`-prefixed HERE (server) so the component never parses
+ * in markup; a missing/malformed swatch (no `-`) degrades to empty stops → the
+ * renderer skips the swatch span.
+ */
+function tableParse(body: string | null): { columns: string[]; rows: TableRow[] } {
+  const lines = (body ?? '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const columns = (lines[0] ?? '').split('|').map((c) => c.trim());
+  const rows = lines
+    .slice(1)
+    .map((l) => l.split('|').map((c) => c.trim()))
+    .filter((c) => c.length >= 5)
+    .map((c) => {
+      const [from, to] = c[2].includes('-') ? c[2].split('-') : ['', ''];
+      return {
+        raw: c[0],
+        color: c[1],
+        swatchFrom: from ? `#${from}` : '',
+        swatchTo: to ? `#${to}` : '',
+        boil: c[3],
+        dye: c[4]
+      };
+    });
+  return { columns, rows };
+}
+
+/** Recommendations (`note` recs variant): one row per line `icon|text`. */
+function recRows(body: string | null): RecRow[] {
+  return (body ?? '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const a = l.indexOf('|');
+      if (a === -1) return null;
+      return { icon: l.slice(0, a).trim(), text: l.slice(a + 1).trim() };
+    })
+    .filter((r): r is RecRow => r !== null);
+}
+
+/**
  * Practice kicker token channel — two registries (see the note in
  * types/datocms.ts). One token per kicker; unknown tokens are simply passed
  * through and stay inert until a matching CSS class exists (forward-compatible).
@@ -218,6 +264,28 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
             .map((i) => ({ name: i.name, qty: i.qty }))
         });
         break;
+      case 'table': {
+        const { columns, rows } = tableParse(s.body);
+        out.push({
+          type: 'table',
+          title: s.title ?? '',
+          intro: s.caption ?? '',
+          columns,
+          rows
+        });
+        break;
+      }
+      case 'note': {
+        const variant = firstToken(s.kicker) === 'recs' ? 'recs' : 'warn';
+        out.push({
+          type: 'note',
+          variant,
+          title: s.title ?? '',
+          body: variant === 'warn' ? (s.body ?? '') : '',
+          items: variant === 'recs' ? recRows(s.body) : []
+        });
+        break;
+      }
     }
   }
   return out;

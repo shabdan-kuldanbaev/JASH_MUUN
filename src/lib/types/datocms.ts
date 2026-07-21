@@ -144,6 +144,26 @@ export interface ChecklistItem {
   desc: string;
 }
 
+/**
+ * One data row of the shades table (`section_type: table`). Swatch stops are
+ * parsed server-side into ready `#hex` values so the component never parses in
+ * markup (centralization). Empty stops → the renderer skips the swatch span.
+ */
+export interface TableRow {
+  raw: string; // Растительное сырьё
+  color: string; // Цвет (named shade)
+  swatchFrom: string; // "#c9962e" — gradient start ('' if none/malformed)
+  swatchTo: string; // "#b3591f" — gradient end ('' if none/malformed)
+  boil: string; // Кипячение отвара
+  dye: string; // Окрашивание
+}
+
+/** One recommendation row inside a `note` (recs variant); icon is a lucide name. */
+export interface RecRow {
+  icon: string;
+  text: string;
+}
+
 /** A single ritual step rendered in the sticky-scroll block. */
 export interface RitualStep {
   /** Step heading — the "Шаг N" prefix is intentionally dropped. */
@@ -178,11 +198,14 @@ export interface RitualStep {
 //   THEME  — one token on the HERO section kicker, applied page-wide to
 //            timeline / ritual / lede as `--theme-<name>`. Known: `duotone`
 //            (two alternating wool accents + two-colour ornament), `ember`
-//            (single clay accent + clay ornament). Add a theme = one CSS block
-//            per themed component, no component-logic change.
+//            (single clay accent + clay ornament), `dye` (single steppe/gold
+//            accent + steppe ornament — natural-dye identity). Add a theme =
+//            one CSS block per themed component, no component-logic change.
 //   MOOD   — one token per ritual STAGE kicker (zone soak) and on a `photo`
 //            section kicker (spatial close band), rendered as `is-<mood>` /
-//            `photo--<mood>`. Known: `silk`, `ember`.
+//            `photo--<mood>`. Known: `silk`, `ember`, `dye` (warm vat zone —
+//            golden haze; placed on the single thermal stage so the zone lives
+//            mid-ritual and never touches a section boundary).
 
 export type PracticeSection =
   | {
@@ -218,6 +241,29 @@ export type PracticeSection =
       note: string;
       footnote: string;
       items: IngredientRow[];
+    }
+  | {
+      /** Shades table — specialized to the 4-column schema (raw|color|swatch|boil|dye). */
+      type: 'table';
+      title: string;
+      intro: string;
+      /** Column headers (localized), e.g. [Растительное сырьё, Цвет, Кипячение отвара, Окрашивание]. */
+      columns: string[];
+      rows: TableRow[];
+    }
+  | {
+      /**
+       * Variant-discriminated reference callout (kicker channel — like the article
+       * `sectionVariants` registry). `warn` — titled «Важно» paragraph; `recs` —
+       * icon+text checklist. A future variant (e.g. `info`/`tip`) is one kicker
+       * token + one `normalize()` branch + CSS — no new section_type. The
+       * discrimination stays in the server normalizer.
+       */
+      type: 'note';
+      variant: 'warn' | 'recs';
+      title: string;
+      body: string; // warn: the paragraph; recs: unused
+      items: RecRow[]; // recs: the rows; warn: []
     };
 
 // ── Archive ─────────────────────────────────────────────────────────────────

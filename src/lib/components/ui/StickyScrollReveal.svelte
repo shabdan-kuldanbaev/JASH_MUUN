@@ -275,6 +275,10 @@
     --ssr-acc: var(--clay);
   }
 
+  .ssr--theme-dye .ssr-stage {
+    --ssr-acc: var(--steppe);
+  }
+
   .ssr--theme-duotone .ssr-stage:nth-child(odd) {
     --ssr-acc: var(--steppe);
   }
@@ -373,6 +377,12 @@
     font-weight: 700;
     font-size: 15.5px;
     color: var(--ink);
+  }
+
+  /* Term-less checklist rows (icon||desc, e.g. the dyeing steps): drop the empty
+     bold line so the row reads as a clean icon + description. */
+  .ssr-check-term:empty {
+    display: none;
   }
 
   .ssr-check-desc {
