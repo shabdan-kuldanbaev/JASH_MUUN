@@ -243,6 +243,11 @@
     --tl-acc: var(--clay);
   }
 
+  /* `dye` — single steppe/gold rail (natural-dye) */
+  .timeline--theme-dye .tl-item {
+    --tl-acc: var(--steppe);
+  }
+
   /* `duotone` — the two contrast wools, rail flows as a gradient between them */
   .timeline--theme-duotone .tl-item:nth-child(odd) {
     --tl-acc: var(--steppe);

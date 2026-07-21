@@ -4,6 +4,7 @@
   import SilentHero from '$components/sections/SilentHero.svelte';
   import MilestoneTimeline from '$components/ui/MilestoneTimeline.svelte';
   import StickyScrollReveal from '$components/ui/StickyScrollReveal.svelte';
+  import LucideIcon from '$components/ui/LucideIcon.svelte';
 
   let { sections }: { sections: PracticeSection[] } = $props();
 
@@ -119,6 +120,65 @@
             </div>
           </div>
         </section>
+      {:else if section.type === 'table'}
+        <section class="sec table-sec">
+          <div class="sec-inner">
+            {#if section.title}<h2 class="table-title">{section.title}</h2>{/if}
+            {#if section.intro}<p class="table-lead">{section.intro}</p>{/if}
+            <table class="otenki">
+              <thead>
+                <tr
+                  >{#each section.columns as col (col)}<th scope="col">{col}</th>{/each}</tr
+                >
+              </thead>
+              <tbody>
+                {#each section.rows as row, r (r)}
+                  <tr>
+                    <td class="col-raw">{row.raw}</td>
+                    <td class="col-color">
+                      {#if row.swatchFrom}
+                        <span
+                          class="swatch"
+                          style="background:linear-gradient(135deg,{row.swatchFrom},{row.swatchTo})"
+                        ></span>
+                      {/if}{row.color}
+                    </td>
+                    <td class="col-time" data-label={section.columns[2] ?? ''}>{row.boil}</td>
+                    <td class="col-time" data-label={section.columns[3] ?? ''}>{row.dye}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      {:else if section.type === 'note'}
+        <section class="sec note note--{section.variant}">
+          <div class="sec-inner">
+            {#if section.variant === 'warn'}
+              <div class="note-warn">
+                <span class="note-ico" aria-hidden="true"
+                  ><LucideIcon name="triangle-alert" size={24} /></span
+                >
+                <div>
+                  {#if section.title}<h3>{section.title}</h3>{/if}
+                  <p>{section.body}</p>
+                </div>
+              </div>
+            {:else}
+              {#if section.title}<h2 class="recs-title">{section.title}</h2>{/if}
+              <ul class="recs-list">
+                {#each section.items as row, r (r)}
+                  <li>
+                    <span class="recs-ico" aria-hidden="true"
+                      ><LucideIcon name={row.icon} size={20} /></span
+                    >
+                    <span>{row.text}</span>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          </div>
+        </section>
       {/if}
     {/each}
   </div>
@@ -216,6 +276,13 @@
     --orn-c: var(--clay);
   }
 
+  /* `dye` — single steppe/gold ornament (natural-dye identity) */
+  .lede--theme-dye .ornament {
+    --orn-a: var(--steppe);
+    --orn-b: var(--steppe);
+    --orn-c: var(--steppe);
+  }
+
   /* Timeline / ritual keep their own component styling; no fixed height —
      the timeline sizes to its content (its own 32px block padding). */
 
@@ -259,6 +326,24 @@
     background: radial-gradient(
       130% 90% at 50% 35%,
       color-mix(in srgb, var(--clay) 9%, transparent),
+      transparent 72%
+    );
+  }
+
+  /* `dye` — warm vat zone (mirror of is-ember, steppe-toned). `--vat` is a
+     component-scoped token (like `--silk` on .photo--silk) — keeps the dye tint
+     named + single-sourced instead of an inline color-mix. */
+  .ritual.is-dye {
+    --vat: color-mix(in srgb, var(--steppe) 7%, var(--paper));
+
+    background: var(--vat);
+  }
+
+  .ritual.is-dye::after {
+    opacity: 1;
+    background: radial-gradient(
+      130% 90% at 50% 34%,
+      color-mix(in srgb, var(--steppe) 12%, transparent),
       transparent 72%
     );
   }
@@ -481,6 +566,210 @@
     .ritual,
     .ritual::after {
       transition: none;
+    }
+  }
+
+  /* ── Shades table (section_type=table) ─────────────────────────────────── */
+  .table-sec {
+    padding-block: var(--section-py);
+  }
+
+  .table-title {
+    text-align: center;
+    font-size: clamp(30px, 3.6vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: clamp(14px, 2vw, 20px);
+  }
+
+  .table-lead {
+    max-width: 66ch;
+    margin: 0 auto clamp(26px, 3vw, 40px);
+    text-align: center;
+    font-size: clamp(15px, 1.7vw, 17px);
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--ink-2);
+  }
+
+  .otenki {
+    width: 100%;
+    border-collapse: collapse;
+    font-weight: 300;
+  }
+
+  .otenki thead th {
+    padding: 0 0 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .otenki tbody td {
+    padding: clamp(18px, 2.4vw, 24px) 0;
+    border-bottom: 1px solid var(--line);
+    font-size: clamp(15px, 1.7vw, 18px);
+    line-height: 1.5;
+    color: var(--ink-2);
+    vertical-align: top;
+  }
+
+  .otenki .col-raw {
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .otenki .col-time {
+    white-space: nowrap;
+  }
+
+  .otenki thead th + th,
+  .otenki tbody td + td {
+    padding-left: clamp(18px, 3vw, 40px);
+  }
+
+  .swatch {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin-right: 14px;
+    border-radius: 3px;
+    vertical-align: -8px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+
+  .col-color {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .col-color .swatch {
+    flex: none;
+  }
+
+  /* ── «Важно» warn callout (note--warn) ─────────────────────────────────── */
+  .note {
+    padding-block: clamp(8px, 2vw, 24px);
+  }
+
+  .note-warn {
+    max-width: 1152px;
+    margin-inline: auto;
+    padding: clamp(20px, 3vw, 28px) clamp(22px, 3vw, 32px);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    align-items: start;
+    border-left: 3px solid var(--steppe);
+    background: color-mix(in srgb, var(--steppe) 6%, transparent);
+  }
+
+  .note-ico {
+    color: var(--steppe);
+    margin-top: 2px;
+  }
+
+  .note-warn h3 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .note-warn p {
+    font-size: clamp(15px, 1.7vw, 17px);
+    line-height: 1.72;
+    color: var(--ink-2);
+  }
+
+  /* ── Recommendations checklist (note--recs) ────────────────────────────── */
+  .note--recs .sec-inner {
+    max-width: 820px;
+  }
+
+  .recs-title {
+    font-size: clamp(26px, 3vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: clamp(20px, 3vw, 28px);
+  }
+
+  .recs-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .recs-list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 15px;
+    align-items: start;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    font-size: clamp(16px, 1.8vw, 18px);
+    font-weight: 300;
+    line-height: 1.62;
+    color: var(--ink-2);
+  }
+
+  .recs-list li:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .recs-ico {
+    color: var(--steppe);
+    margin-top: 1px;
+  }
+
+  /* Table → stacked cards on phones (the mockup .otenki responsive rules) */
+  @media (max-width: 720px) {
+    .otenki,
+    .otenki thead,
+    .otenki tbody,
+    .otenki tr,
+    .otenki td {
+      display: block;
+    }
+
+    .otenki thead {
+      display: none;
+    }
+
+    .otenki tbody td {
+      border-bottom: none;
+      padding: 4px 0;
+    }
+
+    .otenki tbody tr {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .otenki tbody td + td {
+      padding-left: 0;
+    }
+
+    .otenki .col-raw {
+      font-size: 19px;
+      margin-bottom: 8px;
+    }
+
+    .otenki .col-time::before {
+      content: attr(data-label) ': ';
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
     }
   }
 </style>
