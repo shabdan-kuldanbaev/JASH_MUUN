@@ -219,42 +219,13 @@ html[data-transition-dir='back'] ::view-transition-new(root) {
                     overflow:hidden mask on its parent).
      [data-rv]    — directional slide/scale (up | left | right | zoom).
 
-   The `--d` custom property staggers a group. Neutralized under
-   prefers-reduced-motion (block at the bottom of this section).
+   The `--d` custom property staggers a group. The entrance offsets and
+   transitions live entirely inside a `prefers-reduced-motion: no-preference`
+   block, so under reduced motion the primitives are inert (no offset to undo,
+   hence no !important is needed).
    ===================================================================== */
 
-[data-rv] {
-  opacity: 0;
-  transition:
-    opacity 0.85s ease,
-    transform 0.95s var(--ease);
-  transition-delay: var(--d, 0s);
-  will-change: opacity, transform;
-}
-
-[data-rv='up'] {
-  transform: translateY(34px);
-}
-
-[data-rv='left'] {
-  transform: translateX(-56px);
-}
-
-[data-rv='right'] {
-  transform: translateX(56px);
-}
-
-[data-rv='zoom'] {
-  transform: scale(1.08);
-}
-
-[data-rv].is-in {
-  opacity: 1;
-  transform: none;
-}
-
-/* Masked "rise from below". The action does NOT mutate children — author the
-   .rise-inner wrapper in markup so Svelte keeps ownership of the DOM. */
+/* Masked "rise from below" — the mask is static structure and always applies. */
 [data-rise] {
   overflow: hidden;
 }
@@ -262,25 +233,47 @@ html[data-transition-dir='back'] ::view-transition-new(root) {
 .rise-inner {
   display: block;
   padding-bottom: 0.08em; /* room for descenders so the mask never clips them */
-  transform: translateY(120%);
-  transition: transform 0.9s var(--ease);
-  transition-delay: var(--d, 0s);
-  will-change: transform;
 }
 
-[data-rise].is-in .rise-inner {
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: no-preference) {
   [data-rv] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
+    opacity: 0;
+    transition:
+      opacity 0.85s ease,
+      transform 0.95s var(--ease);
+    transition-delay: var(--d, 0s);
+    will-change: opacity, transform;
+  }
+
+  [data-rv='up'] {
+    transform: translateY(34px);
+  }
+
+  [data-rv='left'] {
+    transform: translateX(-56px);
+  }
+
+  [data-rv='right'] {
+    transform: translateX(56px);
+  }
+
+  [data-rv='zoom'] {
+    transform: scale(1.08);
+  }
+
+  [data-rv].is-in {
+    opacity: 1;
+    transform: none;
   }
 
   .rise-inner {
-    transform: none !important;
-    transition: none !important;
+    transform: translateY(120%);
+    transition: transform 0.9s var(--ease);
+    transition-delay: var(--d, 0s);
+    will-change: transform;
+  }
+
+  [data-rise].is-in .rise-inner {
+    transform: translateY(0);
   }
 }
