@@ -264,6 +264,13 @@
     --orn-c: var(--clay);
   }
 
+  /* Bigger on phones — 150px reads small against the full-bleed mobile column. */
+  @media (max-width: 720px) {
+    .ornament {
+      width: min(240px, 62vw);
+    }
+  }
+
   .lede--theme-duotone .ornament {
     --orn-a: var(--steppe);
     --orn-b: var(--shyrdak);

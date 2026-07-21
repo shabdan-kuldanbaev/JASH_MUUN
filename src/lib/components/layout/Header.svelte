@@ -86,7 +86,7 @@
     <!-- Partner logos (mobile only — replaces brand text) -->
     <div class="brand-mobile">
       {#each logos as logo (logo.alt)}
-        <span class="brand-logo" aria-label={logo.label}>
+        <span class="brand-logo" class:brand-logo--eu={logo.alt === 'EU'} aria-label={logo.label}>
           <img src={logo.src} alt={logo.alt} />
         </span>
       {/each}
@@ -361,6 +361,12 @@
     height: 100%;
     width: auto;
     display: block;
+  }
+
+  /* EU logo dropped from the cramped mobile brand row — ALIPH + site logo stay
+     (EU remains on desktop and in the footer credit). */
+  .brand-logo--eu {
+    display: none;
   }
 
   .burger {
