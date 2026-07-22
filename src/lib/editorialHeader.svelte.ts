@@ -1,23 +1,22 @@
 /**
- * Editorial homepage header state — the transparent, contrast-adaptive nav.
+ * Editorial header state — the transparent, contrast-adaptive nav.
  *
  * Mirrors the shape of headerReveal.svelte.ts (a rune module exposing reactive
  * getters + an init that attaches a scroll tracker and returns a teardown), but
  * carries the extra state the editorial header needs:
  *
- *   onLight      — the nav sits over the light content (past the hero). Text
- *                  flips to black; logos drop their white filter.
+ *   onLight      — the nav sits over the light content (past the hero, or on a
+ *                  page with no dark hero at all). Text flips to black; logos
+ *                  drop their white filter.
  *   overContent  — same boundary, surfaced separately so the component/body can
  *                  switch the language-dropdown scrim to its light variant.
- *   lit          — the light `nav-glow` band under the header should show: the
- *                  header is visible over content (returning on reverse scroll).
  *   hidden       — the header is retracted (deliberate downward scroll).
  *
  * Direction detection reuses headerReveal's per-direction hysteresis so
  * trackpad jitter never flips the state, plus the same panel / mobile-menu
  * guards, rather than the mockup's naive `y > lastY`. The init sets the body
- * classes `nav-lit` and `over-content` (the CSS keys off those). The language
- * dropdown owns the `lang-open` class itself, in the component.
+ * class `over-content` (the CSS keys off it). The language dropdown owns the
+ * `lang-open` class itself, in the component.
  */
 
 /** Hide only after this many accumulated px of downward scroll. */
@@ -26,14 +25,11 @@ const DOWN_TOLERANCE = 12;
 const UP_TOLERANCE = 4;
 /** Fallback pin/hero offset when a measurement is unavailable. */
 const DEFAULT_OFFSET = 88;
-/** Fallback hero height when the hero element cannot be measured. */
-const DEFAULT_HERO = 600;
 /** Never retract the header inside this top band (mirrors headerReveal). */
 const HIDE_FLOOR = 240;
 
 let _onLight = $state(false);
 let _overContent = $state(false);
-let _lit = $state(false);
 let _hidden = $state(false);
 
 export const editorialHeader = {
@@ -42,9 +38,6 @@ export const editorialHeader = {
   },
   get overContent() {
     return _overContent;
-  },
-  get lit() {
-    return _lit;
   },
   get hidden() {
     return _hidden;
@@ -59,19 +52,15 @@ export const editorialHeader = {
 /**
  * Attach the scroll/resize tracker for the editorial header.
  *
- * @param getHeroEl returns the hero element so the light/dark boundary tracks
- *   its live height (the hero is full-viewport, but height changes on resize /
+ * @param getHeroHeight returns the current dark-hero height in px, or `null`
+ *   when the page has no dark hero (index/content pages) — in which case the nav
+ *   is `onLight` from the top. A number makes the light/dark boundary track that
+ *   live height (the hero is full-viewport, but height changes on resize /
  *   mobile URL-bar collapse).
- * @param opts.alwaysOnLight content pages have no dark hero — the nav sits over
- *   light paper from the top, so `onLight`/`overContent` stay true and only the
- *   auto-hide (`hidden`) tracks scroll.
- * @returns teardown that removes listeners, clears the body classes, and
- *   re-pins the header.
+ * @returns teardown that removes listeners, clears the body class, and re-pins
+ *   the header.
  */
-export function initEditorialHeader(
-  getHeroEl: () => HTMLElement | null,
-  opts: { alwaysOnLight?: boolean } = {}
-): () => void {
+export function initEditorialHeader(getHeroHeight: () => number | null): () => void {
   if (typeof window === 'undefined') return () => {};
 
   const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'));
@@ -82,14 +71,14 @@ export function initEditorialHeader(
   let lastDirection: 1 | -1 = 1;
   let ticking = false;
 
+  // No hero → boundary at -∞ so the nav is onLight everywhere; a hero height
+  // makes the flip happen as its bottom passes under the nav.
   const heroBoundary = () => {
-    const hero = getHeroEl();
-    const heroH = hero ? hero.offsetHeight : DEFAULT_HERO;
-    return heroH - offset;
+    const h = getHeroHeight();
+    return h == null ? Number.NEGATIVE_INFINITY : h - offset;
   };
 
   const applyBodyClasses = () => {
-    document.body.classList.toggle('nav-lit', _lit);
     document.body.classList.toggle('over-content', _overContent);
   };
 
@@ -109,7 +98,7 @@ export function initEditorialHeader(
     const delta = y - lastY;
     lastY = y;
 
-    const onlight = opts.alwaysOnLight ? true : y > heroBoundary();
+    const onlight = y > heroBoundary();
     _onLight = onlight;
     _overContent = onlight;
 
@@ -135,8 +124,6 @@ export function initEditorialHeader(
       }
     }
 
-    // The light band shows only when the header is visible over content.
-    _lit = onlight && !_hidden;
     applyBodyClasses();
   };
 
@@ -156,7 +143,6 @@ export function initEditorialHeader(
     _hidden = false;
     _onLight = false;
     _overContent = false;
-    _lit = false;
-    document.body.classList.remove('nav-lit', 'over-content');
+    document.body.classList.remove('over-content');
   };
 }

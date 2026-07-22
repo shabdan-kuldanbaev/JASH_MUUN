@@ -193,8 +193,10 @@
   */
   .hero-pin {
     position: sticky;
-    top: var(--nav-h);
-    height: calc(100svh - var(--nav-h));
+    top: 0;
+    /* Full-viewport, bleeding under the transparent nav (the content shell drops
+       its top padding on this page) — matches the homepage hero. */
+    height: 100svh;
     z-index: 0;
   }
 

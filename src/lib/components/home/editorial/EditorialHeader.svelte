@@ -123,9 +123,6 @@
 
 <svelte:window onkeydown={onWindowKeydown} onclick={onWindowClick} />
 
-<!-- Light gradient band under the header on reverse scroll over content -->
-<div class="nav-glow" aria-hidden="true"></div>
-
 <header
   class="nav"
   class:nav--onlight={onLight || editorialHeader.onLight}
@@ -588,33 +585,6 @@
   :global(body.lang-open.over-content) .nav-item {
     color: #000;
     text-shadow: none;
-  }
-
-  /* ── Light glow band under the header on reverse scroll over content ── */
-  .nav-glow {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: clamp(160px, 21vh, 270px);
-    background: linear-gradient(
-      to bottom,
-      rgba(250, 250, 247, 0.97) 0%,
-      rgba(250, 250, 247, 0.9) 30%,
-      rgba(250, 250, 247, 0.68) 50%,
-      rgba(250, 250, 247, 0.4) 68%,
-      rgba(250, 250, 247, 0.18) 82%,
-      rgba(250, 250, 247, 0.06) 92%,
-      rgba(250, 250, 247, 0) 100%
-    );
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: 37;
-  }
-
-  :global(body.nav-lit) .nav-glow {
-    opacity: 1;
   }
 
   /* ── Mobile: two rows, no burger — logos on top, links below ── */

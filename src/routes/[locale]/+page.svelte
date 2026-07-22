@@ -35,7 +35,7 @@
     const onLoad = () => document.body.classList.add('is-loaded');
     window.addEventListener('load', onLoad);
 
-    const stopHeader = initEditorialHeader(() => heroEl);
+    const stopHeader = initEditorialHeader(() => heroEl?.offsetHeight ?? null);
     // Momentum smooth-scroll on the vertical homepage too (same eased Lenis as
     // the content pages; drives native scroll so the header tracker still fires).
     const smooth = initSmoothScroll();
