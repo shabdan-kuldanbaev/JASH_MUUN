@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { resolve, asset } from '$app/paths';
   import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
@@ -15,6 +16,36 @@
   const cells = $derived(
     ARCHIVE_SCATTER.map((pos, i) => ({ pos, item: archive[i] })).filter((c) => c.item)
   );
+
+  // Light parallax: each image is taller than its cell and drifts vertically by
+  // the cell's position through the viewport (`--par`, read by .arch-img below).
+  let cellEls = $state<HTMLElement[]>([]);
+  onMount(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+      for (const el of cellEls) {
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -50 || r.top > vh + 50) continue;
+        const progress = Math.max(-1, Math.min(1, ((r.top + r.height / 2) / vh) * 2 - 1));
+        el.style.setProperty('--par', `${-8 + progress * 5}%`);
+      }
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  });
 </script>
 
 <section class="archive" id="archive">
@@ -41,9 +72,10 @@
         alt=""
         aria-hidden="true"
       />
-      {#each cells as cell (cell.item.key)}
+      {#each cells as cell, i (cell.item.key)}
         <div
           class="arch-cell"
+          bind:this={cellEls[i]}
           use:rv={'up'}
           style={`--l:${cell.pos.left}; --t:${cell.pos.top}; --w:${cell.pos.width}; --ar:${cell.pos.aspect}; --d:${cell.pos.delay}`}
         >
@@ -153,10 +185,12 @@
 
   .arch-cell :global(.arch-img) {
     width: 100%;
-    height: 100%;
+    height: 116%; /* taller than the cell → room for the parallax drift */
     object-fit: cover; /* fill the fixed box, crop instead of stretch */
     display: block;
     filter: saturate(0.94);
+    transform: translateY(var(--par, -8%));
+    will-change: transform;
   }
 
   /* CTA */
