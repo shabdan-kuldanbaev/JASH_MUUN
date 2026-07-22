@@ -16,9 +16,12 @@
       <span class="eyebrow" data-rise use:rise>
         <span class="rise-inner">{m.footer_link_about()}</span>
       </span>
-      <!-- home_meta_description — verbatim (single source string). -->
+      <!-- Statement text (same copy as home_meta_description) split into an ink
+           lead + a muted geographic tail, matching the two-tone mockup. -->
       <p class="statement-big" data-rise use:rise>
-        <span class="rise-inner">{m.home_meta_description()}</span>
+        <span class="rise-inner"
+          >{m.home_statement_lead()} <span class="soft">{m.home_statement_soft()}</span></span
+        >
       </p>
     </div>
 
@@ -92,6 +95,11 @@
     text-wrap: balance;
   }
 
+  /* Muted geographic tail — the two-tone display statement from the mockup. */
+  .statement-big .soft {
+    color: var(--muted);
+  }
+
   .statement-partners {
     margin-top: clamp(44px, 6vw, 88px);
     align-items: start;
@@ -124,7 +132,7 @@
     font-size: 12.5px;
     line-height: 1.6;
     color: var(--muted);
-    white-space: nowrap;
+    max-width: 64ch;
   }
 
   @media (max-width: 1024px) {
@@ -135,17 +143,9 @@
     .statement-partners {
       margin-top: clamp(32px, 5vw, 56px);
     }
-
-    .st-note {
-      white-space: normal;
-    }
   }
 
   @media (max-width: 640px) {
-    .st-note {
-      white-space: normal;
-    }
-
     .st-logo {
       height: 44px;
     }
