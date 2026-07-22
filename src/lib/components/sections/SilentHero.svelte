@@ -18,9 +18,9 @@
 <div class="hero">
   <img class="hero-img" src={src(image)} alt={imageAlt} fetchpriority="high" />
   <span class="hero-ov" aria-hidden="true"></span>
+  <span class="hero-scrim-top" aria-hidden="true"></span>
   <div class="hero-inner">
-    <!-- Long poster words (e.g. «НУНО-ВОЙЛОК», ~11.8em with tracking) need a
-         smaller fluid size to stay on one line down to 320px. -->
+    <!-- Long poster words get a smaller fluid size to stay on one line down to 320px. -->
     <h1 class="hero-word" class:hero-word--long={word.length > 8}>{word}</h1>
     {#if subtitle}<p class="hero-sub">{subtitle}</p>{/if}
   </div>
@@ -49,6 +49,17 @@
     position: absolute;
     inset: 0;
     background: rgba(18, 16, 14, 0.4);
+  }
+
+  /* Darken the top band so the transparent white nav stays legible over any hero image. */
+  .hero-scrim-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: clamp(160px, 22vh, 280px);
+    background: linear-gradient(180deg, rgba(12, 10, 8, 0.55) 0%, rgba(12, 10, 8, 0) 100%);
+    pointer-events: none;
   }
 
   .hero-inner {

@@ -13,18 +13,12 @@ const NOOP: SmoothScroll = {
 };
 
 /**
- * Momentum smooth-scroll for the vertical content pages, backed by Lenis.
+ * Momentum smooth-scroll for the vertical pages, backed by Lenis.
  *
- * Scoped to the `(content)` layout only — the horizontal homepage stage owns its
- * own scroll and must never be wrapped. Lenis drives the native window scroll
- * (no transform wrapper), so the `position: fixed`/`sticky` chrome and the View
- * Transition crossfade keep working untouched.
- *
- * Bails out entirely under `prefers-reduced-motion`, and pauses while the
- * SlidePanel or mobile menu lock the page (`body[data-panel-open]` /
- * `body[data-mobile-menu-open]`).
- *
- * Returns a teardown handle; call `destroy()` from the layout's onMount cleanup.
+ * Drives native window scroll (no transform wrapper), so fixed/sticky chrome and
+ * the View Transition crossfade keep working. Bails under `prefers-reduced-motion`
+ * and pauses while the SlidePanel or mobile menu lock the page. Returns a teardown
+ * handle; call `destroy()` from the layout's onMount cleanup.
  */
 export function initSmoothScroll(): SmoothScroll {
   if (typeof window === 'undefined') return NOOP;
@@ -33,11 +27,12 @@ export function initSmoothScroll(): SmoothScroll {
   if (reduced) return NOOP;
 
   const lenis = new Lenis({
-    duration: 1.1,
-    // cubic-out: softer, longer tail than expo-out — a more fluid glide.
+    // Frame-based smoothing: each frame moves this fraction toward the target (1 = instant).
+    lerp: 0.2,
+    // Applies to programmatic scrollTo only (wheel uses lerp above).
     easing: (t) => 1 - Math.pow(1 - t, 3),
     smoothWheel: true
-    // Touch left native: smoothTouch defaults off so mobile keeps OS momentum.
+    // smoothTouch defaults off so mobile keeps OS momentum.
   });
 
   let frame = requestAnimationFrame(function raf(time) {
@@ -45,9 +40,7 @@ export function initSmoothScroll(): SmoothScroll {
     frame = requestAnimationFrame(raf);
   });
 
-  // Pause Lenis whenever the page is locked (panel / mobile menu open) and
-  // resume once both release. The body data-attributes are the single source
-  // of truth — SlidePanel and Header toggle them independently.
+  // Pause Lenis while the page is locked (panel / mobile menu), resume once both release.
   const syncLock = () => {
     const locked =
       document.body.hasAttribute('data-panel-open') ||

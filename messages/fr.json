@@ -12,6 +12,14 @@
   "panel_close": "Fermer",
   "home_meta_title": "Jash-Muun · Patrimoine vivant",
   "home_meta_description": "Une exposition numérique consacrée au patrimoine culturel immatériel des communautés montagnardes du Kirghizstan.",
+  "home_statement_lead": "Une exposition numérique consacrée au patrimoine culturel immatériel",
+  "home_statement_soft": "des communautés montagnardes du Kirghizstan.",
+
+  "home_hero_title_line_1": "Pratiques, personnes",
+  "home_hero_title_line_2": "et les motifs du patrimoine.",
+  "home_hero_image_alt": "Artisanes travaillant le feutre",
+  "home_practices_cta": "Voir toutes les pratiques",
+  "home_archive_cta": "Voir toute l’archive",
 
   "scroll_progress": "Progression de l'exposition",
   "scroll_previous": "Salle précédente",
@@ -33,11 +41,11 @@
   "footer_aria_section": "Contact et partenaires",
 
   "footer_supported_by": "Soutenu par",
-  "footer_support_note": "Ce projet est soutenu par ALIPH (Alliance internationale pour la protection du patrimoine) et la fondation Jash-Muun.",
+  "footer_support_note": "Ce projet est soutenu par ALIPH (Alliance internationale pour la protection du patrimoine) et l'association publique Jash-Muun. Toutes les photographies et pratiques ont été réalisées exclusivement à Toktogoul.",
   "footer_link_about": "À propos",
   "footer_link_contact": "Contact",
   "footer_link_privacy": "Confidentialité",
-  "footer_copyright": "© 2026 Fondation Jash-Muun · Bichkek, Kirghizstan",
+  "footer_copyright": "© 2026 Association publique Jash-Muun · Bichkek, Kirghizstan",
   "practices_meta_title": "Pratiques — Jash-Muun",
   "practices_meta_description": "Pratiques culturelles documentées, recherches de terrain et archives patrimoniales des communautés montagnardes du Kirghizstan.",
   "practices_kicker": "Pratiques",

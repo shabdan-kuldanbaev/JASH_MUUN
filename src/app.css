@@ -37,6 +37,15 @@
      ingredients, ritual). Single source of truth — fluid 32px (mobile) → 64px
      (desktop), same clamp idiom as --gutter. */
   --section-py: clamp(32px, 5vw, 64px);
+
+  /* Editorial homepage rhythm — distinct from the content-page tokens above.
+     --home-w is the wider column the editorial redesign uses (hero title,
+     header, footer wordmark all share it); --section-pad is that page's larger
+     inter-section rhythm; --ease is its signature easing curve. These do not
+     replace --content-w / --section-py, which the content pages keep. */
+  --home-w: 1600px;
+  --section-pad: clamp(88px, 12vw, 200px);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 *,
@@ -113,50 +122,42 @@ html.lenis body {
    Soft crossfade with subtle directional shift (editorial feel)
    ===================================================================== */
 
-@keyframes fade-out-left {
+@keyframes vt-recede {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
   to {
     opacity: 0;
-    transform: translateX(-40px);
+    transform: scale(0.97);
   }
 }
 
-@keyframes fade-in-from-right {
+@keyframes vt-emerge {
   from {
     opacity: 0;
-    transform: translateX(40px);
+    transform: scale(1.03);
   }
-}
 
-@keyframes fade-out-right {
   to {
-    opacity: 0;
-    transform: translateX(40px);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-@keyframes fade-in-from-left {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
-}
-
-/* Forward direction (default): old fades left, new fades in from right */
+/* Page transition: an opacity crossfade carrying a soft depth zoom — not a
+   left/right slide. The old view fades + eases back while the new one fades in
+   from a touch closer. Long + soft so it reads as a smooth dissolve; symmetric in
+   both directions. Opacity leads the eye, the scale gives the recede. */
 ::view-transition-old(root) {
-  animation: fade-out-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: vt-recede 0.72s cubic-bezier(0.33, 0, 0.15, 1) both;
+  transform-origin: center;
 }
 
 ::view-transition-new(root) {
-  animation: fade-in-from-right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Back direction: old fades right, new fades in from left */
-html[data-transition-dir='back'] ::view-transition-old(root) {
-  animation-name: fade-out-right;
-}
-
-html[data-transition-dir='back'] ::view-transition-new(root) {
-  animation-name: fade-in-from-left;
+  animation: vt-emerge 0.72s cubic-bezier(0.33, 0, 0.15, 1) both;
+  transform-origin: center;
 }
 
 /* Header stays in place during page transitions */
@@ -196,5 +197,75 @@ html[data-transition-dir='back'] ::view-transition-new(root) {
 @media (max-width: 767px) {
   .petroglyph {
     display: none;
+  }
+}
+
+/* =====================================================================
+   EDITORIAL REVEAL — scroll-triggered entrance animations
+   Global primitives for the editorial homepage (and any future surface
+   that opts in). Toggled by $lib/actions/editorialReveal.ts, which adds
+   `.is-in` when the element enters the viewport. Two families:
+
+     [data-rise]  — masked "rise from below" (the .rise-inner wrapper,
+                    authored in markup, slides up from behind an
+                    overflow:hidden mask on its parent).
+     [data-rv]    — directional slide/scale (up | left | right | zoom).
+
+   The `--d` custom property staggers a group. The entrance offsets and
+   transitions live entirely inside a `prefers-reduced-motion: no-preference`
+   block, so under reduced motion the primitives are inert (no offset to undo,
+   hence no !important is needed).
+   ===================================================================== */
+
+/* Masked "rise from below" — the mask is static structure and always applies. */
+[data-rise] {
+  overflow: hidden;
+}
+
+.rise-inner {
+  display: block;
+  padding-bottom: 0.08em; /* room for descenders so the mask never clips them */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-rv] {
+    opacity: 0;
+    transition:
+      opacity 0.85s ease,
+      transform 0.95s var(--ease);
+    transition-delay: var(--d, 0s);
+    will-change: opacity, transform;
+  }
+
+  [data-rv='up'] {
+    transform: translateY(34px);
+  }
+
+  [data-rv='left'] {
+    transform: translateX(-56px);
+  }
+
+  [data-rv='right'] {
+    transform: translateX(56px);
+  }
+
+  [data-rv='zoom'] {
+    transform: scale(1.08);
+  }
+
+  [data-rv].is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  .rise-inner {
+    transform: translateY(120%);
+    transition: transform 0.9s var(--ease);
+    transition-delay: var(--d, 0s);
+    will-change: transform;
+  }
+
+  [data-rise].is-in .rise-inner {
+    transform: translateY(0);
   }
 }
