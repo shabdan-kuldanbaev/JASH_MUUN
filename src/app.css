@@ -123,29 +123,40 @@ html.lenis body {
    ===================================================================== */
 
 @keyframes vt-recede {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
   to {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.97);
   }
 }
 
 @keyframes vt-emerge {
   from {
     opacity: 0;
-    transform: scale(1.06);
+    transform: scale(1.03);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* Page transition: a depth zoom, not a left/right slide — the old view recedes
-   (scales back + fades) while the new one settles forward into place. Symmetric,
-   so it reads the same in both navigation directions. */
+/* Page transition: an opacity crossfade carrying a soft depth zoom — not a
+   left/right slide. The old view fades + eases back while the new one fades in
+   from a touch closer. Long + soft so it reads as a smooth dissolve; symmetric in
+   both directions. Opacity leads the eye, the scale gives the recede. */
 ::view-transition-old(root) {
-  animation: vt-recede 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: vt-recede 0.72s cubic-bezier(0.33, 0, 0.15, 1) both;
   transform-origin: center;
 }
 
 ::view-transition-new(root) {
-  animation: vt-emerge 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: vt-emerge 0.72s cubic-bezier(0.33, 0, 0.15, 1) both;
   transform-origin: center;
 }
 
