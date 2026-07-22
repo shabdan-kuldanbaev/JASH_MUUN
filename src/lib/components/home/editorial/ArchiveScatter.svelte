@@ -67,7 +67,7 @@
     <div class="arch-more" data-rise use:rise>
       <span class="rise-inner">
         <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- galleryHref is resolve()'d -->
-        <a href={galleryHref}>{m.home_archive_cta()} <span class="arw">→</span></a>
+        <a href={galleryHref}>{m.home_archive_cta()}</a>
       </span>
     </div>
   </div>
@@ -177,29 +177,33 @@
   }
 
   .arch-more a {
-    display: inline-flex;
-    gap: 12px;
-    align-items: center;
+    position: relative;
+    display: inline-block;
     font-family: Jost, sans-serif;
     font-weight: 500;
     font-size: clamp(22px, 2.4vw, 34px);
     letter-spacing: -0.01em;
     color: var(--ink);
-    border-bottom: 1px solid var(--line);
     padding-bottom: 6px;
-    transition: border-color 0.25s ease;
   }
 
-  .arch-more a:hover {
-    border-color: var(--ink);
+  /* Same left-grown underline as the practice items. */
+  .arch-more a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.45s var(--ease);
   }
 
-  .arw {
-    transition: transform 0.25s ease;
-  }
-
-  .arch-more a:hover .arw {
-    transform: translateX(6px);
+  .arch-more a:hover::after,
+  .arch-more a:focus-visible::after {
+    transform: scaleX(1);
   }
 
   /* ── Tablet / mobile — flat two-column flow, no absolute scatter ── */

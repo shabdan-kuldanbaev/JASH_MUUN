@@ -71,10 +71,7 @@
                     use:rise
                     style={`--d:${i * 0.08}s`}
                   >
-                    <span class="rise-inner">
-                      {practice.shortTitle || practice.title}
-                      <span class="pf-arrow" aria-hidden="true">›</span>
-                    </span>
+                    <span class="rise-inner">{practice.shortTitle || practice.title}</span>
                   </span>
                   {#if cat}
                     <span class="pf-cat">{cat}</span>
@@ -89,7 +86,7 @@
         <div class="pf-cta" data-rise use:rise>
           <span class="rise-inner">
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- practicesHref is resolve()'d -->
-            <a href={practicesHref}>{m.home_practices_cta()} <span class="arw">→</span></a>
+            <a href={practicesHref}>{m.home_practices_cta()}</a>
           </span>
         </div>
       </div>
@@ -196,6 +193,7 @@
   }
 
   .pf-name {
+    position: relative;
     display: inline-block;
     font-family: Jost, sans-serif;
     font-weight: 500;
@@ -206,8 +204,7 @@
     line-height: 1.22;
     text-wrap: balance;
     color: inherit;
-    padding-bottom: 0.06em;
-    transition: transform 0.5s var(--ease);
+    padding-bottom: 0.12em;
   }
 
   /* A short poster name (short_title set for this locale) gets the large
@@ -218,22 +215,18 @@
     line-height: 1.02;
   }
 
-  .pf-name.is-short .pf-arrow {
-    font-size: 0.52em;
-  }
-
-  .pf-arrow {
-    /* Stalkless chevron (not the shafted → arrow), sized up — a heavier forward
-       cue than a full arrow at the poster size. */
-    color: var(--shyrdak);
-    font-size: 0.62em;
-    font-weight: 300;
-    line-height: 1;
-    opacity: 0;
-    transform: translateX(-12px);
-    transition:
-      opacity 0.35s ease,
-      transform 0.5s var(--ease);
+  /* Animated underline drawn from the left on hover/focus (replaces the arrow). */
+  .pf-name::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--shyrdak);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.45s var(--ease);
   }
 
   .pf-cat {
@@ -257,14 +250,14 @@
     color: var(--ink);
   }
 
-  .pf-item:hover .pf-name {
-    transform: translateX(clamp(10px, 1.4vw, 24px));
-  }
-
-  .pf-item:hover .pf-arrow,
   .pf-item:hover .pf-cat {
     opacity: 1;
     transform: translateX(0);
+  }
+
+  .pf-item:hover .pf-name::after,
+  .pf-item:focus-visible .pf-name::after {
+    transform: scaleX(1);
   }
 
   /* ── Crossfading preview ── */
@@ -304,29 +297,33 @@
   }
 
   .pf-cta a {
-    display: inline-flex;
-    gap: 16px;
-    align-items: center;
+    position: relative;
+    display: inline-block;
     font-family: Jost, sans-serif;
     font-weight: 400;
     font-size: clamp(24px, 3vw, 44px);
     letter-spacing: -0.02em;
     color: var(--ink);
-    border-bottom: 1px solid var(--line);
     padding-bottom: 8px;
-    transition: border-color 0.25s ease;
   }
 
-  .pf-cta a:hover {
-    border-color: var(--ink);
+  /* Same left-grown underline as the practice items. */
+  .pf-cta a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.45s var(--ease);
   }
 
-  .arw {
-    transition: transform 0.25s ease;
-  }
-
-  .pf-cta a:hover .arw {
-    transform: translateX(8px);
+  .pf-cta a:hover::after,
+  .pf-cta a:focus-visible::after {
+    transform: scaleX(1);
   }
 
   @media (max-width: 1024px) {
