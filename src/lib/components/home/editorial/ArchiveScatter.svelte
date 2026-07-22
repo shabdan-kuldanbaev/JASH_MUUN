@@ -47,7 +47,7 @@
           class="arch-cell"
           href={galleryHref}
           use:rv={'up'}
-          style={`--l:${cell.pos.left}; --t:${cell.pos.top}; --w:${cell.pos.width}; --d:${cell.pos.delay}`}
+          style={`--l:${cell.pos.left}; --t:${cell.pos.top}; --w:${cell.pos.width}; --ar:${cell.pos.aspect}; --d:${cell.pos.delay}`}
         >
           <CmsImage
             image={{
@@ -147,6 +147,7 @@
     left: var(--l);
     top: var(--t);
     width: var(--w);
+    aspect-ratio: var(--ar); /* fixed box → CMS images can't overflow/overlap */
     display: block;
     overflow: hidden;
     background: var(--paper-2);
@@ -154,7 +155,8 @@
 
   .arch-cell :global(.arch-img) {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover; /* fill the fixed box, crop instead of stretch */
     display: block;
     filter: saturate(0.94);
     transition:
@@ -214,6 +216,7 @@
       left: auto;
       top: auto;
       width: calc(50% - 10px);
+      aspect-ratio: 4 / 3; /* uniform box → even two-column grid on mobile */
     }
   }
 
