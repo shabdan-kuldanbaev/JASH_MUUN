@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
+  import { goto } from '$app/navigation';
   import { m, LOCALES } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import { editorialHeader } from '$lib/editorialHeader.svelte';
@@ -49,14 +50,31 @@
 
   const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
+  // A link tapped inside the panel closes it first, then navigates once the
+  // curtain has swept out — so the page transition plays on a clean screen.
+  let pendingHref: string | null = null;
+  function chooseAndClose(href: string) {
+    pendingHref = href;
+    closeLang();
+  }
+
   function runPanel(open: boolean) {
     if (!pathEl) return;
     cancelAnimationFrame(edgeRaf);
     const W = window.innerWidth;
     const to = open ? 0 : W;
+    const finish = () => {
+      if (!open && pendingHref) {
+        const href = pendingHref;
+        pendingHref = null;
+        // eslint-disable-next-line svelte/no-navigation-without-resolve -- href is already resolve()'d
+        goto(href);
+      }
+    };
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       edgeX = to;
       pathEl.setAttribute('d', panelPath(edgeX, 0));
+      finish();
       return;
     }
     const from = edgeX;
@@ -68,6 +86,7 @@
       edgeX = from + (to - from) * easeInOutCubic(p);
       pathEl?.setAttribute('d', panelPath(edgeX, bulge * Math.sin(p * Math.PI)));
       if (p < 1) edgeRaf = requestAnimationFrame(tick);
+      else finish();
     };
     edgeRaf = requestAnimationFrame(tick);
   }
@@ -262,36 +281,98 @@
         </button>
       </div>
     </nav>
+
+    <button
+      class="nav-burger"
+      onclick={toggleLang}
+      aria-haspopup="dialog"
+      aria-expanded={langOpen}
+      aria-label={m.nav_menu()}
+    >
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </header>
 
-<!-- Full-screen language slide-over — curved SVG edge that flattens as it lands -->
+<!-- Full-screen menu / language slide-over — curved SVG edge that flattens as it lands -->
 <div class="lang-panel" class:is-open={langOpen} aria-hidden={!langOpen}>
   <svg class="lang-shape" preserveAspectRatio="none" aria-hidden="true">
     <path bind:this={pathEl} d="" />
   </svg>
   <div class="lang-content">
-    <button class="lang-close" onclick={() => closeLang(true)} aria-label={m.nav_language()}>
+    <button class="lang-close" onclick={() => closeLang(true)} aria-label={m.panel_close()}>
       <span class="lang-x" aria-hidden="true"></span>
     </button>
-    <nav class="lang-list" aria-label={m.nav_language()}>
-      <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
-      {#each LOCALES as l, i (l)}
+    <div class="menu-scroll">
+      <!-- Primary nav — only surfaced inside the panel on mobile (the burger menu). -->
+      <nav class="menu-links" aria-label="Primary">
+        <!-- eslint-disable svelte/no-navigation-without-resolve -- hrefs are resolve()'d -->
         <a
-          href={localePath(l)}
-          class="lang-choice"
-          class:is-current={l === locale}
-          aria-current={l === locale ? 'true' : undefined}
+          href={homeHref}
+          class="menu-link"
+          class:is-active={isHome}
           tabindex={langOpen ? 0 : -1}
-          bind:this={optionEls[i]}
-          onclick={() => closeLang()}
-          onkeydown={(e) => onMenuKeydown(e, i)}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(homeHref);
+          }}>{m.nav_home()}</a
         >
-          {localeLabels[l] ?? l.toUpperCase()}
-        </a>
-      {/each}
-      <!-- eslint-enable svelte/no-navigation-without-resolve -->
-    </nav>
+        <a
+          href={practicesHref}
+          class="menu-link"
+          class:is-active={isPractices}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(practicesHref);
+          }}>{m.nav_practices()}</a
+        >
+        <a
+          href={articlesHref}
+          class="menu-link"
+          class:is-active={isArticles}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(articlesHref);
+          }}>{m.nav_articles()}</a
+        >
+        <a
+          href={galleryHref}
+          class="menu-link"
+          class:is-active={isGallery}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(galleryHref);
+          }}>{m.nav_archive()}</a
+        >
+        <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      </nav>
+
+      <nav class="lang-list" aria-label={m.panel_language_aria()}>
+        <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
+        {#each LOCALES as l, i (l)}
+          <a
+            href={localePath(l)}
+            class="lang-choice"
+            class:is-current={l === locale}
+            aria-current={l === locale ? 'true' : undefined}
+            tabindex={langOpen ? 0 : -1}
+            bind:this={optionEls[i]}
+            onclick={(e) => {
+              e.preventDefault();
+              chooseAndClose(localePath(l));
+            }}
+            onkeydown={(e) => onMenuKeydown(e, i)}
+          >
+            {localeLabels[l] ?? l.toUpperCase()}
+          </a>
+        {/each}
+        <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      </nav>
+    </div>
   </div>
 </div>
 
@@ -402,6 +483,40 @@
     display: flex;
     gap: 20px;
     align-items: baseline;
+  }
+
+  /* Burger — mobile only (desktop keeps the inline nav links). */
+  .nav-burger {
+    display: none;
+    width: 34px;
+    height: 20px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    color: #fff;
+  }
+
+  .nav--onlight .nav-burger {
+    color: #000;
+  }
+
+  .nav-burger span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.6px;
+    background: currentcolor;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .nav-burger span:nth-child(1) {
+    top: 4px;
+  }
+
+  .nav-burger span:nth-child(2) {
+    bottom: 4px;
   }
 
   .nav-item {
@@ -586,30 +701,48 @@
     transform: rotate(-45deg);
   }
 
-  .lang-list {
+  .menu-scroll {
     position: absolute;
     inset: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: clamp(6px, 1vw, 16px);
-    padding: 0 clamp(24px, 9vw, 160px);
+    gap: clamp(28px, 6vh, 60px);
+    padding: clamp(80px, 12vh, 140px) clamp(24px, 9vw, 160px);
     pointer-events: none; /* container spans the panel — only the links catch clicks */
   }
 
+  /* Primary nav inside the panel — mobile burger menu only. */
+  .menu-links {
+    display: none;
+    flex-direction: column;
+    gap: clamp(4px, 1.2vh, 14px);
+  }
+
+  .lang-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 1vw, 16px);
+  }
+
+  .menu-link,
   .lang-choice {
     position: relative;
     width: fit-content;
     pointer-events: auto;
     font-family: Jost, sans-serif;
     font-weight: 400;
-    font-size: clamp(38px, 8vw, 104px);
     letter-spacing: -0.02em;
     line-height: 1.08;
     color: var(--ink);
   }
 
-  /* Underline slides in from the left on hover/focus; the current language keeps it. */
+  .lang-choice {
+    font-size: clamp(38px, 8vw, 104px);
+  }
+
+  /* Underline slides in from the left on hover/focus; the active/current keeps it. */
+  .menu-link::after,
   .lang-choice::after {
     content: '';
     position: absolute;
@@ -623,46 +756,54 @@
     transition: transform 0.4s var(--ease);
   }
 
+  .menu-link:hover::after,
+  .menu-link:focus-visible::after,
+  .menu-link.is-active::after,
   .lang-choice:hover::after,
   .lang-choice:focus-visible::after,
   .lang-choice.is-current::after {
     transform: scaleX(1);
   }
 
-  /* Mobile: two rows, no burger — logos on top, links below */
+  /* Mobile: single row — logos left, burger right; nav moves into the panel */
   @media (max-width: 767px) {
     .nav {
       height: auto;
     }
 
     .nav-inner {
-      flex-direction: column;
-      align-items: stretch;
+      align-items: center;
       height: auto;
-      gap: 15px;
-      padding: 12px clamp(14px, 4vw, 20px) 14px;
+      padding: 14px clamp(14px, 4vw, 20px);
     }
 
     .nav-logos {
-      height: 46px;
+      height: 44px;
       gap: 16px;
     }
 
     .logo {
-      height: 46px;
+      height: 44px;
     }
 
     .nav-links {
-      gap: clamp(14px, 4.5vw, 26px);
+      display: none;
     }
 
-    .nav-item {
-      font-size: 12px;
-      letter-spacing: 0.08em;
+    .nav-burger {
+      display: block;
     }
 
-    .lang {
-      margin-left: auto;
+    .menu-links {
+      display: flex;
+    }
+
+    .menu-link {
+      font-size: clamp(34px, 9vw, 60px);
+    }
+
+    .lang-choice {
+      font-size: clamp(20px, 5.5vw, 30px);
     }
   }
 

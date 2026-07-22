@@ -65,10 +65,9 @@
     padding-top: 0;
   }
 
-  /* The nav is two rows on mobile (taller than --nav-h) — reserve more space. */
   @media (max-width: 767px) {
     .content-shell {
-      padding-top: 118px;
+      padding-top: 84px;
     }
   }
 </style>
