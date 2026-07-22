@@ -598,6 +598,7 @@
   }
 
   .lang-choice {
+    position: relative;
     width: fit-content;
     pointer-events: auto;
     font-family: Jost, sans-serif;
@@ -606,12 +607,26 @@
     letter-spacing: -0.02em;
     line-height: 1.08;
     color: var(--ink);
-    transition: color 0.3s ease;
   }
 
-  .lang-choice:hover,
-  .lang-choice.is-current {
-    color: var(--shyrdak);
+  /* Underline slides in from the left on hover/focus; the current language keeps it. */
+  .lang-choice::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0.04em;
+    width: 100%;
+    height: 3px;
+    background: var(--shyrdak);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--ease);
+  }
+
+  .lang-choice:hover::after,
+  .lang-choice:focus-visible::after,
+  .lang-choice.is-current::after {
+    transform: scaleX(1);
   }
 
   /* Mobile: two rows, no burger — logos on top, links below */
