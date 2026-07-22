@@ -191,10 +191,13 @@
   .pf-name {
     display: inline-block;
     font-family: Jost, sans-serif;
-    font-weight: 400;
-    font-size: clamp(34px, 5vw, 76px);
-    letter-spacing: -0.025em;
-    line-height: 1.06;
+    font-weight: 500;
+    /* Sized for real CMS titles (full descriptive sentences), not short poster
+       words — a large poster size turns long titles into an unreadable wall. */
+    font-size: clamp(19px, 2.2vw, 32px);
+    letter-spacing: -0.015em;
+    line-height: 1.22;
+    text-wrap: balance;
     color: inherit;
     padding-bottom: 0.06em;
     transition: transform 0.5s var(--ease);
