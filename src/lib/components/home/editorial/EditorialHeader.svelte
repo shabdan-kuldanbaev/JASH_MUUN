@@ -5,9 +5,7 @@
   import type { Locale } from '$lib/i18n';
   import { editorialHeader } from '$lib/editorialHeader.svelte';
 
-  // `onLight` forces the over-content treatment from first paint — content pages
-  // have no dark hero, so the nav must render black-on-paper immediately (before
-  // the scroll tracker mounts) rather than flashing white.
+  // `onLight` forces the over-content treatment from first paint (content pages have no dark hero) to avoid a white flash.
   let { locale, onLight = false }: { locale: Locale; onLight?: boolean } = $props();
 
   const path = $derived(page.url.pathname);
@@ -30,7 +28,7 @@
     fr: 'Français'
   };
 
-  /* ── Language dropdown (a real listbox) ─────────────────────────────── */
+  /* Language dropdown */
   let langOpen = $state(false);
   let langEl = $state<HTMLElement | null>(null);
   let toggleEl = $state<HTMLButtonElement | null>(null);
@@ -39,7 +37,6 @@
 
   function openLang() {
     langOpen = true;
-    // Focus the current option once the menu is visible.
     requestAnimationFrame(() => optionEls[currentIndex >= 0 ? currentIndex : 0]?.focus());
   }
 
@@ -79,7 +76,6 @@
         break;
       case 'Enter':
       case ' ':
-        // Let the anchor navigate; just close the menu.
         closeLang();
         break;
       case 'Escape':
@@ -109,13 +105,12 @@
     if (langOpen && langEl && !langEl.contains(e.target as Node)) closeLang();
   }
 
-  // The corner scrim is a body-level class so it can sit above the fixed header.
+  // Body-level class so the corner scrim can sit above the fixed header.
   $effect(() => {
     document.body.classList.toggle('lang-open', langOpen);
     return () => document.body.classList.remove('lang-open');
   });
 
-  /* Active-link matching (only home / practices / archive live in this nav). */
   const isPractices = $derived(path.includes('/practices'));
   const isGallery = $derived(path.includes('/gallery'));
   const isHome = $derived(!isPractices && !isGallery);
@@ -129,7 +124,7 @@
   class:nav--hidden={editorialHeader.hidden}
 >
   <div class="nav-inner">
-    <!-- Logos — left. Our mark → home, ALIPH → foundation site, EU → static. -->
+    <!-- Logos: mark → home, ALIPH → foundation site, EU → static -->
     <div class="nav-logos">
       <span class="logo logo--main">
         <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- homeHref is already resolve()'d -->
@@ -163,7 +158,6 @@
       </span>
     </div>
 
-    <!-- Navigation — right; language is a dropdown listbox -->
     <nav class="nav-links" aria-label="Primary">
       <!-- eslint-disable svelte/no-navigation-without-resolve -- hrefs are resolve()'d above -->
       <a
@@ -206,8 +200,6 @@
             {locale.toUpperCase()}<span class="lang-caret" aria-hidden="true"></span>
           </span>
         </button>
-        <!-- Roving focus: focus moves to the option anchors themselves (each
-             carries its own tabindex), so aria-activedescendant is not used. -->
         <ul class="lang-menu" role="listbox" aria-label={m.nav_language()}>
           <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
           {#each LOCALES as l, i (l)}
@@ -234,11 +226,11 @@
   </div>
 </header>
 
-<!-- Corner (radial) scrim behind the open language dropdown -->
+<!-- Corner scrim behind the open language dropdown -->
 <div class="lang-scrim" aria-hidden="true"></div>
 
 <style>
-  /* ═══ Header — always transparent; text/logos flip over content ═══════ */
+  /* Header — always transparent; text/logos flip over content */
   .nav {
     position: fixed;
     top: 0;
@@ -248,13 +240,12 @@
     z-index: 40;
     background: transparent;
 
-    /* Reveal (slide-in) with a small delay so the glow band lands first. */
+    /* Slight reveal delay so the glow band lands first. */
     transition:
       transform 0.42s ease 0.16s,
       box-shadow 0.32s ease;
   }
 
-  /* Retract straight away on downward scroll. */
   .nav--hidden {
     transform: translateY(-100%);
     transition: transform 0.3s ease 0s;
@@ -274,7 +265,7 @@
     padding: 0 var(--gutter);
   }
 
-  /* ── Logos (left) ── */
+  /* Logos (left) */
   .nav-logos {
     position: relative;
     display: flex;
@@ -310,7 +301,7 @@
     filter: none;
   }
 
-  /* Main mark: cross-fade the white hero variant to the standard mark. */
+  /* Main mark: cross-fade white hero variant to the standard mark */
   .logo--main .logo-rise {
     position: relative;
   }
@@ -337,7 +328,7 @@
     opacity: 1;
   }
 
-  /* ── Nav links (right) ── */
+  /* Nav links (right) */
   .nav-links {
     display: flex;
     gap: 20px;
@@ -379,7 +370,7 @@
     transform: scaleX(1);
   }
 
-  /* Over light content — pure black text, no shadow. */
+  /* Over light content — black text, no shadow */
   .nav--onlight .nav-item {
     color: #000;
     text-shadow: none;
@@ -391,9 +382,7 @@
     gap: 7px;
   }
 
-  /* Reveal (slide-in from below) on load. The pre-state offset, the transition,
-     and the staggered delays only exist when motion is allowed — so under
-     prefers-reduced-motion there is nothing to neutralize (no !important). */
+  /* Slide-in-from-below reveal; gated on motion allowed so reduced-motion needs no override. */
   @media (prefers-reduced-motion: no-preference) {
     .logo-rise,
     .nav-rise {
@@ -431,15 +420,13 @@
       transition-delay: 0.66s;
     }
 
-    /* The language control is the 4th child of .nav-links — .lang:nth-child(4)
-       keeps the same specificity as the .nav-item:nth-child rules above so the
-       staggered delays stay in ascending specificity order. */
+    /* .lang:nth-child(4) matches the .nav-item:nth-child specificity above so the delays stay in ascending order. */
     .nav-links .lang:nth-child(4) .nav-rise {
       transition-delay: 0.73s;
     }
   }
 
-  /* ── Language dropdown ── */
+  /* Language dropdown */
   .lang {
     position: relative;
     display: inline-flex;
@@ -512,7 +499,6 @@
     font-weight: 500;
   }
 
-  /* Over light content — black menu text. */
   :global(body.over-content) .lang-opt {
     color: #000;
   }
@@ -538,7 +524,7 @@
     transition-delay: 0.2s;
   }
 
-  /* ── Corner scrim (behind the open dropdown) ── */
+  /* Corner scrim (behind the open dropdown) */
   .lang-scrim {
     --w: min(58vw, 460px);
     --h: min(92vh, 860px);
@@ -565,13 +551,13 @@
     opacity: 1;
   }
 
-  /* Dark scrim → keep nav text white while the menu is open over the hero. */
+  /* Keep nav text white while the menu is open over the dark hero scrim. */
   :global(body.lang-open) .nav-item {
     color: #fff;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
   }
 
-  /* Over content — light corner scrim, black nav text. */
+  /* Over content — light corner scrim, black nav text */
   :global(body.over-content) .lang-scrim {
     background: radial-gradient(
       var(--w) var(--h) at top right,
@@ -587,7 +573,7 @@
     text-shadow: none;
   }
 
-  /* ── Mobile: two rows, no burger — logos on top, links below ── */
+  /* Mobile: two rows, no burger — logos on top, links below */
   @media (max-width: 767px) {
     .nav {
       height: auto;

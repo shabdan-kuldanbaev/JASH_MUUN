@@ -3,8 +3,7 @@
   import { m } from '$i18n';
   import { rise } from '$lib/actions/editorialReveal';
 
-  // Content pages have no About block, so the footer carries the ALIPH support
-  // credit; the homepage keeps it in AboutStatement (credit stays false there).
+  // Content pages have no About block, so the footer carries the ALIPH support credit (homepage keeps it in AboutStatement).
   let { credit = false }: { credit?: boolean } = $props();
 </script>
 
@@ -25,7 +24,7 @@
       <span>{m.footer_copyright()}</span>
     </div>
   </div>
-  <!-- Giant full-width wordmark — masked rise on entry (like the hero title). -->
+  <!-- Full-width wordmark — masked rise on entry -->
   <div class="footer-word" data-rise use:rise aria-label="Jash Muun">
     <span class="rise-inner">JASH&nbsp;MUUN</span>
   </div>

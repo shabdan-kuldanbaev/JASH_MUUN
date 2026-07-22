@@ -2,9 +2,7 @@
   import { asset } from '$app/paths';
   import { m } from '$i18n';
 
-  // The parent binds this element so the header can measure the hero height
-  // (the light/dark boundary tracks the live hero, which is full-viewport but
-  // resizes with the mobile URL bar).
+  // Bound so the header can measure the live hero height for the light/dark boundary (resizes with the mobile URL bar).
   let { heroEl = $bindable(null) }: { heroEl?: HTMLElement | null } = $props();
 </script>
 
@@ -18,7 +16,7 @@
 
   <div class="hero-content">
     <div class="hero-bottom">
-      <!-- Condensed two-line title — per-line masked slide-up on load. -->
+      <!-- Two-line title — per-line masked slide-up on load -->
       <h1 class="hero-title">
         <span class="ht-mask"><span class="ht-line">{m.home_hero_title_line_1()}</span></span>
         <span class="ht-mask"><span class="ht-line">{m.home_hero_title_line_2()}</span></span>
@@ -51,8 +49,7 @@
     object-position: center 42%;
   }
 
-  /* Rest state once loaded — the pre-state + transition live in the
-     prefers-reduced-motion: no-preference block below. */
+  /* Rest state once loaded (pre-state + transition are in the no-preference block below). */
   :global(body.is-loaded) .hero-img {
     transform: scale(1);
     opacity: 1;
@@ -107,9 +104,7 @@
   }
 
   .hero-bottom {
-    /* Wide enough that the longest localized title (Kyrgyz line 2) is never
-       clipped by the mask's overflow — the lines are nowrap, so this only sets
-       the clip boundary, not the visual width. */
+    /* Wide enough that the longest localized title isn't clipped by the mask overflow (lines are nowrap). */
     max-width: min(96%, 1100px);
   }
 
@@ -127,8 +122,7 @@
   .hero-title .ht-mask {
     display: block;
     overflow: hidden;
-    /* Room for Cyrillic descenders (р, д, ц, у) below the tight 0.98 line box —
-       the negative margin keeps the inter-line gap unchanged. */
+    /* Room for Cyrillic descenders below the tight 0.98 line box; negative margin keeps the inter-line gap. */
     padding-bottom: 0.22em;
     margin-bottom: -0.16em;
   }
@@ -141,9 +135,7 @@
     transform: translateY(0);
   }
 
-  /* The entrance (and its pre-animation offset) only exists when motion is
-     allowed — so under reduced motion there is nothing to neutralize and no
-     !important is needed. */
+  /* Entrance + its pre-animation offset only exist when motion is allowed, so reduced-motion needs no override. */
   @media (prefers-reduced-motion: no-preference) {
     .hero-img {
       transform: scale(1.14);
@@ -155,8 +147,7 @@
     }
 
     .hero-title .ht-line {
-      /* 125% (not 110%) so the taller descender-padded mask still fully hides
-         the line before it slides up. */
+      /* 125% (not 110%) so the descender-padded mask fully hides the line before it slides up. */
       transform: translateY(125%);
       transition: transform 0.95s var(--ease);
       will-change: transform;

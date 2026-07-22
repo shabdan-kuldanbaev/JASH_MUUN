@@ -1,22 +1,13 @@
 /**
  * Editorial header state — the transparent, contrast-adaptive nav.
  *
- * Mirrors the shape of headerReveal.svelte.ts (a rune module exposing reactive
- * getters + an init that attaches a scroll tracker and returns a teardown), but
- * carries the extra state the editorial header needs:
+ *   onLight      — nav over light content; text flips black, logos drop the white filter.
+ *   overContent  — same boundary, surfaced separately for the dropdown scrim variant.
+ *   hidden       — header retracted (deliberate downward scroll).
  *
- *   onLight      — the nav sits over the light content (past the hero, or on a
- *                  page with no dark hero at all). Text flips to black; logos
- *                  drop their white filter.
- *   overContent  — same boundary, surfaced separately so the component/body can
- *                  switch the language-dropdown scrim to its light variant.
- *   hidden       — the header is retracted (deliberate downward scroll).
- *
- * Direction detection reuses headerReveal's per-direction hysteresis so
- * trackpad jitter never flips the state, plus the same panel / mobile-menu
- * guards, rather than the mockup's naive `y > lastY`. The init sets the body
- * class `over-content` (the CSS keys off it). The language dropdown owns the
- * `lang-open` class itself, in the component.
+ * Uses per-direction hysteresis (trackpad jitter never flips state) plus panel /
+ * mobile-menu guards. The init sets the body class `over-content`; the language
+ * dropdown owns `lang-open` in the component.
  */
 
 /** Hide only after this many accumulated px of downward scroll. */
@@ -52,13 +43,10 @@ export const editorialHeader = {
 /**
  * Attach the scroll/resize tracker for the editorial header.
  *
- * @param getHeroHeight returns the current dark-hero height in px, or `null`
- *   when the page has no dark hero (index/content pages) — in which case the nav
- *   is `onLight` from the top. A number makes the light/dark boundary track that
- *   live height (the hero is full-viewport, but height changes on resize /
- *   mobile URL-bar collapse).
- * @returns teardown that removes listeners, clears the body class, and re-pins
- *   the header.
+ * @param getHeroHeight current dark-hero height in px, or `null` for pages with
+ *   no dark hero (nav is `onLight` from the top). A number tracks the live
+ *   boundary across resize / mobile URL-bar collapse.
+ * @returns teardown that removes listeners, clears the body class, and re-pins the header.
  */
 export function initEditorialHeader(getHeroHeight: () => number | null): () => void {
   if (typeof window === 'undefined') return () => {};
@@ -71,8 +59,7 @@ export function initEditorialHeader(getHeroHeight: () => number | null): () => v
   let lastDirection: 1 | -1 = 1;
   let ticking = false;
 
-  // No hero → boundary at -∞ so the nav is onLight everywhere; a hero height
-  // makes the flip happen as its bottom passes under the nav.
+  // No hero → boundary at -∞ (onLight everywhere); a height flips the nav as the hero bottom passes under it.
   const heroBoundary = () => {
     const h = getHeroHeight();
     return h == null ? Number.NEGATIVE_INFINITY : h - offset;
@@ -85,7 +72,7 @@ export function initEditorialHeader(getHeroHeight: () => number | null): () => v
   const update = () => {
     ticking = false;
 
-    // Panel / mobile menu lock the page — never retract underneath them.
+    // Never retract under a locked page (panel / mobile menu).
     if (
       document.body.hasAttribute('data-panel-open') ||
       document.body.hasAttribute('data-mobile-menu-open')
@@ -93,7 +80,7 @@ export function initEditorialHeader(getHeroHeight: () => number | null): () => v
       _hidden = false;
     }
 
-    // Clamp away iOS rubber-band negatives.
+    // Clamp iOS rubber-band negatives.
     const y = Math.max(window.scrollY, 0);
     const delta = y - lastY;
     lastY = y;
@@ -108,7 +95,7 @@ export function initEditorialHeader(getHeroHeight: () => number | null): () => v
         _hidden = false;
         accumulated = 0;
       } else {
-        // Hysteresis: the accumulator resets whenever the direction flips.
+        // Hysteresis: accumulator resets on direction flip.
         const direction: 1 | -1 = delta > 0 ? 1 : -1;
         if (direction !== lastDirection) {
           lastDirection = direction;

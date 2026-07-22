@@ -14,18 +14,15 @@
     return resolve(`/${locale}/practices/${slug}/`);
   }
 
-  // Only practices that carry a cover can appear in the crossfading preview; the
-  // name list still shows every practice. The first practice is the resting one.
+  // Only practices with a cover can appear in the crossfading preview; the name list shows every practice.
   const withCover = $derived(practices.filter((p) => p.coverImage));
   const firstKey = $derived(withCover[0]?.slug ?? null);
 
-  // Component-local hover state — the active preview key. Falls back to the
-  // first practice when the pointer leaves the list.
+  // Active preview key; falls back to the first practice when the pointer leaves the list.
   let activeKey = $state<string | null>(null);
   const shownKey = $derived(activeKey ?? firstKey);
 
   function activate(slug: string) {
-    // Only switch the preview if that practice actually has a cover image.
     if (withCover.some((p) => p.slug === slug)) activeKey = slug;
   }
   function reset() {
@@ -132,7 +129,7 @@
     transform: rotate(9deg);
   }
 
-  /* ── Section head ── */
+  /* Section head */
   .shead {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -160,7 +157,7 @@
     color: var(--ink-2);
   }
 
-  /* ── Practices index ── */
+  /* Practices index */
   .practices {
     display: grid;
     grid-template-columns: 1fr 0.78fr;
@@ -197,8 +194,7 @@
     display: inline-block;
     font-family: Jost, sans-serif;
     font-weight: 500;
-    /* Fallback size for real CMS titles (full descriptive sentences) or locales
-       with no short_title — a large poster size turns long titles into a wall. */
+    /* Fallback size for long descriptive titles / locales with no short_title. */
     font-size: clamp(19px, 2.2vw, 32px);
     letter-spacing: -0.015em;
     line-height: 1.22;
@@ -207,15 +203,14 @@
     padding-bottom: 0.12em;
   }
 
-  /* A short poster name (short_title set for this locale) gets the large
-     exhibition size; the descriptive-title fallback above stays readable. */
+  /* Short poster name (short_title set) gets the large exhibition size. */
   .pf-name.is-short {
     font-size: clamp(34px, 5vw, 72px);
     letter-spacing: -0.03em;
     line-height: 1.02;
   }
 
-  /* Animated underline drawn from the left on hover/focus (replaces the arrow). */
+  /* Left-grown underline on hover/focus. */
   .pf-name::after {
     content: '';
     position: absolute;
@@ -260,7 +255,7 @@
     transform: scaleX(1);
   }
 
-  /* ── Crossfading preview ── */
+  /* Crossfading preview */
   .pf-media {
     position: relative;
     aspect-ratio: 4 / 5;
@@ -290,7 +285,7 @@
     filter: saturate(0.97);
   }
 
-  /* ── CTA ── */
+  /* CTA */
   .pf-cta {
     display: inline-block;
     margin-top: 0;
@@ -307,7 +302,6 @@
     padding-bottom: 8px;
   }
 
-  /* Same left-grown underline as the practice items. */
   .pf-cta a::after {
     content: '';
     position: absolute;

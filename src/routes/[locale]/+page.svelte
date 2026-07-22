@@ -14,18 +14,15 @@
 
   let { data }: { data: PageData } = $props();
 
-  // The hero element — bound so the header can measure its live height for the
-  // light/dark boundary.
+  // Bound so the header can measure the live hero height for the light/dark boundary.
   let heroEl = $state<HTMLElement | null>(null);
 
   onMount(() => {
-    // The homepage is vertical (like content pages); restore vertical scroll
-    // here since app.css locks body overflow globally.
+    // Restore vertical scroll (app.css locks body overflow globally).
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'auto';
 
-    // Load gate for the hero/header entrance — paint the pre-state one frame,
-    // then flip `is-loaded` so the CSS transitions run.
+    // Load gate: paint the pre-state one frame, then flip `is-loaded` so the transitions run.
     let raf1 = 0;
     let raf2 = 0;
     raf1 = requestAnimationFrame(() => {
@@ -36,8 +33,7 @@
     window.addEventListener('load', onLoad);
 
     const stopHeader = initEditorialHeader(() => heroEl?.offsetHeight ?? null);
-    // Momentum smooth-scroll on the vertical homepage too (same eased Lenis as
-    // the content pages; drives native scroll so the header tracker still fires).
+    // Momentum smooth-scroll on the homepage too (drives native scroll so the header tracker still fires).
     const smooth = initSmoothScroll();
 
     return () => {

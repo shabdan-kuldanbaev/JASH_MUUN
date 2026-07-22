@@ -11,7 +11,7 @@
 
   const galleryHref = $derived(resolve(`/${locale}/gallery/`));
 
-  // At most one image per scatter slot; render only the slots we have images for.
+  // One image per scatter slot; render only slots that have an image.
   const cells = $derived(
     ARCHIVE_SCATTER.map((pos, i) => ({ pos, item: archive[i] })).filter((c) => c.item)
   );
@@ -87,7 +87,7 @@
     padding: 0 var(--gutter);
   }
 
-  /* ── Section head (shared visual with practices) ── */
+  /* Section head (shared visual with practices) */
   .shead {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -115,7 +115,7 @@
     color: var(--ink-2);
   }
 
-  /* ── Free scatter (desktop) — absolute % positions from ARCHIVE_SCATTER ── */
+  /* Free scatter (desktop) — absolute % positions from ARCHIVE_SCATTER */
   .arch-scatter {
     position: relative;
     width: 100%;
@@ -169,7 +169,7 @@
     filter: saturate(1.05);
   }
 
-  /* ── CTA ── */
+  /* CTA */
   .arch-more {
     display: flex;
     justify-content: center;
@@ -187,7 +187,6 @@
     padding-bottom: 6px;
   }
 
-  /* Same left-grown underline as the practice items. */
   .arch-more a::after {
     content: '';
     position: absolute;
@@ -206,7 +205,7 @@
     transform: scaleX(1);
   }
 
-  /* ── Tablet / mobile — flat two-column flow, no absolute scatter ── */
+  /* Tablet / mobile — flat two-column flow, no absolute scatter */
   @media (max-width: 1024px) {
     .arch-scatter {
       height: auto;

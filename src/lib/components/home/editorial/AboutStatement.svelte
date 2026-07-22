@@ -16,8 +16,7 @@
       <span class="eyebrow" data-rise use:rise>
         <span class="rise-inner">{m.footer_link_about()}</span>
       </span>
-      <!-- Statement text (same copy as home_meta_description) split into an ink
-           lead + a muted geographic tail, matching the two-tone mockup. -->
+      <!-- Statement split into an ink lead + a muted geographic tail (two-tone). -->
       <p class="statement-big" data-rise use:rise>
         <span class="rise-inner"
           >{m.home_statement_lead()} <span class="soft">{m.home_statement_soft()}</span></span
@@ -95,7 +94,7 @@
     text-wrap: balance;
   }
 
-  /* Muted geographic tail — the two-tone display statement from the mockup. */
+  /* Muted geographic tail of the two-tone display statement. */
   .statement-big .soft {
     color: var(--muted);
   }
