@@ -35,6 +35,62 @@
   let optionEls = $state<HTMLAnchorElement[]>([]);
   const currentIndex = $derived(LOCALES.indexOf(locale));
 
+  /* Curved-edge reveal: the panel's left boundary is an SVG path whose middle
+     control point bulges out mid-sweep and flattens as it reaches the edge. */
+  let pathEl = $state<SVGPathElement | null>(null);
+  let edgeX = 0;
+  let edgeRaf = 0;
+
+  function panelPath(x: number, bulge: number): string {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    return `M${x} 0 H${W} V${H} H${x} Q${x - bulge} ${H / 2} ${x} 0 Z`;
+  }
+
+  const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  function runPanel(open: boolean) {
+    if (!pathEl) return;
+    cancelAnimationFrame(edgeRaf);
+    const W = window.innerWidth;
+    const to = open ? 0 : W;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      edgeX = to;
+      pathEl.setAttribute('d', panelPath(edgeX, 0));
+      return;
+    }
+    const from = edgeX;
+    const bulge = Math.min(W * 0.2, 300);
+    const dur = open ? 820 : 620;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / dur);
+      edgeX = from + (to - from) * easeInOutCubic(p);
+      pathEl?.setAttribute('d', panelPath(edgeX, bulge * Math.sin(p * Math.PI)));
+      if (p < 1) edgeRaf = requestAnimationFrame(tick);
+    };
+    edgeRaf = requestAnimationFrame(tick);
+  }
+
+  let edgePrimed = false;
+  $effect(() => {
+    const open = langOpen;
+    if (!pathEl) return;
+    if (!edgePrimed) {
+      edgePrimed = true;
+      edgeX = window.innerWidth;
+      pathEl.setAttribute('d', panelPath(edgeX, 0));
+      if (!open) return;
+    }
+    runPanel(open);
+  });
+
+  function onResize() {
+    if (!pathEl) return;
+    if (!langOpen) edgeX = window.innerWidth;
+    pathEl.setAttribute('d', panelPath(edgeX, 0));
+  }
+
   function openLang() {
     langOpen = true;
     requestAnimationFrame(() => optionEls[currentIndex >= 0 ? currentIndex : 0]?.focus());
@@ -114,7 +170,7 @@
   const isHome = $derived(!isPractices && !isArticles && !isGallery);
 </script>
 
-<svelte:window onkeydown={onWindowKeydown} />
+<svelte:window onkeydown={onWindowKeydown} onresize={onResize} />
 
 <header
   class="nav"
@@ -202,38 +258,41 @@
           aria-expanded={langOpen}
           aria-label={m.nav_language()}
         >
-          <span class="nav-rise">
-            {locale.toUpperCase()}<span class="lang-caret" aria-hidden="true"></span>
-          </span>
+          <span class="nav-rise">{locale.toUpperCase()}</span>
         </button>
       </div>
     </nav>
   </div>
 </header>
 
-<!-- Full-screen language slide-over (enters right → left) -->
-<div class="lang-panel" class:is-open={langOpen}>
-  <button class="lang-close" onclick={() => closeLang(true)} aria-label={m.nav_language()}>
-    <span class="lang-x" aria-hidden="true"></span>
-  </button>
-  <nav class="lang-list" aria-label={m.nav_language()}>
-    <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
-    {#each LOCALES as l, i (l)}
-      <a
-        href={localePath(l)}
-        class="lang-choice"
-        class:is-current={l === locale}
-        aria-current={l === locale ? 'true' : undefined}
-        tabindex={langOpen ? 0 : -1}
-        bind:this={optionEls[i]}
-        onclick={() => closeLang()}
-        onkeydown={(e) => onMenuKeydown(e, i)}
-      >
-        {localeLabels[l] ?? l.toUpperCase()}
-      </a>
-    {/each}
-    <!-- eslint-enable svelte/no-navigation-without-resolve -->
-  </nav>
+<!-- Full-screen language slide-over — curved SVG edge that flattens as it lands -->
+<div class="lang-panel" class:is-open={langOpen} aria-hidden={!langOpen}>
+  <svg class="lang-shape" preserveAspectRatio="none" aria-hidden="true">
+    <path bind:this={pathEl} d="" />
+  </svg>
+  <div class="lang-content">
+    <button class="lang-close" onclick={() => closeLang(true)} aria-label={m.nav_language()}>
+      <span class="lang-x" aria-hidden="true"></span>
+    </button>
+    <nav class="lang-list" aria-label={m.nav_language()}>
+      <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
+      {#each LOCALES as l, i (l)}
+        <a
+          href={localePath(l)}
+          class="lang-choice"
+          class:is-current={l === locale}
+          aria-current={l === locale ? 'true' : undefined}
+          tabindex={langOpen ? 0 : -1}
+          bind:this={optionEls[i]}
+          onclick={() => closeLang()}
+          onkeydown={(e) => onMenuKeydown(e, i)}
+        >
+          {localeLabels[l] ?? l.toUpperCase()}
+        </a>
+      {/each}
+      <!-- eslint-enable svelte/no-navigation-without-resolve -->
+    </nav>
+  </div>
 </div>
 
 <style>
@@ -451,36 +510,40 @@
     align-items: center;
   }
 
-  .lang-caret {
-    width: 6px;
-    height: 6px;
-    border-right: 1.6px solid currentcolor;
-    border-bottom: 1.6px solid currentcolor;
-    transform: translateY(-2px) rotate(45deg);
-    transition: transform 0.32s var(--ease);
-  }
-
-  .lang.is-open .lang-caret {
-    transform: translateY(1px) rotate(-135deg);
-  }
-
-  /* Full-screen language slide-over (enters from the right) */
+  /* Full-screen language slide-over — the SVG path animates the curved edge */
   .lang-panel {
     position: fixed;
     inset: 0;
     z-index: 60;
-    background: var(--paper);
-    transform: translateX(100%);
-    visibility: hidden;
-    transition:
-      transform 0.55s var(--ease),
-      visibility 0s linear 0.55s;
+    pointer-events: none;
   }
 
   .lang-panel.is-open {
-    transform: translateX(0);
-    visibility: visible;
-    transition: transform 0.55s var(--ease);
+    pointer-events: auto;
+  }
+
+  .lang-shape {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .lang-shape path {
+    fill: var(--paper);
+  }
+
+  .lang-content {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .lang-panel.is-open .lang-content {
+    opacity: 1;
+    transition: opacity 0.45s ease 0.35s;
   }
 
   .lang-close {
