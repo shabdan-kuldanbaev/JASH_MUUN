@@ -33,7 +33,9 @@ export function initSmoothScroll(): SmoothScroll {
   if (reduced) return NOOP;
 
   const lenis = new Lenis({
-    duration: 1.1,
+    // Shorter catch-up than before — snappier, closer to native while still
+    // eased (the homepage + content pages felt too glidey at 1.1).
+    duration: 0.8,
     // cubic-out: softer, longer tail than expo-out — a more fluid glide.
     easing: (t) => 1 - Math.pow(1 - t, 3),
     smoothWheel: true

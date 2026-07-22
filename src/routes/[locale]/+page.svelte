@@ -10,6 +10,7 @@
   import ArchiveScatter from '$components/home/editorial/ArchiveScatter.svelte';
   import FooterWordmark from '$components/home/editorial/FooterWordmark.svelte';
   import { initEditorialHeader } from '$lib/editorialHeader.svelte';
+  import { initSmoothScroll } from '$lib/smoothScroll';
 
   let { data }: { data: PageData } = $props();
 
@@ -35,12 +36,16 @@
     window.addEventListener('load', onLoad);
 
     const stopHeader = initEditorialHeader(() => heroEl);
+    // Momentum smooth-scroll on the vertical homepage too (same eased Lenis as
+    // the content pages; drives native scroll so the header tracker still fires).
+    const smooth = initSmoothScroll();
 
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
       window.removeEventListener('load', onLoad);
       stopHeader();
+      smooth.destroy();
       document.body.classList.remove('is-loaded');
       document.body.style.overflow = prevOverflow;
     };

@@ -122,50 +122,31 @@ html.lenis body {
    Soft crossfade with subtle directional shift (editorial feel)
    ===================================================================== */
 
-@keyframes fade-out-left {
+@keyframes vt-recede {
   to {
     opacity: 0;
-    transform: translateX(-40px);
+    transform: scale(0.94);
   }
 }
 
-@keyframes fade-in-from-right {
+@keyframes vt-emerge {
   from {
     opacity: 0;
-    transform: translateX(40px);
+    transform: scale(1.06);
   }
 }
 
-@keyframes fade-out-right {
-  to {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-}
-
-@keyframes fade-in-from-left {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
-}
-
-/* Forward direction (default): old fades left, new fades in from right */
+/* Page transition: a depth zoom, not a left/right slide — the old view recedes
+   (scales back + fades) while the new one settles forward into place. Symmetric,
+   so it reads the same in both navigation directions. */
 ::view-transition-old(root) {
-  animation: fade-out-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: vt-recede 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
 }
 
 ::view-transition-new(root) {
-  animation: fade-in-from-right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Back direction: old fades right, new fades in from left */
-html[data-transition-dir='back'] ::view-transition-old(root) {
-  animation-name: fade-out-right;
-}
-
-html[data-transition-dir='back'] ::view-transition-new(root) {
-  animation-name: fade-in-from-left;
+  animation: vt-emerge 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
 }
 
 /* Header stays in place during page transitions */
