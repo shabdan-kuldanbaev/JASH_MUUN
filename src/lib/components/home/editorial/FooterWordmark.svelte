@@ -2,6 +2,10 @@
   import { asset } from '$app/paths';
   import { m } from '$i18n';
   import { rise } from '$lib/actions/editorialReveal';
+
+  // Content pages have no About block, so the footer carries the ALIPH support
+  // credit; the homepage keeps it in AboutStatement (credit stays false there).
+  let { credit = false }: { credit?: boolean } = $props();
 </script>
 
 <footer class="content-footer">
@@ -12,6 +16,10 @@
     aria-hidden="true"
   />
   <div class="footer-inner">
+    {#if credit}
+      <!-- footer_support_note — verbatim (ALIPH credit + provenance). -->
+      <p class="support-note">{m.footer_support_note()}</p>
+    {/if}
     <div class="colophon">
       <!-- footer_copyright — verbatim. -->
       <span>{m.footer_copyright()}</span>
@@ -45,6 +53,17 @@
     max-width: var(--home-w);
     margin: 0 auto;
     padding: clamp(40px, 5vw, 72px) var(--gutter) clamp(16px, 2vw, 28px);
+  }
+
+  .support-note {
+    max-width: 62ch;
+    margin-bottom: clamp(20px, 2.4vw, 34px);
+    padding-bottom: clamp(16px, 2vw, 26px);
+    border-bottom: 1px solid var(--line);
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--muted);
+    letter-spacing: 0.01em;
   }
 
   .colophon {

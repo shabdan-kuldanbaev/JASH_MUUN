@@ -5,7 +5,10 @@
   import type { Locale } from '$lib/i18n';
   import { editorialHeader } from '$lib/editorialHeader.svelte';
 
-  let { locale }: { locale: Locale } = $props();
+  // `onLight` forces the over-content treatment from first paint — content pages
+  // have no dark hero, so the nav must render black-on-paper immediately (before
+  // the scroll tracker mounts) rather than flashing white.
+  let { locale, onLight = false }: { locale: Locale; onLight?: boolean } = $props();
 
   const path = $derived(page.url.pathname);
   const pathFromLocale = $derived(path.slice(path.indexOf(`/${locale}`)));
@@ -125,7 +128,7 @@
 
 <header
   class="nav"
-  class:nav--onlight={editorialHeader.onLight}
+  class:nav--onlight={onLight || editorialHeader.onLight}
   class:nav--hidden={editorialHeader.hidden}
 >
   <div class="nav-inner">

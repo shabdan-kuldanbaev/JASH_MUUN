@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { afterNavigate } from '$app/navigation';
-  import Header from '$components/layout/Header.svelte';
-  import ContentFooter from '$components/layout/ContentFooter.svelte';
+  import EditorialHeader from '$components/home/editorial/EditorialHeader.svelte';
+  import FooterWordmark from '$components/home/editorial/FooterWordmark.svelte';
   import { initSmoothScroll, type SmoothScroll } from '$lib/smoothScroll';
-  import { headerReveal, initHeaderReveal } from '$lib/headerReveal.svelte';
+  import { editorialHeader, initEditorialHeader } from '$lib/editorialHeader.svelte';
 
   let { children, data } = $props();
 
@@ -16,12 +16,18 @@
     document.body.style.overflow = 'auto';
     // Momentum smooth-scroll (Lenis) lives here, not on the horizontal homepage.
     smooth = initSmoothScroll();
-    // Auto-hide header follows the vertical scroll (content pages only).
-    const stopHeaderReveal = initHeaderReveal();
+    // The editorial nav in "always over light" mode: content pages have no dark
+    // hero, so it renders black-on-paper and only auto-hides on scroll.
+    const stopHeader = initEditorialHeader(() => null, { alwaysOnLight: true });
+    // The nav/logo entrance masks key off `body.is-loaded` (the homepage sets
+    // it too) — without it the logos and links stay hidden below their masks.
+    const raf = requestAnimationFrame(() => document.body.classList.add('is-loaded'));
     return () => {
+      cancelAnimationFrame(raf);
       smooth?.destroy();
       smooth = null;
-      stopHeaderReveal();
+      stopHeader();
+      document.body.classList.remove('is-loaded');
       document.body.style.overflow = '';
     };
   });
@@ -31,15 +37,15 @@
   // the whole previous page. (afterNavigate must be registered at init time.)
   afterNavigate(() => {
     smooth?.scrollToTop();
-    headerReveal.show();
+    editorialHeader.show();
   });
 </script>
 
-<Header locale={data.locale} />
+<EditorialHeader locale={data.locale} onLight />
 
 <div class="content-shell">
   {@render children()}
-  <ContentFooter />
+  <FooterWordmark credit />
 </div>
 
 <style>
@@ -50,5 +56,13 @@
     /* `clip` (not `hidden`) so it doesn't become a scroll container — keeps
        horizontal full-bleed contained while letting `position: sticky` work. */
     overflow-x: clip;
+  }
+
+  /* The editorial nav stacks into two rows on mobile (logos over links), so it
+     is taller than --nav-h — reserve more space or content tucks under it. */
+  @media (max-width: 767px) {
+    .content-shell {
+      padding-top: 118px;
+    }
   }
 </style>

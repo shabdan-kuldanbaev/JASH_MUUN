@@ -62,10 +62,16 @@ export const editorialHeader = {
  * @param getHeroEl returns the hero element so the light/dark boundary tracks
  *   its live height (the hero is full-viewport, but height changes on resize /
  *   mobile URL-bar collapse).
+ * @param opts.alwaysOnLight content pages have no dark hero — the nav sits over
+ *   light paper from the top, so `onLight`/`overContent` stay true and only the
+ *   auto-hide (`hidden`) tracks scroll.
  * @returns teardown that removes listeners, clears the body classes, and
  *   re-pins the header.
  */
-export function initEditorialHeader(getHeroEl: () => HTMLElement | null): () => void {
+export function initEditorialHeader(
+  getHeroEl: () => HTMLElement | null,
+  opts: { alwaysOnLight?: boolean } = {}
+): () => void {
   if (typeof window === 'undefined') return () => {};
 
   const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'));
@@ -103,7 +109,7 @@ export function initEditorialHeader(getHeroEl: () => HTMLElement | null): () => 
     const delta = y - lastY;
     lastY = y;
 
-    const onlight = y > heroBoundary();
+    const onlight = opts.alwaysOnLight ? true : y > heroBoundary();
     _onLight = onlight;
     _overContent = onlight;
 
