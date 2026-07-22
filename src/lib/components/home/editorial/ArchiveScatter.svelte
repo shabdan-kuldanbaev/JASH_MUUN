@@ -97,7 +97,7 @@
   }
 
   .shead h2 {
-    display: inline-block;
+    display: block;
     font-family: Jost, sans-serif;
     font-weight: 600;
     font-size: clamp(30px, 3.4vw, 52px);
@@ -107,7 +107,7 @@
   }
 
   .shead-lede {
-    display: inline-block;
+    display: block;
     max-width: 52ch;
     margin-top: 14px;
     font-size: 14.5px;

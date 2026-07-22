@@ -73,7 +73,7 @@
                   >
                     <span class="rise-inner">
                       {practice.shortTitle || practice.title}
-                      <span class="pf-arrow" aria-hidden="true">→</span>
+                      <span class="pf-arrow" aria-hidden="true">›</span>
                     </span>
                   </span>
                   {#if cat}
@@ -145,7 +145,7 @@
   }
 
   .shead h2 {
-    display: inline-block;
+    display: block;
     font-family: Jost, sans-serif;
     font-weight: 600;
     font-size: clamp(30px, 3.4vw, 52px);
@@ -155,7 +155,7 @@
   }
 
   .shead-lede {
-    display: inline-block;
+    display: block;
     max-width: 52ch;
     margin-top: 14px;
     font-size: 14.5px;
@@ -219,12 +219,16 @@
   }
 
   .pf-name.is-short .pf-arrow {
-    font-size: 0.28em;
+    font-size: 0.52em;
   }
 
   .pf-arrow {
+    /* Stalkless chevron (not the shafted → arrow), sized up — a heavier forward
+       cue than a full arrow at the poster size. */
     color: var(--shyrdak);
-    font-size: 0.42em;
+    font-size: 0.62em;
+    font-weight: 300;
+    line-height: 1;
     opacity: 0;
     transform: translateX(-12px);
     transition:
