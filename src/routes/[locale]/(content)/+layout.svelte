@@ -1,45 +1,54 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { afterNavigate } from '$app/navigation';
-  import Header from '$components/layout/Header.svelte';
-  import ContentFooter from '$components/layout/ContentFooter.svelte';
+  import { page } from '$app/state';
+  import EditorialHeader from '$components/home/editorial/EditorialHeader.svelte';
+  import FooterWordmark from '$components/home/editorial/FooterWordmark.svelte';
   import { initSmoothScroll, type SmoothScroll } from '$lib/smoothScroll';
-  import { headerReveal, initHeaderReveal } from '$lib/headerReveal.svelte';
+  import { editorialHeader, initEditorialHeader } from '$lib/editorialHeader.svelte';
 
   let { children, data } = $props();
+
+  // Practice detail opens on a full-viewport dark hero (nav flips like the homepage, no reserved band);
+  // every other content page is light paper from the top → onLight nav + padding.
+  const isPracticeDetail = $derived(page.route.id?.endsWith('practices/[slug]') ?? false);
 
   let smooth: SmoothScroll | null = null;
 
   onMount(() => {
-    // Enable normal vertical scrolling for content pages.
-    // The homepage restores overflow: hidden in its own onMount/cleanup.
+    // Enable normal vertical scrolling for content pages (app.css locks body overflow globally).
     document.body.style.overflow = 'auto';
-    // Momentum smooth-scroll (Lenis) lives here, not on the horizontal homepage.
     smooth = initSmoothScroll();
-    // Auto-hide header follows the vertical scroll (content pages only).
-    const stopHeaderReveal = initHeaderReveal();
+    // Dark-hero pages report their viewport height so the nav flips at the hero edge; others → null (onLight).
+    const stopHeader = initEditorialHeader(() =>
+      page.route.id?.endsWith('practices/[slug]') ? window.innerHeight : null
+    );
+    // Nav/logo entrance masks key off `body.is-loaded` — without it they stay hidden below their masks.
+    const raf = requestAnimationFrame(() => document.body.classList.add('is-loaded'));
     return () => {
+      cancelAnimationFrame(raf);
       smooth?.destroy();
       smooth = null;
-      stopHeaderReveal();
+      stopHeader();
+      document.body.classList.remove('is-loaded');
       document.body.style.overflow = '';
     };
   });
 
-  // This layout persists across content→content navigation, so Lenis keeps its
-  // offset — jump instantly to the top instead of smooth-scrolling up through
-  // the whole previous page. (afterNavigate must be registered at init time.)
+  // Layout persists across content→content nav, so jump instantly to the top instead of smooth-scrolling up.
   afterNavigate(() => {
     smooth?.scrollToTop();
-    headerReveal.show();
+    editorialHeader.show();
+    // Recompute the light/dark nav state for the new route without waiting for a scroll.
+    requestAnimationFrame(() => window.dispatchEvent(new Event('scroll')));
   });
 </script>
 
-<Header locale={data.locale} />
+<EditorialHeader locale={data.locale} onLight={!isPracticeDetail} />
 
-<div class="content-shell">
+<div class="content-shell" class:flush={isPracticeDetail}>
   {@render children()}
-  <ContentFooter />
+  <FooterWordmark credit />
 </div>
 
 <style>
@@ -47,8 +56,19 @@
     padding-top: var(--nav-h);
     min-height: 100vh;
     background: var(--paper);
-    /* `clip` (not `hidden`) so it doesn't become a scroll container — keeps
-       horizontal full-bleed contained while letting `position: sticky` work. */
+    /* `clip` (not `hidden`) so it isn't a scroll container — contains full-bleed while `position: sticky` still works. */
     overflow-x: clip;
+  }
+
+  /* Dark-hero pages bleed under the transparent nav — no band. Beats the mobile padding below. */
+  .content-shell.flush {
+    padding-top: 0;
+  }
+
+  /* The nav is two rows on mobile (taller than --nav-h) — reserve more space. */
+  @media (max-width: 767px) {
+    .content-shell {
+      padding-top: 118px;
+    }
   }
 </style>

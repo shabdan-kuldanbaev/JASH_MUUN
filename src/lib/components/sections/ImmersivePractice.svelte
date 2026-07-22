@@ -9,13 +9,9 @@
   let { sections }: { sections: PracticeSection[] } = $props();
 
   const hero = $derived(sections.find((s) => s.type === 'hero'));
-  // Everything after the hero flows normally over the pinned hero.
   const rest = $derived(sections.filter((s) => s.type !== 'hero'));
 
-  // Zone mood: the ritual reflects the ACTIVE stage's mood (`silk`, `ember`, …),
-  // rendered as `.ritual.is-<mood>`. The zone can start AND end mid-ritual —
-  // the temporal counterpart of the article dye band. A `photo` section with a
-  // mood closes a zone spatially (`photo--<mood>`). Registry: the CSS below.
+  // Ritual background reflects the active stage's mood, rendered as `.ritual.is-<mood>` (registry in CSS below).
   let ritualMood = $state<string | null>(null);
 </script>
 
@@ -185,16 +181,12 @@
 </div>
 
 <style>
-  /*
-    Parallax: ONLY the hero is pinned (position: sticky). The `.flow` wrapper is an
-    opaque paper block (z above the hero) that scrolls up and covers it — a single
-    overlap seam. Inside `.flow` every section flows normally; they do NOT stick or
-    overlap each other. (The ritual keeps its own inner sticky-scroll image.)
-  */
+  /* Only the hero is pinned; the opaque `.flow` block scrolls up and covers it (single overlap seam). */
   .hero-pin {
     position: sticky;
-    top: var(--nav-h);
-    height: calc(100svh - var(--nav-h));
+    top: 0;
+    /* Full-viewport, bleeding under the transparent nav. */
+    height: 100svh;
     z-index: 0;
   }
 
@@ -212,15 +204,11 @@
     }
   }
 
-  /* shared section rhythm */
+  /* Shared section rhythm */
   .sec {
     position: relative;
 
-    /*
-      `clip` (not `hidden`) contains bleeding petroglyphs WITHOUT establishing a
-      scroll container — otherwise the ritual section's inner `position: sticky`
-      visual would resolve against `.sec` instead of the viewport and scroll away.
-    */
+    /* `clip` (not `hidden`) contains petroglyphs without becoming a scroll container that would trap the ritual's inner `position: sticky`. */
     overflow: clip;
   }
 
@@ -239,7 +227,7 @@
     margin-bottom: 18px;
   }
 
-  /* Lede — editorial manifesto paragraph */
+  /* Lede */
   .lede {
     padding-block: var(--section-py);
   }
@@ -253,8 +241,7 @@
     max-width: 40ch;
   }
 
-  /* Kyial ornament — theme marker. Stroke colours come from per-theme vars
-     (registry below); default is a single earthy accent. */
+  /* Kyial ornament — stroke colours come from per-theme vars (registry below). */
   .ornament {
     display: block;
     width: 150px;
@@ -262,6 +249,13 @@
     --orn-a: var(--clay);
     --orn-b: var(--clay);
     --orn-c: var(--clay);
+  }
+
+  /* Bigger on phones — 150px reads small against the full-bleed column. */
+  @media (max-width: 720px) {
+    .ornament {
+      width: min(240px, 62vw);
+    }
   }
 
   .lede--theme-duotone .ornament {
@@ -276,20 +270,14 @@
     --orn-c: var(--clay);
   }
 
-  /* `dye` — single steppe/gold ornament (natural-dye identity) */
+  /* `dye` — single steppe/gold ornament */
   .lede--theme-dye .ornament {
     --orn-a: var(--steppe);
     --orn-b: var(--steppe);
     --orn-c: var(--steppe);
   }
 
-  /* Timeline / ritual keep their own component styling; no fixed height —
-     the timeline sizes to its content (its own 32px block padding). */
-
-  /* Ritual mood-zone registry: the section background reflects the active
-     stage's mood (StickyScrollReveal → onMoodChange). Add a mood = add its
-     `.ritual.is-<mood>` pair below; the renderer sets the class generically.
-     `silk` — cool pearl + diagonal weave; `ember` — warm clay + heat haze. */
+  /* Ritual mood-zone registry: background reflects the active stage's mood (add a mood = add its `.ritual.is-<mood>` pair). */
   .ritual {
     background: var(--paper);
     transition: background-color 1.1s ease;
@@ -308,15 +296,6 @@
     background: color-mix(in srgb, var(--ink) 2.5%, var(--paper));
   }
 
-  .ritual.is-silk::after {
-    opacity: 0.4;
-    background: repeating-linear-gradient(
-      115deg,
-      color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
-      transparent 1px 9px
-    );
-  }
-
   .ritual.is-ember {
     background: color-mix(in srgb, var(--clay) 5%, var(--paper));
   }
@@ -330,9 +309,7 @@
     );
   }
 
-  /* `dye` — warm vat zone (mirror of is-ember, steppe-toned). `--vat` is a
-     component-scoped token (like `--silk` on .photo--silk) — keeps the dye tint
-     named + single-sourced instead of an inline color-mix. */
+  /* `dye` — warm vat zone (mirror of is-ember, steppe-toned). */
   .ritual.is-dye {
     --vat: color-mix(in srgb, var(--steppe) 7%, var(--paper));
 
@@ -353,7 +330,7 @@
     z-index: 1;
   }
 
-  /* Photo — uncropped plate (the kiiz plate vocabulary) */
+  /* Photo — uncropped plate */
   .photo {
     padding-block: clamp(8px, 2vw, 24px);
   }
@@ -388,26 +365,6 @@
     );
   }
 
-  .photo--silk::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.4;
-    background: repeating-linear-gradient(
-      115deg,
-      color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
-      transparent 1px 9px
-    );
-    -webkit-mask-image: linear-gradient(
-      180deg,
-      #000 0,
-      #000 calc(100% - var(--edge)),
-      transparent 100%
-    );
-    mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - var(--edge)), transparent 100%);
-  }
-
   .photo--silk .plate {
     position: relative;
     z-index: 1;
@@ -417,7 +374,7 @@
     box-shadow: 0 0 90px color-mix(in srgb, var(--ink) 7%, transparent);
   }
 
-  /* Quote — centred epigraph */
+  /* Quote */
   .quote {
     padding-block: var(--section-py);
     text-align: center;
@@ -508,8 +465,7 @@
     color: var(--ink);
   }
 
-  /* Bare-name ledger (no detail on any row, e.g. base felt): drop the empty
-     value cell so the name reads as a clean single-column ruled list. */
+  /* Bare-name ledger (no detail on any row): drop the empty value cell → single-column ruled list. */
   .ledger-row dd:empty {
     display: none;
   }
@@ -532,8 +488,7 @@
       gap: 32px;
     }
 
-    /* The two-column ledger row squeezes long texts on a phone — stack each
-       entry: bold name on top, details underneath, everything left-aligned. */
+    /* Stack each ledger entry on phones: bold name over details, left-aligned. */
     .ledger-row {
       flex-direction: column;
       align-items: flex-start;
@@ -569,7 +524,7 @@
     }
   }
 
-  /* ── Shades table (section_type=table) ─────────────────────────────────── */
+  /* Shades table (section_type=table) */
   .table-sec {
     padding-block: var(--section-py);
   }
@@ -654,7 +609,7 @@
     flex: none;
   }
 
-  /* ── «Важно» warn callout (note--warn) ─────────────────────────────────── */
+  /* Warn callout (note--warn) */
   .note {
     padding-block: clamp(8px, 2vw, 24px);
   }
@@ -691,7 +646,7 @@
     color: var(--ink-2);
   }
 
-  /* ── Recommendations checklist (note--recs) ────────────────────────────── */
+  /* Recommendations checklist (note--recs) */
   .note--recs .sec-inner {
     max-width: 820px;
   }
@@ -732,7 +687,7 @@
     margin-top: 1px;
   }
 
-  /* Table → stacked cards on phones (the mockup .otenki responsive rules) */
+  /* Table → stacked cards on phones */
   @media (max-width: 720px) {
     .otenki,
     .otenki thead,

@@ -12,6 +12,14 @@
   "panel_close": "Close",
   "home_meta_title": "Jash-Muun · Living Heritage",
   "home_meta_description": "A digital exhibition of intangible cultural heritage from Kyrgyz mountain communities.",
+  "home_statement_lead": "A digital exhibition of intangible cultural heritage",
+  "home_statement_soft": "from Kyrgyz mountain communities.",
+
+  "home_hero_title_line_1": "Practices, people",
+  "home_hero_title_line_2": "and patterns of heritage.",
+  "home_hero_image_alt": "Craftswomen working with felt",
+  "home_practices_cta": "View all practices",
+  "home_archive_cta": "View the full archive",
 
   "scroll_progress": "Exhibition progress",
   "scroll_previous": "Previous room",
@@ -33,11 +41,11 @@
   "footer_aria_section": "Contact & Partners",
 
   "footer_supported_by": "Supported by",
-  "footer_support_note": "This project is supported by ALIPH (International Alliance for the Protection of Heritage) and Jash-Muun Foundation.",
+  "footer_support_note": "This project is supported by ALIPH (International Alliance for the Protection of Heritage) and the Jash-Muun Public Association. All photography and practices were made exclusively in Toktogul.",
   "footer_link_about": "About",
   "footer_link_contact": "Contact",
   "footer_link_privacy": "Privacy",
-  "footer_copyright": "© 2026 Jash-Muun Foundation · Bishkek, Kyrgyzstan",
+  "footer_copyright": "© 2026 Jash-Muun Public Association · Bishkek, Kyrgyzstan",
   "practices_meta_title": "Practices — Jash-Muun",
   "practices_meta_description": "Documented cultural practices, field research, and heritage records from Kyrgyz mountain communities.",
   "practices_kicker": "Practices",

@@ -33,6 +33,9 @@ export type PracticeCategory = 'crafts' | 'music' | 'rituals' | 'cuisine' | 'gam
 export interface PracticeSummary {
   id: string;
   title: string;
+  // Short poster name (e.g. "Сүмөлөк") for the editorial homepage; the long
+  // descriptive `title` is the fallback when it is empty for a locale.
+  shortTitle?: string | null;
   slug: string;
   excerpt?: string | null;
   coverImage?: DatoImage | null;

@@ -13,6 +13,7 @@ const QUERY = /* GraphQL */ `
     ) {
       id
       title
+      shortTitle
       slug
       excerpt
       coverImage {
@@ -33,6 +34,7 @@ interface RawData {
   allPractices: Array<{
     id: string;
     title: string;
+    shortTitle: string | null;
     slug: string;
     excerpt: string | null;
     coverImage: {
