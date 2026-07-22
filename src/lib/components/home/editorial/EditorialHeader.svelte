@@ -548,6 +548,7 @@
 
   .lang-close {
     position: absolute;
+    z-index: 2;
     top: clamp(18px, 3vw, 40px);
     right: clamp(18px, 4vw, 56px);
     width: 46px;
@@ -593,10 +594,12 @@
     justify-content: center;
     gap: clamp(6px, 1vw, 16px);
     padding: 0 clamp(24px, 9vw, 160px);
+    pointer-events: none; /* container spans the panel — only the links catch clicks */
   }
 
   .lang-choice {
     width: fit-content;
+    pointer-events: auto;
     font-family: Jost, sans-serif;
     font-weight: 400;
     font-size: clamp(38px, 8vw, 104px);
