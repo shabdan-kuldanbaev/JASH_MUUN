@@ -1,9 +1,20 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
+  import { goto } from '$app/navigation';
   import { m, LOCALES } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import { editorialHeader } from '$lib/editorialHeader.svelte';
+
+  // The active-link underline is held back until the nav has risen in on first
+  // load (a persistent body flag), so it draws in after — not before — the text.
+  // On client navigation the flag is already set, so it updates without delay.
+  onMount(() => {
+    if (document.body.classList.contains('nav-ready')) return;
+    const t = setTimeout(() => document.body.classList.add('nav-ready'), 1400);
+    return () => clearTimeout(t);
+  });
 
   // `onLight` forces the over-content treatment from first paint (content pages have no dark hero) to avoid a white flash.
   let { locale, onLight = false }: { locale: Locale; onLight?: boolean } = $props();
@@ -29,12 +40,85 @@
     fr: 'Français'
   };
 
-  /* Language dropdown */
+  /* Language slide-over */
   let langOpen = $state(false);
-  let langEl = $state<HTMLElement | null>(null);
   let toggleEl = $state<HTMLButtonElement | null>(null);
   let optionEls = $state<HTMLAnchorElement[]>([]);
   const currentIndex = $derived(LOCALES.indexOf(locale));
+
+  /* Curved-edge reveal: the panel's left boundary is an SVG path whose middle
+     control point bulges out mid-sweep and flattens as it reaches the edge. */
+  let pathEl = $state<SVGPathElement | null>(null);
+  let edgeX = 0;
+  let edgeRaf = 0;
+
+  function panelPath(x: number, bulge: number): string {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    return `M${x} 0 H${W} V${H} H${x} Q${x - bulge} ${H / 2} ${x} 0 Z`;
+  }
+
+  const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  // A link tapped inside the panel closes it first, then navigates once the
+  // curtain has swept out — so the page transition plays on a clean screen.
+  let pendingHref: string | null = null;
+  function chooseAndClose(href: string) {
+    pendingHref = href;
+    closeLang();
+  }
+
+  function runPanel(open: boolean) {
+    if (!pathEl) return;
+    cancelAnimationFrame(edgeRaf);
+    const W = window.innerWidth;
+    const to = open ? 0 : W;
+    const finish = () => {
+      if (!open && pendingHref) {
+        const href = pendingHref;
+        pendingHref = null;
+        // eslint-disable-next-line svelte/no-navigation-without-resolve -- href is already resolve()'d
+        goto(href);
+      }
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      edgeX = to;
+      pathEl.setAttribute('d', panelPath(edgeX, 0));
+      finish();
+      return;
+    }
+    const from = edgeX;
+    const bulge = Math.min(W * 0.2, 300);
+    const dur = open ? 820 : 620;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / dur);
+      edgeX = from + (to - from) * easeInOutCubic(p);
+      pathEl?.setAttribute('d', panelPath(edgeX, bulge * Math.sin(p * Math.PI)));
+      if (p < 1) edgeRaf = requestAnimationFrame(tick);
+      else finish();
+    };
+    edgeRaf = requestAnimationFrame(tick);
+  }
+
+  let edgePrimed = false;
+  $effect(() => {
+    const open = langOpen;
+    if (!pathEl) return;
+    if (!edgePrimed) {
+      edgePrimed = true;
+      edgeX = window.innerWidth;
+      pathEl.setAttribute('d', panelPath(edgeX, 0));
+      if (!open) return;
+    }
+    runPanel(open);
+  });
+
+  function onResize() {
+    if (!pathEl) return;
+    if (!langOpen) edgeX = window.innerWidth;
+    pathEl.setAttribute('d', panelPath(edgeX, 0));
+  }
 
   function openLang() {
     langOpen = true;
@@ -102,14 +186,11 @@
     if (e.key === 'Escape' && langOpen) closeLang(true);
   }
 
-  function onWindowClick(e: MouseEvent) {
-    if (langOpen && langEl && !langEl.contains(e.target as Node)) closeLang();
-  }
-
-  // Body-level class so the corner scrim can sit above the fixed header.
+  // Lock page scroll (pauses Lenis via its body-attr observer) while the
+  // full-screen language panel is open.
   $effect(() => {
-    document.body.classList.toggle('lang-open', langOpen);
-    return () => document.body.classList.remove('lang-open');
+    document.body.toggleAttribute('data-panel-open', langOpen);
+    return () => document.body.removeAttribute('data-panel-open');
   });
 
   const isPractices = $derived(path.includes('/practices'));
@@ -118,7 +199,7 @@
   const isHome = $derived(!isPractices && !isArticles && !isGallery);
 </script>
 
-<svelte:window onkeydown={onWindowKeydown} onclick={onWindowClick} />
+<svelte:window onkeydown={onWindowKeydown} onresize={onResize} />
 
 <header
   class="nav"
@@ -196,48 +277,114 @@
       </a>
       <!-- eslint-enable svelte/no-navigation-without-resolve -->
 
-      <div class="lang" class:is-open={langOpen} bind:this={langEl}>
+      <div class="lang" class:is-open={langOpen}>
         <button
           class="nav-item lang-toggle"
           bind:this={toggleEl}
           onclick={toggleLang}
           onkeydown={onToggleKeydown}
-          aria-haspopup="listbox"
+          aria-haspopup="dialog"
           aria-expanded={langOpen}
           aria-label={m.nav_language()}
         >
-          <span class="nav-rise">
-            {locale.toUpperCase()}<span class="lang-caret" aria-hidden="true"></span>
-          </span>
+          <span class="nav-rise">{locale.toUpperCase()}</span>
         </button>
-        <ul class="lang-menu" role="listbox" aria-label={m.nav_language()}>
-          <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
-          {#each LOCALES as l, i (l)}
-            <li role="none">
-              <a
-                href={localePath(l)}
-                class="lang-opt"
-                class:is-current={l === locale}
-                role="option"
-                aria-selected={l === locale}
-                tabindex={langOpen ? 0 : -1}
-                bind:this={optionEls[i]}
-                onclick={() => closeLang()}
-                onkeydown={(e) => onMenuKeydown(e, i)}
-              >
-                {localeLabels[l] ?? l.toUpperCase()}
-              </a>
-            </li>
-          {/each}
-          <!-- eslint-enable svelte/no-navigation-without-resolve -->
-        </ul>
       </div>
     </nav>
+
+    <button
+      class="nav-burger"
+      onclick={toggleLang}
+      aria-haspopup="dialog"
+      aria-expanded={langOpen}
+      aria-label={m.nav_menu()}
+    >
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </header>
 
-<!-- Corner scrim behind the open language dropdown -->
-<div class="lang-scrim" aria-hidden="true"></div>
+<!-- Full-screen menu / language slide-over — curved SVG edge that flattens as it lands -->
+<div class="lang-panel" class:is-open={langOpen} aria-hidden={!langOpen}>
+  <svg class="lang-shape" preserveAspectRatio="none" aria-hidden="true">
+    <path bind:this={pathEl} d="" />
+  </svg>
+  <div class="lang-content">
+    <button class="lang-close" onclick={() => closeLang(true)} aria-label={m.panel_close()}>
+      <span class="lang-x" aria-hidden="true"></span>
+    </button>
+    <div class="menu-scroll">
+      <!-- Primary nav — only surfaced inside the panel on mobile (the burger menu). -->
+      <nav class="menu-links" aria-label="Primary">
+        <!-- eslint-disable svelte/no-navigation-without-resolve -- hrefs are resolve()'d -->
+        <a
+          href={homeHref}
+          class="menu-link"
+          class:is-active={isHome}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(homeHref);
+          }}>{m.nav_home()}</a
+        >
+        <a
+          href={practicesHref}
+          class="menu-link"
+          class:is-active={isPractices}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(practicesHref);
+          }}>{m.nav_practices()}</a
+        >
+        <a
+          href={articlesHref}
+          class="menu-link"
+          class:is-active={isArticles}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(articlesHref);
+          }}>{m.nav_articles()}</a
+        >
+        <a
+          href={galleryHref}
+          class="menu-link"
+          class:is-active={isGallery}
+          tabindex={langOpen ? 0 : -1}
+          onclick={(e) => {
+            e.preventDefault();
+            chooseAndClose(galleryHref);
+          }}>{m.nav_archive()}</a
+        >
+        <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      </nav>
+
+      <nav class="lang-list" aria-label={m.panel_language_aria()}>
+        <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
+        {#each LOCALES as l, i (l)}
+          <a
+            href={localePath(l)}
+            class="lang-choice"
+            class:is-current={l === locale}
+            aria-current={l === locale ? 'true' : undefined}
+            tabindex={langOpen ? 0 : -1}
+            bind:this={optionEls[i]}
+            onclick={(e) => {
+              e.preventDefault();
+              chooseAndClose(localePath(l));
+            }}
+            onkeydown={(e) => onMenuKeydown(e, i)}
+          >
+            {localeLabels[l] ?? l.toUpperCase()}
+          </a>
+        {/each}
+        <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      </nav>
+    </div>
+  </div>
+</div>
 
 <style>
   /* Header — always transparent; text/logos flip over content */
@@ -249,11 +396,14 @@
     height: var(--nav-h);
     z-index: 40;
     background: transparent;
-
-    /* Slight reveal delay so the glow band lands first. */
     transition:
       transform 0.42s ease 0.16s,
-      box-shadow 0.32s ease;
+      background-color 0.3s ease;
+  }
+
+  /* Flat paper backing once the nav sits over content (incl. on reverse scroll). */
+  .nav--onlight {
+    background: var(--paper);
   }
 
   .nav--hidden {
@@ -345,6 +495,47 @@
     align-items: baseline;
   }
 
+  /* Burger — mobile only (desktop keeps the inline nav links). */
+  .nav-burger {
+    display: none;
+    width: 34px;
+    height: 20px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    color: #fff;
+  }
+
+  .nav--onlight .nav-burger {
+    color: #000;
+  }
+
+  /* Enlarge the tap target without changing the visual size. */
+  .nav-burger::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
+
+  .nav-burger span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.6px;
+    background: currentcolor;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .nav-burger span:nth-child(1) {
+    top: 4px;
+  }
+
+  .nav-burger span:nth-child(2) {
+    bottom: 4px;
+  }
+
   .nav-item {
     position: relative;
     overflow: hidden; /* mask for the rise-in of the label */
@@ -375,8 +566,12 @@
     transition: transform 0.4s var(--ease);
   }
 
-  .nav-item:hover::after,
-  .nav-item.is-active::after {
+  .nav-item:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Active underline draws in only after the nav has risen in (first load). */
+  :global(body.nav-ready) .nav-item.is-active::after {
     transform: scaleX(1);
   }
 
@@ -451,186 +646,185 @@
     align-items: center;
   }
 
-  .lang-caret {
-    width: 6px;
-    height: 6px;
-    border-right: 1.6px solid currentcolor;
-    border-bottom: 1.6px solid currentcolor;
-    transform: translateY(-2px) rotate(45deg);
-    transition: transform 0.32s var(--ease);
+  /* Full-screen language slide-over — the SVG path animates the curved edge */
+  .lang-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
   }
 
-  .lang.is-open .lang-caret {
-    transform: translateY(1px) rotate(-135deg);
+  .lang-panel.is-open {
+    pointer-events: auto;
   }
 
-  .lang-menu {
+  .lang-shape {
     position: absolute;
-    top: calc(100% + 14px);
-    right: 0;
-    min-width: 130px;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .lang-shape path {
+    fill: var(--paper);
+  }
+
+  .lang-content {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .lang-panel.is-open .lang-content {
+    opacity: 1;
+    transition: opacity 0.45s ease 0.35s;
+  }
+
+  .lang-close {
+    position: absolute;
+    z-index: 2;
+    top: clamp(18px, 3vw, 40px);
+    right: clamp(18px, 4vw, 56px);
+    width: 46px;
+    height: 46px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .lang-x {
+    position: relative;
+    display: block;
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+  }
+
+  .lang-x::before,
+  .lang-x::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: currentcolor;
+  }
+
+  .lang-x::before {
+    transform: rotate(45deg);
+  }
+
+  .lang-x::after {
+    transform: rotate(-45deg);
+  }
+
+  .menu-scroll {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
-    background: transparent;
-    list-style: none;
-    opacity: 0;
-    transform: translateY(-8px);
-    visibility: hidden;
-    pointer-events: none;
-    transition:
-      opacity 0.32s ease,
-      transform 0.4s var(--ease),
-      visibility 0s linear 0.4s;
-    z-index: 41;
+    justify-content: center;
+    gap: clamp(28px, 6vh, 60px);
+    padding: clamp(80px, 12vh, 140px) clamp(24px, 9vw, 160px);
+    pointer-events: none; /* container spans the panel — only the links catch clicks */
   }
 
-  .lang.is-open .lang-menu {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
+  /* Primary nav inside the panel — mobile burger menu only. */
+  .menu-links {
+    display: none;
+    flex-direction: column;
+    gap: clamp(4px, 1.2vh, 14px);
+  }
+
+  .lang-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 1vw, 16px);
+  }
+
+  .menu-link,
+  .lang-choice {
+    position: relative;
+    width: fit-content;
     pointer-events: auto;
-    transition:
-      opacity 0.32s ease,
-      transform 0.4s var(--ease);
+    font-family: Jost, sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    color: var(--ink);
   }
 
-  .lang-opt {
-    display: block;
-    padding: 8px 2px;
-    font-size: 13px;
-    letter-spacing: 0.02em;
-    color: #fff;
-    text-align: right;
-    opacity: 0;
-    transform: translateY(-6px);
-    transition:
-      color 0.2s ease,
-      transform 0.35s var(--ease),
-      opacity 0.35s ease;
+  .lang-choice {
+    font-size: clamp(38px, 8vw, 104px);
   }
 
-  .lang-opt.is-current {
-    font-weight: 500;
+  /* Underline slides in from the left on hover/focus; the active/current keeps it. */
+  .menu-link::after,
+  .lang-choice::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0.04em;
+    width: 100%;
+    height: 3px;
+    background: var(--shyrdak);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--ease);
   }
 
-  :global(body.over-content) .lang-opt {
-    color: #000;
+  .menu-link:hover::after,
+  .menu-link:focus-visible::after,
+  .menu-link.is-active::after,
+  .lang-choice:hover::after,
+  .lang-choice:focus-visible::after,
+  .lang-choice.is-current::after {
+    transform: scaleX(1);
   }
 
-  .lang.is-open .lang-menu .lang-opt {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .lang.is-open .lang-menu li:nth-child(1) .lang-opt {
-    transition-delay: 0.05s;
-  }
-
-  .lang.is-open .lang-menu li:nth-child(2) .lang-opt {
-    transition-delay: 0.1s;
-  }
-
-  .lang.is-open .lang-menu li:nth-child(3) .lang-opt {
-    transition-delay: 0.15s;
-  }
-
-  .lang.is-open .lang-menu li:nth-child(4) .lang-opt {
-    transition-delay: 0.2s;
-  }
-
-  /* Corner scrim (behind the open dropdown) */
-  .lang-scrim {
-    --w: min(58vw, 460px);
-    --h: min(92vh, 860px);
-
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: var(--w);
-    height: var(--h);
-    background: radial-gradient(
-      var(--w) var(--h) at top right,
-      rgba(8, 6, 4, 0.55) 0%,
-      rgba(8, 6, 4, 0.4) 32%,
-      rgba(8, 6, 4, 0.14) 62%,
-      rgba(8, 6, 4, 0) 84%
-    );
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: 38;
-  }
-
-  :global(body.lang-open) .lang-scrim {
-    opacity: 1;
-  }
-
-  /* Keep nav text white while the menu is open over the dark hero scrim. */
-  :global(body.lang-open) .nav-item {
-    color: #fff;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
-  }
-
-  /* Over content — light corner scrim, black nav text */
-  :global(body.over-content) .lang-scrim {
-    background: radial-gradient(
-      var(--w) var(--h) at top right,
-      rgba(250, 250, 247, 0.94) 0%,
-      rgba(250, 250, 247, 0.62) 32%,
-      rgba(250, 250, 247, 0.22) 62%,
-      rgba(250, 250, 247, 0) 84%
-    );
-  }
-
-  :global(body.lang-open.over-content) .nav-item {
-    color: #000;
-    text-shadow: none;
-  }
-
-  /* Mobile: two rows, no burger — logos on top, links below */
+  /* Mobile: single row — logos left, burger right; nav moves into the panel */
   @media (max-width: 767px) {
     .nav {
       height: auto;
     }
 
     .nav-inner {
-      flex-direction: column;
-      align-items: stretch;
+      align-items: center;
       height: auto;
-      gap: 15px;
-      padding: 12px clamp(14px, 4vw, 20px) 14px;
+      padding: 14px clamp(14px, 4vw, 20px);
     }
 
     .nav-logos {
-      height: 46px;
+      height: 44px;
       gap: 16px;
     }
 
     .logo {
-      height: 46px;
+      height: 44px;
     }
 
     .nav-links {
-      gap: clamp(14px, 4.5vw, 26px);
+      display: none;
     }
 
-    .nav-item {
-      font-size: 12px;
-      letter-spacing: 0.08em;
+    .nav-burger {
+      display: block;
     }
 
-    .lang {
-      margin-left: auto;
+    .menu-links {
+      display: flex;
     }
 
-    .lang-menu {
-      min-width: 108px;
-      top: calc(100% + 10px);
+    .menu-link {
+      font-size: clamp(34px, 9vw, 60px);
     }
 
-    .lang-opt {
-      font-size: 14px;
-      padding: 9px 2px;
+    .lang-choice {
+      font-size: clamp(20px, 5.5vw, 30px);
     }
   }
 

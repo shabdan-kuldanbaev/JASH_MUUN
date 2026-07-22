@@ -1,13 +1,57 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { asset } from '$app/paths';
   import { m } from '$i18n';
-  import { rise } from '$lib/actions/editorialReveal';
 
   // Content pages have no About block, so the footer carries the ALIPH support credit (homepage keeps it in AboutStatement).
   let { credit = false }: { credit?: boolean } = $props();
+
+  let footerEl = $state<HTMLElement | null>(null);
+
+  onMount(() => {
+    if (!footerEl) return;
+    const root = document.documentElement;
+    // Report the footer height so the page reserves the reveal gap below itself.
+    const setH = () => root.style.setProperty('--footer-h', `${footerEl!.offsetHeight}px`);
+    const ro = new ResizeObserver(setH);
+    ro.observe(footerEl);
+    setH();
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      footerEl.style.setProperty('--reveal', '1');
+      return () => {
+        ro.disconnect();
+        root.style.removeProperty('--footer-h');
+      };
+    }
+
+    // `--reveal` (0→1) tracks how much of the fixed footer the page has uncovered
+    // in its last footer-height of scroll; the wordmark rides it up, hides down.
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const h = footerEl!.offsetHeight || 1;
+      const max = root.scrollHeight - window.innerHeight;
+      const p = Math.min(1, Math.max(0, (window.scrollY - (max - h)) / h));
+      footerEl!.style.setProperty('--reveal', String(p));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(raf);
+      root.style.removeProperty('--footer-h');
+    };
+  });
 </script>
 
-<footer class="content-footer">
+<footer class="content-footer" bind:this={footerEl}>
   <img
     class="petroglyph petro-footer"
     src={asset('/assets/petroglyphs/2.svg')}
@@ -37,15 +81,19 @@
       <span>{m.footer_copyright()}</span>
     </div>
   </div>
-  <!-- Full-width wordmark — masked rise on entry -->
-  <div class="footer-word" data-rise use:rise aria-label="Jash Muun">
-    <span class="rise-inner">JASH&nbsp;MUUN</span>
+  <!-- Full-width wordmark — rides the reveal, hides down when the footer leaves view -->
+  <div class="footer-word" aria-label="Jash Muun">
+    <span class="fw-inner">JASH&nbsp;MUUN</span>
   </div>
 </footer>
 
 <style>
   .content-footer {
-    position: relative;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
     overflow: clip;
     background: var(--paper-2);
     padding-bottom: clamp(8px, 1.5vw, 24px);
@@ -116,6 +164,7 @@
   }
 
   .footer-word {
+    overflow: hidden; /* mask for the wordmark's slide */
     font-family: Jost, sans-serif;
     font-weight: 600;
     font-size: clamp(40px, 16.4vw, 300px);
@@ -128,9 +177,11 @@
     user-select: none;
   }
 
-  /* Extra room under the J descender so the rise mask never clips it. */
-  .footer-word .rise-inner {
-    padding-bottom: 0.22em;
+  .footer-word .fw-inner {
+    display: inline-block;
+    padding-bottom: 0.22em; /* room for the J descender inside the mask */
+    transform: translateY(calc((1 - var(--reveal, 1)) * 100%));
+    will-change: transform;
   }
 
   @media (max-width: 760px) {
