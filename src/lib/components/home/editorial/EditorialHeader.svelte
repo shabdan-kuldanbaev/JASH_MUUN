@@ -13,6 +13,7 @@
 
   const homeHref = $derived(resolve(`/${locale}/`));
   const practicesHref = $derived(resolve(`/${locale}/practices/`));
+  const articlesHref = $derived(resolve(`/${locale}/articles/`));
   const galleryHref = $derived(resolve(`/${locale}/gallery/`));
 
   /** Localized clone of the current path for a language switch (mirrors Header.svelte). */
@@ -112,8 +113,9 @@
   });
 
   const isPractices = $derived(path.includes('/practices'));
+  const isArticles = $derived(path.includes('/articles'));
   const isGallery = $derived(path.includes('/gallery'));
-  const isHome = $derived(!isPractices && !isGallery);
+  const isHome = $derived(!isPractices && !isArticles && !isGallery);
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} onclick={onWindowClick} />
@@ -175,6 +177,14 @@
         aria-current={isPractices ? 'page' : undefined}
       >
         <span class="nav-rise">{m.nav_practices()}</span>
+      </a>
+      <a
+        class="nav-item"
+        class:is-active={isArticles}
+        href={articlesHref}
+        aria-current={isArticles ? 'page' : undefined}
+      >
+        <span class="nav-rise">{m.nav_articles()}</span>
       </a>
       <a
         class="nav-item"
@@ -420,9 +430,13 @@
       transition-delay: 0.66s;
     }
 
-    /* .lang:nth-child(4) matches the .nav-item:nth-child specificity above so the delays stay in ascending order. */
-    .nav-links .lang:nth-child(4) .nav-rise {
+    .nav-links .nav-item:nth-child(4) .nav-rise {
       transition-delay: 0.73s;
+    }
+
+    /* .lang:nth-child(5) matches the .nav-item:nth-child specificity above so the delays stay in ascending order. */
+    .nav-links .lang:nth-child(5) .nav-rise {
+      transition-delay: 0.8s;
     }
   }
 
