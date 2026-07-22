@@ -42,10 +42,8 @@
         aria-hidden="true"
       />
       {#each cells as cell (cell.item.key)}
-        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- galleryHref is resolve()'d -->
-        <a
+        <div
           class="arch-cell"
-          href={galleryHref}
           use:rv={'up'}
           style={`--l:${cell.pos.left}; --t:${cell.pos.top}; --w:${cell.pos.width}; --ar:${cell.pos.aspect}; --d:${cell.pos.delay}`}
         >
@@ -60,7 +58,7 @@
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 42vw"
             class="arch-img"
           />
-        </a>
+        </div>
       {/each}
     </div>
 
@@ -159,14 +157,6 @@
     object-fit: cover; /* fill the fixed box, crop instead of stretch */
     display: block;
     filter: saturate(0.94);
-    transition:
-      transform 0.8s var(--ease),
-      filter 0.4s ease;
-  }
-
-  .arch-cell:hover :global(.arch-img) {
-    transform: scale(1.04);
-    filter: saturate(1.05);
   }
 
   /* CTA */
