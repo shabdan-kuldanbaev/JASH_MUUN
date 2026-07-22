@@ -1,20 +1,61 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { m } from '$i18n';
   import SeoHead from '$cms/SeoHead.svelte';
-  import Header from '$components/layout/Header.svelte';
-  import HorizontalStage from '$components/home/HorizontalStage.svelte';
-  import HeroSection from '$components/sections/HeroSection.svelte';
-  import FooterSection from '$components/sections/FooterSection.svelte';
+  import EditorialHeader from '$components/home/editorial/EditorialHeader.svelte';
+  import HeroPoster from '$components/home/editorial/HeroPoster.svelte';
+  import AboutStatement from '$components/home/editorial/AboutStatement.svelte';
+  import EditorialPractices from '$components/home/editorial/EditorialPractices.svelte';
+  import ArchiveScatter from '$components/home/editorial/ArchiveScatter.svelte';
+  import FooterWordmark from '$components/home/editorial/FooterWordmark.svelte';
+  import { initEditorialHeader } from '$lib/editorialHeader.svelte';
 
   let { data }: { data: PageData } = $props();
+
+  // The hero element — bound so the header can measure its live height for the
+  // light/dark boundary.
+  let heroEl = $state<HTMLElement | null>(null);
+
+  onMount(() => {
+    // The homepage is vertical (like content pages); restore vertical scroll
+    // here since app.css locks body overflow globally.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'auto';
+
+    // Load gate for the hero/header entrance — paint the pre-state one frame,
+    // then flip `is-loaded` so the CSS transitions run.
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => document.body.classList.add('is-loaded'));
+    });
+    // Safety net if the page was restored past first paint.
+    const onLoad = () => document.body.classList.add('is-loaded');
+    window.addEventListener('load', onLoad);
+
+    const stopHeader = initEditorialHeader(() => heroEl);
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      window.removeEventListener('load', onLoad);
+      stopHeader();
+      document.body.classList.remove('is-loaded');
+      document.body.style.overflow = prevOverflow;
+    };
+  });
 </script>
 
 <SeoHead title={m.home_meta_title()} description={m.home_meta_description()} locale={data.locale} />
 
-<Header locale={data.locale} />
+<EditorialHeader locale={data.locale} />
 
-<HorizontalStage>
-  <HeroSection practices={data.practices} locale={data.locale} />
-  <FooterSection />
-</HorizontalStage>
+<main>
+  <HeroPoster bind:heroEl />
+  <AboutStatement />
+  <EditorialPractices practices={data.practices} locale={data.locale} />
+  <ArchiveScatter archive={data.archive} locale={data.locale} />
+</main>
+
+<FooterWordmark />
