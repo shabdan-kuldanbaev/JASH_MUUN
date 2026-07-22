@@ -502,6 +502,13 @@
     color: #000;
   }
 
+  /* Enlarge the tap target without changing the visual size. */
+  .nav-burger::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
+
   .nav-burger span {
     position: absolute;
     left: 0;
