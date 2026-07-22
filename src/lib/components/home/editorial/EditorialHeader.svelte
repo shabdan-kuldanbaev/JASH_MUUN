@@ -29,9 +29,8 @@
     fr: 'Français'
   };
 
-  /* Language dropdown */
+  /* Language slide-over */
   let langOpen = $state(false);
-  let langEl = $state<HTMLElement | null>(null);
   let toggleEl = $state<HTMLButtonElement | null>(null);
   let optionEls = $state<HTMLAnchorElement[]>([]);
   const currentIndex = $derived(LOCALES.indexOf(locale));
@@ -102,14 +101,11 @@
     if (e.key === 'Escape' && langOpen) closeLang(true);
   }
 
-  function onWindowClick(e: MouseEvent) {
-    if (langOpen && langEl && !langEl.contains(e.target as Node)) closeLang();
-  }
-
-  // Body-level class so the corner scrim can sit above the fixed header.
+  // Lock page scroll (pauses Lenis via its body-attr observer) while the
+  // full-screen language panel is open.
   $effect(() => {
-    document.body.classList.toggle('lang-open', langOpen);
-    return () => document.body.classList.remove('lang-open');
+    document.body.toggleAttribute('data-panel-open', langOpen);
+    return () => document.body.removeAttribute('data-panel-open');
   });
 
   const isPractices = $derived(path.includes('/practices'));
@@ -118,7 +114,7 @@
   const isHome = $derived(!isPractices && !isArticles && !isGallery);
 </script>
 
-<svelte:window onkeydown={onWindowKeydown} onclick={onWindowClick} />
+<svelte:window onkeydown={onWindowKeydown} />
 
 <header
   class="nav"
@@ -196,13 +192,13 @@
       </a>
       <!-- eslint-enable svelte/no-navigation-without-resolve -->
 
-      <div class="lang" class:is-open={langOpen} bind:this={langEl}>
+      <div class="lang" class:is-open={langOpen}>
         <button
           class="nav-item lang-toggle"
           bind:this={toggleEl}
           onclick={toggleLang}
           onkeydown={onToggleKeydown}
-          aria-haspopup="listbox"
+          aria-haspopup="dialog"
           aria-expanded={langOpen}
           aria-label={m.nav_language()}
         >
@@ -210,34 +206,35 @@
             {locale.toUpperCase()}<span class="lang-caret" aria-hidden="true"></span>
           </span>
         </button>
-        <ul class="lang-menu" role="listbox" aria-label={m.nav_language()}>
-          <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
-          {#each LOCALES as l, i (l)}
-            <li role="none">
-              <a
-                href={localePath(l)}
-                class="lang-opt"
-                class:is-current={l === locale}
-                role="option"
-                aria-selected={l === locale}
-                tabindex={langOpen ? 0 : -1}
-                bind:this={optionEls[i]}
-                onclick={() => closeLang()}
-                onkeydown={(e) => onMenuKeydown(e, i)}
-              >
-                {localeLabels[l] ?? l.toUpperCase()}
-              </a>
-            </li>
-          {/each}
-          <!-- eslint-enable svelte/no-navigation-without-resolve -->
-        </ul>
       </div>
     </nav>
   </div>
 </header>
 
-<!-- Corner scrim behind the open language dropdown -->
-<div class="lang-scrim" aria-hidden="true"></div>
+<!-- Full-screen language slide-over (enters right → left) -->
+<div class="lang-panel" class:is-open={langOpen}>
+  <button class="lang-close" onclick={() => closeLang(true)} aria-label={m.nav_language()}>
+    <span class="lang-x" aria-hidden="true"></span>
+  </button>
+  <nav class="lang-list" aria-label={m.nav_language()}>
+    <!-- eslint-disable svelte/no-navigation-without-resolve -- localePath() returns a resolve()'d path -->
+    {#each LOCALES as l, i (l)}
+      <a
+        href={localePath(l)}
+        class="lang-choice"
+        class:is-current={l === locale}
+        aria-current={l === locale ? 'true' : undefined}
+        tabindex={langOpen ? 0 : -1}
+        bind:this={optionEls[i]}
+        onclick={() => closeLang()}
+        onkeydown={(e) => onMenuKeydown(e, i)}
+      >
+        {localeLabels[l] ?? l.toUpperCase()}
+      </a>
+    {/each}
+    <!-- eslint-enable svelte/no-navigation-without-resolve -->
+  </nav>
+</div>
 
 <style>
   /* Header — always transparent; text/logos flip over content */
@@ -249,11 +246,14 @@
     height: var(--nav-h);
     z-index: 40;
     background: transparent;
-
-    /* Slight reveal delay so the glow band lands first. */
     transition:
       transform 0.42s ease 0.16s,
-      box-shadow 0.32s ease;
+      background-color 0.3s ease;
+  }
+
+  /* Flat paper backing once the nav sits over content (incl. on reverse scroll). */
+  .nav--onlight {
+    background: var(--paper);
   }
 
   .nav--hidden {
@@ -464,127 +464,88 @@
     transform: translateY(1px) rotate(-135deg);
   }
 
-  .lang-menu {
+  /* Full-screen language slide-over (enters from the right) */
+  .lang-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--paper);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition:
+      transform 0.55s var(--ease),
+      visibility 0s linear 0.55s;
+  }
+
+  .lang-panel.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.55s var(--ease);
+  }
+
+  .lang-close {
     position: absolute;
-    top: calc(100% + 14px);
-    right: 0;
-    min-width: 130px;
+    top: clamp(18px, 3vw, 40px);
+    right: clamp(18px, 4vw, 56px);
+    width: 46px;
+    height: 46px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .lang-x {
+    position: relative;
+    display: block;
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+  }
+
+  .lang-x::before,
+  .lang-x::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: currentcolor;
+  }
+
+  .lang-x::before {
+    transform: rotate(45deg);
+  }
+
+  .lang-x::after {
+    transform: rotate(-45deg);
+  }
+
+  .lang-list {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
-    background: transparent;
-    list-style: none;
-    opacity: 0;
-    transform: translateY(-8px);
-    visibility: hidden;
-    pointer-events: none;
-    transition:
-      opacity 0.32s ease,
-      transform 0.4s var(--ease),
-      visibility 0s linear 0.4s;
-    z-index: 41;
+    justify-content: center;
+    gap: clamp(6px, 1vw, 16px);
+    padding: 0 clamp(24px, 9vw, 160px);
   }
 
-  .lang.is-open .lang-menu {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    pointer-events: auto;
-    transition:
-      opacity 0.32s ease,
-      transform 0.4s var(--ease);
+  .lang-choice {
+    width: fit-content;
+    font-family: Jost, sans-serif;
+    font-weight: 400;
+    font-size: clamp(38px, 8vw, 104px);
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    color: var(--ink);
+    transition: color 0.3s ease;
   }
 
-  .lang-opt {
-    display: block;
-    padding: 8px 2px;
-    font-size: 13px;
-    letter-spacing: 0.02em;
-    color: #fff;
-    text-align: right;
-    opacity: 0;
-    transform: translateY(-6px);
-    transition:
-      color 0.2s ease,
-      transform 0.35s var(--ease),
-      opacity 0.35s ease;
-  }
-
-  .lang-opt.is-current {
-    font-weight: 500;
-  }
-
-  :global(body.over-content) .lang-opt {
-    color: #000;
-  }
-
-  .lang.is-open .lang-menu .lang-opt {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .lang.is-open .lang-menu li:nth-child(1) .lang-opt {
-    transition-delay: 0.05s;
-  }
-
-  .lang.is-open .lang-menu li:nth-child(2) .lang-opt {
-    transition-delay: 0.1s;
-  }
-
-  .lang.is-open .lang-menu li:nth-child(3) .lang-opt {
-    transition-delay: 0.15s;
-  }
-
-  .lang.is-open .lang-menu li:nth-child(4) .lang-opt {
-    transition-delay: 0.2s;
-  }
-
-  /* Corner scrim (behind the open dropdown) */
-  .lang-scrim {
-    --w: min(58vw, 460px);
-    --h: min(92vh, 860px);
-
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: var(--w);
-    height: var(--h);
-    background: radial-gradient(
-      var(--w) var(--h) at top right,
-      rgba(8, 6, 4, 0.55) 0%,
-      rgba(8, 6, 4, 0.4) 32%,
-      rgba(8, 6, 4, 0.14) 62%,
-      rgba(8, 6, 4, 0) 84%
-    );
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: 38;
-  }
-
-  :global(body.lang-open) .lang-scrim {
-    opacity: 1;
-  }
-
-  /* Keep nav text white while the menu is open over the dark hero scrim. */
-  :global(body.lang-open) .nav-item {
-    color: #fff;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
-  }
-
-  /* Over content — light corner scrim, black nav text */
-  :global(body.over-content) .lang-scrim {
-    background: radial-gradient(
-      var(--w) var(--h) at top right,
-      rgba(250, 250, 247, 0.94) 0%,
-      rgba(250, 250, 247, 0.62) 32%,
-      rgba(250, 250, 247, 0.22) 62%,
-      rgba(250, 250, 247, 0) 84%
-    );
-  }
-
-  :global(body.lang-open.over-content) .nav-item {
-    color: #000;
-    text-shadow: none;
+  .lang-choice:hover,
+  .lang-choice.is-current {
+    color: var(--shyrdak);
   }
 
   /* Mobile: two rows, no burger — logos on top, links below */
@@ -621,16 +582,6 @@
 
     .lang {
       margin-left: auto;
-    }
-
-    .lang-menu {
-      min-width: 108px;
-      top: calc(100% + 10px);
-    }
-
-    .lang-opt {
-      font-size: 14px;
-      padding: 9px 2px;
     }
   }
 
