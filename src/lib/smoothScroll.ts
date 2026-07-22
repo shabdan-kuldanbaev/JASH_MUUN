@@ -40,18 +40,21 @@ export function initSmoothScroll(): SmoothScroll {
     frame = requestAnimationFrame(raf);
   });
 
-  // Pause Lenis while the page is locked (panel / mobile menu), resume once both release.
+  // Pause Lenis while the page is locked (panel / mobile menu / archive lightbox),
+  // resume once all release. Freezing Lenis stops the background scrolling under the
+  // lightbox and keeps the header's scroll tracker from re-showing it.
   const syncLock = () => {
     const locked =
       document.body.hasAttribute('data-panel-open') ||
-      document.body.hasAttribute('data-mobile-menu-open');
+      document.body.hasAttribute('data-mobile-menu-open') ||
+      document.body.classList.contains('archive-lightbox-open');
     if (locked) lenis.stop();
     else lenis.start();
   };
   const lockObserver = new MutationObserver(syncLock);
   lockObserver.observe(document.body, {
     attributes: true,
-    attributeFilter: ['data-panel-open', 'data-mobile-menu-open']
+    attributeFilter: ['data-panel-open', 'data-mobile-menu-open', 'class']
   });
 
   return {

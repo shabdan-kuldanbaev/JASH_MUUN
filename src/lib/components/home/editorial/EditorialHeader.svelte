@@ -415,6 +415,15 @@
     transform: none;
   }
 
+  /* While the archive lightbox is open, retract the nav. The lightbox is trapped
+     in the content-shell's stacking context (z-index below this fixed nav), so it
+     can't paint over the header — hide the header instead. */
+  :global(body.archive-lightbox-open) .nav {
+    transform: translateY(-100%);
+    transition: transform 0.2s ease;
+    pointer-events: none;
+  }
+
   .nav-inner {
     max-width: var(--home-w);
     margin: 0 auto;

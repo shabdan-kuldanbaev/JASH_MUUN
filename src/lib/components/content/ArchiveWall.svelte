@@ -492,6 +492,9 @@
      `overflow: auto` (hence !important — the layout owns the inline slot). */
   :global(body.archive-lightbox-open) {
     overflow: hidden !important;
+    /* iOS Safari ignores body overflow for touch — kill panning and rubber-band too. */
+    touch-action: none;
+    overscroll-behavior: none;
   }
   .lightbox {
     position: fixed;
@@ -502,6 +505,9 @@
     justify-content: center;
     padding: clamp(12px, 2vw, 28px);
     background: var(--paper);
+    /* No touch-panning inside the modal (belt to the body lock above). */
+    touch-action: none;
+    overscroll-behavior: none;
     /* Entry only: the dialog mounts fresh per open, so the paper fades in once.
        Stepping keeps it mounted (src swaps), so this never replays. */
     animation: lb-backdrop 0.32s ease both;
