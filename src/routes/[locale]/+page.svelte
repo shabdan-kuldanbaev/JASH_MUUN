@@ -52,7 +52,7 @@
 
 <EditorialHeader locale={data.locale} />
 
-<main>
+<main class="home-main">
   <HeroPoster bind:heroEl />
   <AboutStatement />
   <EditorialPractices practices={data.practices} locale={data.locale} />
@@ -60,3 +60,14 @@
 </main>
 
 <FooterWordmark />
+
+<style>
+  /* Sits above the fixed footer and reserves its height — the page lifts off to
+     reveal the footer at the bottom. */
+  .home-main {
+    position: relative;
+    z-index: 1;
+    margin-bottom: var(--footer-h, 0px);
+    background: var(--paper);
+  }
+</style>

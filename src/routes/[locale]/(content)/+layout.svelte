@@ -48,15 +48,19 @@
 
 <div class="content-shell" class:flush={isPracticeDetail}>
   {@render children()}
-  <FooterWordmark credit />
 </div>
+<FooterWordmark credit />
 
 <style>
+  /* Sits above the fixed footer and reserves its height below — the content
+     lifts off to reveal the footer as you reach the bottom. */
   .content-shell {
+    position: relative;
+    z-index: 1;
     padding-top: var(--nav-h);
+    margin-bottom: var(--footer-h, 0px);
     min-height: 100vh;
     background: var(--paper);
-    /* `clip` (not `hidden`) so it isn't a scroll container — contains full-bleed while `position: sticky` still works. */
     overflow-x: clip;
   }
 
