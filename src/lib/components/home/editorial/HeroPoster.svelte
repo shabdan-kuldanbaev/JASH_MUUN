@@ -107,7 +107,10 @@
   }
 
   .hero-bottom {
-    max-width: min(92%, 720px);
+    /* Wide enough that the longest localized title (Kyrgyz line 2) is never
+       clipped by the mask's overflow — the lines are nowrap, so this only sets
+       the clip boundary, not the visual width. */
+    max-width: min(96%, 1100px);
   }
 
   .hero-title {
@@ -152,7 +155,9 @@
     }
 
     .hero-title .ht-line {
-      transform: translateY(110%);
+      /* 125% (not 110%) so the taller descender-padded mask still fully hides
+         the line before it slides up. */
+      transform: translateY(125%);
       transition: transform 0.95s var(--ease);
       will-change: transform;
     }
