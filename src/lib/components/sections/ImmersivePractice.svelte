@@ -317,15 +317,6 @@
     background: color-mix(in srgb, var(--ink) 2.5%, var(--paper));
   }
 
-  .ritual.is-silk::after {
-    opacity: 0.4;
-    background: repeating-linear-gradient(
-      115deg,
-      color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
-      transparent 1px 9px
-    );
-  }
-
   .ritual.is-ember {
     background: color-mix(in srgb, var(--clay) 5%, var(--paper));
   }
@@ -395,26 +386,6 @@
       color-mix(in srgb, var(--ink) 1%, var(--paper)) calc(100% - var(--edge) * 0.5),
       var(--paper) 100%
     );
-  }
-
-  .photo--silk::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.4;
-    background: repeating-linear-gradient(
-      115deg,
-      color-mix(in srgb, var(--ink) 3%, transparent) 0 1px,
-      transparent 1px 9px
-    );
-    -webkit-mask-image: linear-gradient(
-      180deg,
-      #000 0,
-      #000 calc(100% - var(--edge)),
-      transparent 100%
-    );
-    mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - var(--edge)), transparent 100%);
   }
 
   .photo--silk .plate {

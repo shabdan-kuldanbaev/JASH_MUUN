@@ -33,10 +33,12 @@ export function initSmoothScroll(): SmoothScroll {
   if (reduced) return NOOP;
 
   const lenis = new Lenis({
-    // Shorter catch-up than before — snappier, closer to native while still
-    // eased (the homepage + content pages felt too glidey at 1.1).
-    duration: 0.8,
-    // cubic-out: softer, longer tail than expo-out — a more fluid glide.
+    // Frame-based smoothing (lerp) instead of a fixed-duration glide: each frame
+    // moves this fraction toward the target, so it tracks the wheel closely and
+    // settles fast — much less floaty than the old duration model. Higher = more
+    // responsive (1 = instant); this keeps a light polish without the drift.
+    lerp: 0.2,
+    // Applies to programmatic scrollTo only (wheel uses lerp above).
     easing: (t) => 1 - Math.pow(1 - t, 3),
     smoothWheel: true
     // Touch left native: smoothTouch defaults off so mobile keeps OS momentum.
