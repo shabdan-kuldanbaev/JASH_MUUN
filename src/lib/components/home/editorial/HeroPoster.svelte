@@ -103,6 +103,14 @@
     justify-content: flex-end;
   }
 
+  /* Match the header's side padding on mobile so the title aligns with the logos. */
+  @media (max-width: 767px) {
+    .hero-content {
+      padding-right: clamp(14px, 4vw, 20px);
+      padding-left: clamp(14px, 4vw, 20px);
+    }
+  }
+
   .hero-bottom {
     /* Wide enough that the longest localized title isn't clipped by the mask overflow (lines are nowrap). */
     max-width: min(96%, 1100px);
