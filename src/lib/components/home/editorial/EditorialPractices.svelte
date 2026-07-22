@@ -64,9 +64,16 @@
                   onmouseenter={() => activate(practice.slug)}
                   onfocus={() => activate(practice.slug)}
                 >
-                  <span class="pf-name" data-rise use:rise style={`--d:${i * 0.08}s`}>
+                  <span
+                    class="pf-name"
+                    class:is-short={!!practice.shortTitle}
+                    data-rise
+                    use:rise
+                    style={`--d:${i * 0.08}s`}
+                  >
                     <span class="rise-inner">
-                      {practice.title} <span class="pf-arrow" aria-hidden="true">→</span>
+                      {practice.shortTitle || practice.title}
+                      <span class="pf-arrow" aria-hidden="true">→</span>
                     </span>
                   </span>
                   {#if cat}
@@ -192,8 +199,8 @@
     display: inline-block;
     font-family: Jost, sans-serif;
     font-weight: 500;
-    /* Sized for real CMS titles (full descriptive sentences), not short poster
-       words — a large poster size turns long titles into an unreadable wall. */
+    /* Fallback size for real CMS titles (full descriptive sentences) or locales
+       with no short_title — a large poster size turns long titles into a wall. */
     font-size: clamp(19px, 2.2vw, 32px);
     letter-spacing: -0.015em;
     line-height: 1.22;
@@ -201,6 +208,18 @@
     color: inherit;
     padding-bottom: 0.06em;
     transition: transform 0.5s var(--ease);
+  }
+
+  /* A short poster name (short_title set for this locale) gets the large
+     exhibition size; the descriptive-title fallback above stays readable. */
+  .pf-name.is-short {
+    font-size: clamp(34px, 5vw, 72px);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+
+  .pf-name.is-short .pf-arrow {
+    font-size: 0.28em;
   }
 
   .pf-arrow {
