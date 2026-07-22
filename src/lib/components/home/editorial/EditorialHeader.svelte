@@ -1,10 +1,20 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { resolve, asset } from '$app/paths';
   import { goto } from '$app/navigation';
   import { m, LOCALES } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import { editorialHeader } from '$lib/editorialHeader.svelte';
+
+  // The active-link underline is held back until the nav has risen in on first
+  // load (a persistent body flag), so it draws in after — not before — the text.
+  // On client navigation the flag is already set, so it updates without delay.
+  onMount(() => {
+    if (document.body.classList.contains('nav-ready')) return;
+    const t = setTimeout(() => document.body.classList.add('nav-ready'), 1400);
+    return () => clearTimeout(t);
+  });
 
   // `onLight` forces the over-content treatment from first paint (content pages have no dark hero) to avoid a white flash.
   let { locale, onLight = false }: { locale: Locale; onLight?: boolean } = $props();
@@ -556,8 +566,12 @@
     transition: transform 0.4s var(--ease);
   }
 
-  .nav-item:hover::after,
-  .nav-item.is-active::after {
+  .nav-item:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Active underline draws in only after the nav has risen in (first load). */
+  :global(body.nav-ready) .nav-item.is-active::after {
     transform: scaleX(1);
   }
 
