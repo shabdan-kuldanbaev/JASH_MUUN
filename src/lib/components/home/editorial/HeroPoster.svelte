@@ -124,7 +124,10 @@
   .hero-title .ht-mask {
     display: block;
     overflow: hidden;
-    padding-bottom: 0.04em;
+    /* Room for Cyrillic descenders (р, д, ц, у) below the tight 0.98 line box —
+       the negative margin keeps the inter-line gap unchanged. */
+    padding-bottom: 0.22em;
+    margin-bottom: -0.16em;
   }
 
   .hero-title .ht-line {
