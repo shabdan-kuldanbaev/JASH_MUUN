@@ -1,14 +1,33 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { asset } from '$app/paths';
   import { m } from '$i18n';
 
   // Bound so the header can measure the live hero height for the light/dark boundary (resizes with the mobile URL bar).
   let { heroEl = $bindable(null) }: { heroEl?: HTMLElement | null } = $props();
+
+  // Reveal the hero photo only once it has actually decoded, so on a slow connection
+  // it fades up out of the warm placeholder instead of flashing in half-loaded. A
+  // cached image is already `complete` before hydration → caught in onMount.
+  let imgEl = $state<HTMLImageElement | null>(null);
+  let imgReady = $state(false);
+  onMount(() => {
+    if (imgEl?.complete && imgEl.naturalWidth > 0) imgReady = true;
+  });
 </script>
 
 <section class="hero" bind:this={heroEl}>
   <div class="hero-media">
-    <img class="hero-img" src={asset('/assets/home/hero.jpg')} alt={m.home_hero_image_alt()} />
+    <img
+      class="hero-img"
+      class:is-ready={imgReady}
+      src={asset('/assets/home/hero.jpg')}
+      alt={m.home_hero_image_alt()}
+      fetchpriority="high"
+      decoding="async"
+      bind:this={imgEl}
+      onload={() => (imgReady = true)}
+    />
     <div class="hero-veil"></div>
     <div class="hero-scrim-top"></div>
     <div class="hero-scrim-bottom"></div>
@@ -40,6 +59,10 @@
     inset: 0;
     z-index: 0;
     overflow: clip;
+    /* On-brand placeholder while the ~1MB hero photo loads: a warm heritage vignette
+       (earth/ink tones) instead of the browser's flat gray, so the white title and
+       logos stay legible from first paint and the photo develops in over it. */
+    background: radial-gradient(120% 85% at 50% 32%, #241b12 0%, #14100c 60%, #0e0b08 100%);
   }
 
   .hero-img {
@@ -49,9 +72,13 @@
     object-position: center 42%;
   }
 
-  /* Rest state once loaded (pre-state + transition are in the no-preference block below). */
+  /* Scale settles with the load-gate; opacity is gated on the photo actually
+     decoding (.is-ready) so it never reveals half-drawn over the placeholder. */
   :global(body.is-loaded) .hero-img {
     transform: scale(1);
+  }
+
+  .hero-img.is-ready {
     opacity: 1;
   }
 
