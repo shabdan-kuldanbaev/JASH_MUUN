@@ -42,7 +42,8 @@
       window.removeEventListener('load', onLoad);
       stopHeader();
       smooth.destroy();
-      document.body.classList.remove('is-loaded');
+      // Leave `is-loaded` set (see the content layout): removing + re-adding it across
+      // navigation replays the header/hero entrance, which reads as a double animation.
       document.body.style.overflow = prevOverflow;
     };
   });

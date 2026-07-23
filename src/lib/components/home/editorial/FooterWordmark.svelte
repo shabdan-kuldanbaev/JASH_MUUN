@@ -28,11 +28,16 @@
     // `--reveal` (0→1) tracks how much of the fixed footer the page has uncovered
     // in its last footer-height of scroll; the wordmark rides it up, hides down.
     let raf = 0;
+    let lastP = -1;
     const update = () => {
       raf = 0;
       const h = footerEl!.offsetHeight || 1;
       const max = root.scrollHeight - window.innerHeight;
       const p = Math.min(1, Math.max(0, (window.scrollY - (max - h)) / h));
+      // Skip redundant style writes (transform on a fixed layer) while the footer
+      // is off-screen and p stays pinned at 0 — cuts compositor churn on iOS momentum.
+      if (p === lastP) return;
+      lastP = p;
       footerEl!.style.setProperty('--reveal', String(p));
     };
     const onScroll = () => {

@@ -188,6 +188,13 @@
     /* Full-viewport, bleeding under the transparent nav. */
     height: 100svh;
     z-index: 0;
+    /* Promote to its own compositor layer so iOS Safari composites the pin
+       instead of repainting it each frame as the URL bar animates → no shake.
+       (transform on the sticky element itself does not affect its own sticky
+       behaviour, only ancestors would.) */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
   }
 
   .flow {
