@@ -24,13 +24,15 @@
       page.route.id?.endsWith('practices/[slug]') ? window.innerHeight : null
     );
     // Nav/logo entrance masks key off `body.is-loaded` — without it they stay hidden below their masks.
+    // Set once and left in place (like `nav-ready`): removing + re-adding it on every
+    // layout mount/unmount replays the whole header rise-in on each homepage↔content
+    // navigation, which — layered under the page View Transition — reads as a double animation.
     const raf = requestAnimationFrame(() => document.body.classList.add('is-loaded'));
     return () => {
       cancelAnimationFrame(raf);
       smooth?.destroy();
       smooth = null;
       stopHeader();
-      document.body.classList.remove('is-loaded');
       document.body.style.overflow = '';
     };
   });

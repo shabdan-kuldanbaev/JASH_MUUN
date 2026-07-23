@@ -12,6 +12,15 @@ const NOOP: SmoothScroll = {
   scrollToTop() {}
 };
 
+// Touch fallback: no Lenis, but keep the instant scroll-to-top on navigation
+// (SvelteKit's own reset can't be relied on across the persistent content layout).
+const NATIVE: SmoothScroll = {
+  destroy() {},
+  scrollToTop() {
+    window.scrollTo(0, 0);
+  }
+};
+
 /**
  * Momentum smooth-scroll for the vertical pages, backed by Lenis.
  *
@@ -25,6 +34,13 @@ export function initSmoothScroll(): SmoothScroll {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) return NOOP;
+
+  // Skip Lenis on touch devices (phones/tablets). Its per-frame scroll
+  // reconciliation fights iOS Safari's native momentum and makes the pinned
+  // hero (position: sticky) jitter. Native scroll is smoother and Safari-friendly;
+  // we keep only the instant scroll-to-top used on content→content navigation.
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  if (coarse) return NATIVE;
 
   const lenis = new Lenis({
     // Frame-based smoothing: each frame moves this fraction toward the target (1 = instant).
