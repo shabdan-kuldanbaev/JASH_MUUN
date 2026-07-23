@@ -750,12 +750,20 @@
   .lang-choice {
     position: relative;
     width: fit-content;
-    pointer-events: auto;
     font-family: Jost, sans-serif;
     font-weight: 400;
     letter-spacing: -0.02em;
     line-height: 1.08;
     color: var(--ink);
+  }
+
+  /* Links catch clicks ONLY while the panel is open. Otherwise the closed,
+     invisible panel (fixed, z-60, full-viewport) leaves its links hit-testable
+     and they intercept clicks on the content beneath — e.g. the archive filter
+     chips ("All" was unclickable). Closed → links inherit the panel's none. */
+  .lang-panel.is-open .menu-link,
+  .lang-panel.is-open .lang-choice {
+    pointer-events: auto;
   }
 
   .lang-choice {
