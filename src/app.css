@@ -70,7 +70,8 @@ body {
   body uses min-height (not height) so it can grow with content —
   height: 100% would pin body to the viewport and break vertical scrolling
   on any page taller than the screen (mobile fallback, content pages).
-  The horizontal stage overrides body overflow imperatively via JS.
+  Scroll is locked imperatively (body[data-panel-open] / [data-mobile-menu-open]),
+  not globally — see the Scrolling Model in CLAUDE.md.
 */
 html {
   height: 100%;
