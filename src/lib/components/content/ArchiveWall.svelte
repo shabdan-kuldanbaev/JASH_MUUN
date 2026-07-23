@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { m } from '$i18n';
   import type { Locale } from '$i18n';
   import type { ArchiveItem, PracticeCategory } from '$lib/types/datocms';
@@ -8,6 +9,8 @@
   import CmsImage from '$cms/CmsImage.svelte';
   import FilterChips from '$components/ui/FilterChips.svelte';
   import { reveal } from '$lib/actions/reveal';
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
 
   let { items, locale }: { items: ArchiveItem[]; locale: Locale } = $props();
 
@@ -27,7 +30,6 @@
     const next = value as 'all' | PracticeCategory;
     if (activeCat === next) return;
     activeCat = next;
-    openKey = null; // close the lightbox if a filter changes the set
   }
 
   // ── Staggered masonry ────────────────────────────────────────────────────
@@ -74,192 +76,77 @@
     return cols;
   });
 
-  // ── Lightbox ─────────────────────────────────────────────────────────────
-  // Keyed on the stable item.key (not an array position), so it stays correct
-  // even if `filtered` changes while open.
-  let openKey = $state<string | null>(null);
-  const openItem = $derived(
-    openKey === null ? null : (filtered.find((i) => i.key === openKey) ?? null)
-  );
-  const isOpen = $derived(openItem !== null);
+  // ── Lightbox (PhotoSwipe) ─────────────────────────────────────────────────
+  // Touch-native gallery: pinch-zoom, swipe, and its own iOS-safe scroll lock.
+  // Rendered at <body> level (z-index 100000), so it sits above the fixed header
+  // and escapes the content-shell stacking context entirely — no CSS hacks.
+  const LB_W = 1600; // imgix caps the long edge here (fit:max never upscales)
 
-  let dialogEl = $state<HTMLElement>();
-  let lastTrigger: HTMLElement | null = null;
-
-  // Closing plays an outro (backdrop fades, photo eases down + blurs — the mirror
-  // of the open "develop") before the dialog unmounts. `closing` gates that window.
-  let closing = $state(false);
-  let closeTimer: ReturnType<typeof setTimeout> | undefined;
-  const CLOSE_MS = 520;
-
-  function openFrame(item: ArchiveItem, trigger: HTMLElement) {
-    clearTimeout(closeTimer); // abort a pending outro if reopened mid-close
-    closing = false;
-    lastTrigger = trigger;
-    openKey = item.key;
-    cursorVisible = false; // reveal on first pointer move, at the real position
+  function slide(it: ArchiveItem) {
+    const ow = it.width || LB_W;
+    const oh = it.height || Math.round(LB_W * 0.66);
+    const w = Math.min(LB_W, ow);
+    const h = Math.round(oh * (w / ow));
+    return {
+      src: datoImg(it.imageUrl, { w: LB_W, fit: 'max' }),
+      width: w,
+      height: h,
+      alt: it.imageAlt,
+      msrc: it.blurUpThumb || undefined // LQIP placeholder while the full frame loads
+    };
   }
 
-  function requestClose() {
-    if (openKey === null || closing) return;
-    cursorVisible = false;
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) {
-      openKey = null; // no outro under reduced motion
-      return;
-    }
-    closing = true;
-    clearTimeout(closeTimer);
-    closeTimer = setTimeout(() => {
-      openKey = null;
-      closing = false;
-    }, CLOSE_MS);
-  }
+  let lightbox: PhotoSwipeLightbox | null = null;
 
-  function step(delta: number) {
-    if (openKey === null || filtered.length === 0) return;
-    const i = filtered.findIndex((it) => it.key === openKey);
-    if (i === -1) {
-      openKey = null;
-      return;
-    }
-    openKey = filtered[(i + delta + filtered.length) % filtered.length].key;
-  }
-
-  function onKeydown(e: KeyboardEvent) {
-    if (!isOpen || closing) return;
-    if (e.key === 'Escape') requestClose();
-    else if (e.key === 'ArrowLeft') step(-1);
-    else if (e.key === 'ArrowRight') step(1);
-    else if (e.key === 'Tab') trapTab(e);
-  }
-
-  // Keep Tab within the dialog's controls (WCAG 2.4.3 — focus must not fall to
-  // the masonry buttons behind the modal overlay).
-  function trapTab(e: KeyboardEvent) {
-    if (!dialogEl) return;
-    const f = Array.from(dialogEl.querySelectorAll<HTMLElement>('button'));
-    if (f.length === 0) return;
-    const first = f[0];
-    const last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-
-  // Modal lifecycle: lock scroll (a body class that layers over the layout's
-  // inline overflow), move focus into the dialog, restore focus to the trigger
-  // on close. Focus lands on the dialog container (not the image/close button)
-  // so no focus ring is drawn around the photo on open. Keyed on `isOpen` (a
-  // boolean) so stepping between images — which keeps isOpen true — does not
-  // re-fire and yank focus.
-  $effect(() => {
-    if (!isOpen) return;
-    const trigger = lastTrigger;
-    // iOS-safe scroll lock: `overflow: hidden` alone doesn't hold on iOS Safari
-    // (touch still pans, the URL bar moves, the fixed layer judders), so pin the
-    // body in place — position: fixed with the scroll offset preserved via top.
-    // The class also drives the header retract and the Lenis pause (both key off
-    // it). Restore the exact scroll position on close.
-    const scrollY = window.scrollY;
-    document.body.style.top = `-${scrollY}px`;
-    document.body.classList.add('archive-lightbox-open');
-    // preventScroll: focusing the dialog must not scroll it into view — that jump
-    // is a second jitter source on iOS.
-    dialogEl?.focus({ preventScroll: true });
+  onMount(() => {
+    lightbox = new PhotoSwipeLightbox({
+      pswpModule: () => import('photoswipe'),
+      mainClass: 'pswp--archive',
+      bgOpacity: 1, // opaque paper backdrop
+      showHideAnimationType: 'fade',
+      arrowPrev: false, // no visible arrow buttons — navigation is the edge zones below
+      arrowNext: false
+    });
+    // Invisible prev/next click zones on the left/right edges (chrome-free, like the
+    // old lightbox). appendTo 'wrapper' → PhotoSwipe routes taps here but swipes/pinch
+    // still reach the image. onClick fires on tap only, not on a drag.
+    lightbox.on('uiRegister', () => {
+      const pswp = lightbox?.pswp;
+      if (!pswp?.ui) return;
+      pswp.ui.registerElement({
+        name: 'nav-prev',
+        className: 'pswp__nav-zone pswp__nav-zone--prev',
+        appendTo: 'wrapper',
+        onClick: () => pswp.prev()
+      });
+      pswp.ui.registerElement({
+        name: 'nav-next',
+        className: 'pswp__nav-zone pswp__nav-zone--next',
+        appendTo: 'wrapper',
+        onClick: () => pswp.next()
+      });
+    });
+    // Pause Lenis + lock the page via the shared body attribute (the smoothScroll
+    // observer stops Lenis on it). PhotoSwipe covers the viewport, so the header
+    // it forces visible underneath never shows.
+    lightbox.on('beforeOpen', () => document.body.setAttribute('data-panel-open', ''));
+    lightbox.on('destroy', () => document.body.removeAttribute('data-panel-open'));
+    lightbox.init();
     return () => {
-      document.body.classList.remove('archive-lightbox-open');
-      document.body.style.top = '';
-      window.scrollTo(0, scrollY);
-      trigger?.focus({ preventScroll: true });
+      lightbox?.destroy();
+      lightbox = null;
     };
   });
 
-  // Large, crisp lightbox source (shared DatoCMS/Imgix builder).
-  const large = (url: string) => datoImg(url, { w: 1600, fit: 'max' });
-
-  // URLs whose full-size source has finished decoding — the "warm" set. A
-  // stepped-to image that is already warm renders at full opacity in the same
-  // frame (instant swap); one that isn't gets the soft develop fade below.
-  // Deliberately a plain, non-reactive cache: reactivity is driven by `imgReady`
-  // and `openKey`, and this set is only ever read inside effects those already
-  // re-run. A SvelteSet would re-trigger the preload effect on every decode and
-  // spawn redundant Image() loads — so opt this one line out of the rule.
-  // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  const warm = new Set<string>();
-
-  // Prefetch the neighbours (±1, ±2 in both directions) so stepping is instant —
-  // each finished decode joins `warm`. Re-runs on every openKey change, keeping
-  // the two photos on each side of the current one primed as you page through.
-  $effect(() => {
-    if (openKey === null || filtered.length < 2) return;
-    const i = filtered.findIndex((it) => it.key === openKey);
-    if (i === -1) return;
-    const n = filtered.length;
-    for (const delta of [1, -1, 2, -2]) {
-      const src = large(filtered[(i + delta + n) % n].imageUrl);
-      if (warm.has(src)) continue;
-      const img = new Image();
-      img.onload = () => warm.add(src);
-      img.src = src;
-      if (img.complete) warm.add(src);
-    }
-  });
-
-  // ── Load state of the CURRENTLY shown photo ──────────────────────────────
-  // `imgReady` drives the develop fade. It flips true synchronously for a warm
-  // photo (fast click that beat the preload still lands soft, not blank), and
-  // via onload otherwise. Element persists across steps, so a warm step never
-  // leaves the ready state → no fade, instant swap.
-  let imgEl = $state<HTMLImageElement>();
-  let imgReady = $state(false);
-
-  $effect(() => {
-    void openKey; // re-evaluate on every open / step
-    const el = imgEl;
-    if (openKey === null || !el) return;
-    const src = large(openItem!.imageUrl);
-    imgReady = warm.has(src) || (el.complete && el.naturalWidth > 0);
-  });
-
-  function onImgLoad() {
-    if (openItem) warm.add(large(openItem.imageUrl));
-    imgReady = true;
-  }
-
-  // ── Cursor (over the open image) ─────────────────────────────────────────
-  // A pixel glyph that follows the pointer — white × over the image, ink
-  // prev/next arrows on the paper margins. `cursorMode` picks the glyph.
-  let cursorX = $state(-100);
-  let cursorY = $state(-100);
-  let cursorVisible = $state(false);
-  let cursorMode = $state<'close' | 'prev' | 'next'>('close');
-
-  function onPointerMove(e: PointerEvent) {
-    if (e.pointerType === 'touch') return; // no hover cursor on touch
-    cursorX = e.clientX;
-    cursorY = e.clientY;
-    cursorVisible = true;
-    const r = imgEl?.getBoundingClientRect();
-    const overImage =
-      !!r &&
-      e.clientX >= r.left &&
-      e.clientX <= r.right &&
-      e.clientY >= r.top &&
-      e.clientY <= r.bottom;
-    cursorMode = overImage ? 'close' : e.clientX < window.innerWidth / 2 ? 'prev' : 'next';
-  }
-
-  function onPointerLeave() {
-    cursorVisible = false;
+  function openAt(item: ArchiveItem) {
+    if (!lightbox) return;
+    const index = filtered.findIndex((i) => i.key === item.key);
+    if (index === -1) return;
+    // Slide set = the currently filtered images, so prev/next stays in scope.
+    lightbox.options.dataSource = filtered.map(slide);
+    lightbox.loadAndOpen(index);
   }
 </script>
-
-<svelte:window onkeydown={onKeydown} />
 
 <SeoHead title={m.gallery_meta_title()} description={m.gallery_meta_description()} {locale} />
 
@@ -291,7 +178,7 @@
               class="frame"
               style="--gap:{GAPS[(ci * 7 + ri) % GAPS.length]}px"
               aria-label={item.imageAlt}
-              onclick={(e) => openFrame(item, e.currentTarget)}
+              onclick={() => openAt(item)}
               use:reveal={(ri % 6) * 40}
             >
               <CmsImage
@@ -311,89 +198,6 @@
     </div>
   {/if}
 </div>
-
-{#if openItem}
-  <div
-    class="lightbox"
-    class:is-closing={closing}
-    role="dialog"
-    aria-modal="true"
-    aria-label={openItem.imageAlt}
-    tabindex="-1"
-    bind:this={dialogEl}
-    onpointermove={onPointerMove}
-    onpointerleave={onPointerLeave}
-  >
-    <button
-      type="button"
-      class="lb-zone lb-prev"
-      aria-label={m.gallery_view_prev()}
-      onclick={() => step(-1)}
-    ></button>
-    <button
-      type="button"
-      class="lb-zone lb-next"
-      aria-label={m.gallery_view_next()}
-      onclick={() => step(1)}
-    ></button>
-    {#if !imgReady}
-      <span class="lb-loading" aria-hidden="true"></span>
-    {/if}
-    <button
-      type="button"
-      class="lb-close"
-      aria-label={m.gallery_view_close()}
-      onclick={requestClose}
-    >
-      <img
-        class="lb-img"
-        class:is-ready={imgReady}
-        src={large(openItem.imageUrl)}
-        alt={openItem.imageAlt}
-        width={openItem.width}
-        height={openItem.height}
-        bind:this={imgEl}
-        onload={onImgLoad}
-      />
-    </button>
-
-    <!-- Cursor glyph — white × over the image, black arrows on the paper margins -->
-    <div
-      class="lb-cursor"
-      class:is-visible={cursorVisible}
-      class:is-nav={cursorMode !== 'close'}
-      style="left:{cursorX}px; top:{cursorY}px"
-      aria-hidden="true"
-    >
-      {#if cursorMode === 'close'}
-        <svg width="46" height="46" viewBox="0 0 100 100">
-          <g fill="currentColor">
-            <path
-              d="M4.882 25.05v-10h9.972v10zM14.882 15.05v-10h9.972v10zM24.882 25.05v-10h9.972v10zM34.882 35.05v-10h9.972v10zM34.864 75.05v-10h9.972v10zM24.854 85.05v-10h9.972v10zM14.882 95.05v-10h9.972v10zM44.882 45.05v-10h9.972v10zM54.882 35.05v-10h9.972v10zM64.854 25.05v-10h9.972v10zM74.882 15.05v-10h9.972v10zM14.882 35.05v-10h9.972v10zM24.882 45.05v-10h9.972v10zM54.882 75.05v-10h9.972v10z"
-            />
-            <path
-              d="M54.854 75.05v-10h9.972v10zM64.854 65.05v-10h10v10zM44.882 65.05v-10h9.972v10zM74.882 75.05v-10h9.972v10zM84.882 85.05v-10h9.972v10zM64.882 85.05v-10h9.972v10zM74.882 95.05v-10h9.972v10zM34.882 55.05v-10h9.972v10zM24.854 65.05v-10h9.972v10zM14.854 75.05v-10h9.972v10zM4.854 85.05v-10h9.972v10zM54.882 55.05v-10h9.972v10zM64.882 45.05v-10h9.972v10zM74.882 35.05v-10h9.972v10zM84.882 25.05v-10h9.972v10z"
-            />
-          </g>
-        </svg>
-      {:else if cursorMode === 'prev'}
-        <svg width="80" height="80" viewBox="0 0 100 100">
-          <path
-            fill="currentColor"
-            d="M32 44v12h12V44zm12 24h12V56H44zm24 0H56v12h12zM56 44V32H44v12zm0-12h12V20H56z"
-          />
-        </svg>
-      {:else}
-        <svg width="80" height="80" viewBox="0 0 100 100">
-          <path
-            fill="currentColor"
-            d="M56 68V56H44v12zm-24 0v12h12V68zm12-24h12V32H44zm24 0H56v12h12zM44 32V20H32v12z"
-          />
-        </svg>
-      {/if}
-    </div>
-  </div>
-{/if}
 
 <style>
   .page {
@@ -498,187 +302,46 @@
       transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
-  /* ── Lightbox — opaque paper, big image, pixel cursors, no chrome ────── */
-  /* Scroll lock: a body class that layers over the content layout's inline
-     `overflow: auto` (hence !important — the layout owns the inline slot). */
-  :global(body.archive-lightbox-open) {
-    /* Pin the body in place (JS sets `top: -scrollY`) so the page can't move
-       under the fixed lightbox — the iOS-solid modal lock. */
-    position: fixed;
-    left: 0;
-    right: 0;
-    width: 100%;
-    overflow: hidden !important;
-    /* iOS Safari ignores body overflow for touch — kill panning and rubber-band too. */
-    touch-action: none;
-    overscroll-behavior: none;
+  /* ── PhotoSwipe (archive lightbox) — paper backdrop, ink icons ───────── */
+  :global(.pswp--archive) {
+    --pswp-bg: var(--paper);
+    --pswp-icon-color: var(--ink);
+    --pswp-icon-color-secondary: var(--paper);
   }
-  .lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(12px, 2vw, 28px);
-    background: var(--paper);
-    /* No touch-panning inside the modal (belt to the body lock above). */
-    touch-action: none;
-    overscroll-behavior: none;
-    /* Entry only: the dialog mounts fresh per open, so the paper fades in once.
-       Stepping keeps it mounted (src swaps), so this never replays. */
-    animation: lb-backdrop 0.32s ease both;
-    /* Native cursor is hidden — the white .lb-cursor glyph replaces it. */
-    cursor: none;
+  /* Flat icons on the light backdrop — drop the dark outline meant for photos. */
+  :global(.pswp--archive .pswp__icn-shadow) {
+    display: none;
   }
-  /* Outro — mirror of the open develop: paper fades while the photo eases down a
-     touch and softens back into blur, then the dialog unmounts (JS, CLOSE_MS).
-     Same soft curve + reversed end-state as the open fade, so in and out read as
-     one gentle motion. Keep the 0.52s here in sync with CLOSE_MS. */
-  .lightbox.is-closing {
-    animation: lb-close 0.52s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-    pointer-events: none;
+  /* Quiet museum chrome — no slide counter, no default arrow buttons. */
+  :global(.pswp--archive .pswp__counter),
+  :global(.pswp--archive .pswp__button--arrow--prev),
+  :global(.pswp--archive .pswp__button--arrow--next) {
+    display: none;
   }
-  .lightbox.is-closing .lb-img {
-    transition:
-      transform 0.52s cubic-bezier(0.2, 0.7, 0.2, 1),
-      filter 0.52s ease;
-    transform: scale(0.965);
-    filter: saturate(0.55) brightness(1.05) blur(7px);
-  }
-  .lb-zone {
-    position: fixed;
+
+  /* Invisible edge navigation zones — click the sides to page prev/next. The
+     pixel arrow cursor is the only hint (matches the archive's pixel cursors). */
+  :global(.pswp--archive .pswp__nav-zone) {
+    position: absolute;
     top: 0;
     bottom: 0;
-    width: 50%;
-    z-index: 2;
+    width: clamp(60px, 22%, 320px);
     background: none;
     border: 0;
-    padding: 0;
   }
-  .lb-prev {
+  :global(.pswp--archive .pswp__nav-zone--prev) {
     left: 0;
-    cursor: none;
+    cursor:
+      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='60'%20height='60'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='%231a1a1a'%20d='M32%2044v12h12V44zm12%2024h12V56H44zm24%200H56v12h12zM56%2044V32H44v12zm0-12h12V20H56z'/%3E%3C/svg%3E")
+        30 30,
+      w-resize;
   }
-  .lb-next {
+  :global(.pswp--archive .pswp__nav-zone--next) {
     right: 0;
-    cursor: none;
-  }
-  .lb-close {
-    position: relative;
-    z-index: 3;
-    display: block;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: none;
-  }
-
-  /* White cursor glyph following the pointer; painted last (top z),
-     `pointer-events: none` keeps clicks flowing to the zones. */
-  .lb-cursor {
-    position: fixed;
-    z-index: 10;
-    transform: translate(-50%, -50%);
-    line-height: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.18s ease;
-    color: #fff;
-  }
-  .lb-cursor.is-visible {
-    opacity: 1;
-  }
-  /* prev/next arrows sit on the light paper margins → keep them ink-black. */
-  .lb-cursor.is-nav {
-    color: var(--ink);
-  }
-  .lb-cursor svg {
-    display: block;
-  }
-  .lb-img {
-    display: block;
-    max-width: 92vw;
-    max-height: 86vh;
-    /* svh = small viewport height: constant as the iOS URL bar shows/hides, so
-       the photo doesn't resize mid-gesture. Falls back to vh above where unsupported. */
-    max-height: 86svh;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    /* Loading → ready: the photo resolves out of a soft, desaturated blur into
-       focus (a quiet "develop" fade). A warm image flips straight to .is-ready
-       in the same frame → no transition start → instant swap when stepping. */
-    opacity: 0;
-    transform: scale(0.965);
-    filter: saturate(0.55) brightness(1.05) blur(7px);
-    transition:
-      opacity 0.55s ease,
-      transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1),
-      filter 0.55s ease;
-  }
-  .lb-img.is-ready {
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
-
-  /* Soft loading cue for a cold image (fast-click that outran the preload) — a
-     low-contrast paper glow breathing in place, no hard skeleton bar. */
-  .lb-loading {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    pointer-events: none;
-  }
-  .lb-loading::after {
-    content: '';
-    width: clamp(120px, 20vw, 260px);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(26, 26, 26, 0.11), rgba(26, 26, 26, 0) 68%);
-    animation: lb-breathe 1.7s ease-in-out infinite;
-  }
-
-  @keyframes lb-backdrop {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  @keyframes lb-close {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-  @keyframes lb-breathe {
-    0%,
-    100% {
-      opacity: 0.35;
-      transform: scale(0.9);
-    }
-    50% {
-      opacity: 0.75;
-      transform: scale(1.06);
-    }
-  }
-  /* The dialog receives focus on open (for keyboard/scroll trapping) but must
-     not paint a ring around the photo. */
-  .lightbox:focus,
-  .lightbox:focus-visible,
-  .lb-close:focus-visible {
-    outline: none;
-  }
-  .lb-zone:focus-visible {
-    outline: 2px solid var(--shyrdak);
-    outline-offset: -4px;
+    cursor:
+      url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='60'%20height='60'%20viewBox='0%200%20100%20100'%3E%3Cpath%20fill='%231a1a1a'%20d='M56%2068V56H44v12zm-24%200v12h12V68zm12-24h12V32H44zm24%200H56v12h12zM44%2032V20H32v12z'/%3E%3C/svg%3E")
+        30 30,
+      e-resize;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -690,17 +353,6 @@
       transition: none;
       opacity: 1;
       transform: none;
-    }
-    .lightbox {
-      animation: none;
-    }
-    .lb-img {
-      transition: none;
-      transform: none;
-      filter: none;
-    }
-    .lb-loading::after {
-      animation: none;
     }
   }
 </style>
