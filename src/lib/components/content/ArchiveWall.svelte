@@ -160,11 +160,22 @@
   $effect(() => {
     if (!isOpen) return;
     const trigger = lastTrigger;
+    // iOS-safe scroll lock: `overflow: hidden` alone doesn't hold on iOS Safari
+    // (touch still pans, the URL bar moves, the fixed layer judders), so pin the
+    // body in place — position: fixed with the scroll offset preserved via top.
+    // The class also drives the header retract and the Lenis pause (both key off
+    // it). Restore the exact scroll position on close.
+    const scrollY = window.scrollY;
+    document.body.style.top = `-${scrollY}px`;
     document.body.classList.add('archive-lightbox-open');
-    dialogEl?.focus();
+    // preventScroll: focusing the dialog must not scroll it into view — that jump
+    // is a second jitter source on iOS.
+    dialogEl?.focus({ preventScroll: true });
     return () => {
       document.body.classList.remove('archive-lightbox-open');
-      trigger?.focus();
+      document.body.style.top = '';
+      window.scrollTo(0, scrollY);
+      trigger?.focus({ preventScroll: true });
     };
   });
 
@@ -491,6 +502,12 @@
   /* Scroll lock: a body class that layers over the content layout's inline
      `overflow: auto` (hence !important — the layout owns the inline slot). */
   :global(body.archive-lightbox-open) {
+    /* Pin the body in place (JS sets `top: -scrollY`) so the page can't move
+       under the fixed lightbox — the iOS-solid modal lock. */
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
     overflow: hidden !important;
     /* iOS Safari ignores body overflow for touch — kill panning and rubber-band too. */
     touch-action: none;
@@ -583,6 +600,9 @@
     display: block;
     max-width: 92vw;
     max-height: 86vh;
+    /* svh = small viewport height: constant as the iOS URL bar shows/hides, so
+       the photo doesn't resize mid-gesture. Falls back to vh above where unsupported. */
+    max-height: 86svh;
     width: auto;
     height: auto;
     object-fit: contain;
