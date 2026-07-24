@@ -734,4 +734,21 @@
       letter-spacing: 0.04em;
     }
   }
+
+  /* A practice can end on a ledger / shades-table / recommendations block whose
+     terminal row carries a bottom rule. When that block is the LAST in the flow it
+     butts up against the revealed footer, so the rule reads as a stray frame on the
+     content↔footer seam — drop it there only (mid-page blocks keep their borders). */
+  .flow > .sec:last-child .ledger-row:last-child,
+  .flow > .sec:last-child .recs-list li:last-child,
+  .flow > .sec:last-child .otenki tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  @media (max-width: 720px) {
+    /* On phones the shades-table stacks and the rule moves to the row itself. */
+    .flow > .sec:last-child .otenki tbody tr:last-child {
+      border-bottom: none;
+    }
+  }
 </style>
