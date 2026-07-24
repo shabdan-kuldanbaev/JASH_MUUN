@@ -102,7 +102,12 @@ body[data-mobile-menu-open] {
    horizontal homepage never mounts Lenis, so `html` keeps its 100% height.
    ===================================================================== */
 html.lenis,
-html.lenis body {
+html.lenis body,
+/* Touch devices run native scroll (no Lenis) but still need height:auto so the
+   footer's trailing margin-bottom reveal gap is actually scrollable — without it
+   the fixed footer only surfaces on overscroll. Class set in $lib/smoothScroll. */
+html.native-scroll,
+html.native-scroll body {
   height: auto;
 }
 
