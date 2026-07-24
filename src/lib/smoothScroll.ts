@@ -32,15 +32,20 @@ const NATIVE: SmoothScroll = {
 export function initSmoothScroll(): SmoothScroll {
   if (typeof window === 'undefined') return NOOP;
 
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) return NOOP;
-
   // Skip Lenis on touch devices (phones/tablets). Its per-frame scroll
   // reconciliation fights iOS Safari's native momentum and makes the pinned
   // hero (position: sticky) jitter. Native scroll is smoother and Safari-friendly;
   // we keep only the instant scroll-to-top used on content→content navigation.
+  // Tag <html> so the footer's trailing margin-bottom reveal gap stays scrollable
+  // (height:auto) — the job Lenis's own `lenis` class used to do here.
   const coarse = window.matchMedia('(pointer: coarse)').matches;
-  if (coarse) return NATIVE;
+  if (coarse) {
+    document.documentElement.classList.add('native-scroll');
+    return NATIVE;
+  }
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return NOOP;
 
   const lenis = new Lenis({
     // Frame-based smoothing: each frame moves this fraction toward the target (1 = instant).
