@@ -12,6 +12,12 @@
     if (!footerEl) return;
     const root = document.documentElement;
     // Report the footer height so the page reserves the reveal gap below itself.
+    // NOTE: `--footer-h` is intentionally NOT cleared on unmount. Homepage and
+    // content pages each render their own FooterWordmark, so on a homepage↔content
+    // navigation the outgoing instance's teardown could wipe the value the incoming
+    // one just set — collapsing the reserve gap to 0 and hiding the fixed footer
+    // behind the content (only draggable into view via overscroll). Every page has a
+    // footer that overwrites this on mount, so leaving the last value is safe.
     const setH = () => root.style.setProperty('--footer-h', `${footerEl!.offsetHeight}px`);
     const ro = new ResizeObserver(setH);
     ro.observe(footerEl);
@@ -21,7 +27,6 @@
       footerEl.style.setProperty('--reveal', '1');
       return () => {
         ro.disconnect();
-        root.style.removeProperty('--footer-h');
       };
     }
 
@@ -51,7 +56,8 @@
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       cancelAnimationFrame(raf);
-      root.style.removeProperty('--footer-h');
+      // `--footer-h` deliberately left in place (see note above) — the next page's
+      // footer overwrites it; clearing it here can collapse the reveal gap mid-nav.
     };
   });
 </script>
