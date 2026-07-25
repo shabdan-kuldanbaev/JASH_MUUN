@@ -4,6 +4,7 @@
   import { m } from '$i18n';
   import type { Locale } from '$lib/i18n';
   import type { ArchiveItem } from '$lib/types/datocms';
+  import { categoryLabel } from '$lib/categories';
   import { ARCHIVE_SCATTER } from '$lib/home/archiveScatter';
   import { rise, rv } from '$lib/actions/editorialReveal';
   import CmsImage from '$cms/CmsImage.svelte';
@@ -82,7 +83,7 @@
           <CmsImage
             image={{
               url: cell.item.imageUrl,
-              alt: cell.item.imageAlt,
+              alt: cell.item.imageAlt || categoryLabel(cell.item.category) || m.gallery_title(),
               width: cell.item.width,
               height: cell.item.height,
               blurUpThumb: cell.item.blurUpThumb

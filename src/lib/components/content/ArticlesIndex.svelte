@@ -83,7 +83,12 @@
         </div>
         <div class="featured-cover">
           {#if featured.coverImage}
-            <CmsImage image={featured.coverImage} eager sizes="(min-width: 900px) 660px, 100vw" />
+            <CmsImage
+              image={featured.coverImage}
+              alt={featured.title}
+              eager
+              sizes="(min-width: 900px) 660px, 100vw"
+            />
           {/if}
         </div>
       </a>
@@ -93,7 +98,11 @@
       {#each cards as article, i (article.id)}
         <a class="card" href={href(article.slug)} use:reveal={i * 40}>
           {#if article.coverImage}
-            <CmsImage image={article.coverImage} sizes="(min-width: 900px) 50vw, 100vw" />
+            <CmsImage
+              image={article.coverImage}
+              alt={article.title}
+              sizes="(min-width: 900px) 50vw, 100vw"
+            />
           {/if}
           <span class="scrim" aria-hidden="true"></span>
           <div class="caption">

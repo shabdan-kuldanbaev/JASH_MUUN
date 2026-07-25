@@ -104,7 +104,11 @@
         {@const label = practice.category ? categoryLabel(practice.category) : null}
         <a class="card" href={href(practice.slug)} use:reveal={i * 40}>
           {#if practice.coverImage}
-            <CmsImage image={practice.coverImage} sizes="(min-width: 900px) 50vw, 100vw" />
+            <CmsImage
+              image={practice.coverImage}
+              alt={practice.title}
+              sizes="(min-width: 900px) 50vw, 100vw"
+            />
           {/if}
           <span class="tint" aria-hidden="true"></span>
           <div class="caption">

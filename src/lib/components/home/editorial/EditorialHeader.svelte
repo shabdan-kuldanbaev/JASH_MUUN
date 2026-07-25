@@ -215,7 +215,7 @@
           <img
             class="logo-alt logo-alt--hero"
             src={asset('/assets/main-logo-hero.svg')}
-            alt="Jash Muun"
+            alt="Jash-Muun"
           />
           <img
             class="logo-alt logo-alt--light"
@@ -237,7 +237,7 @@
         </a>
       </span>
       <span class="logo">
-        <span class="logo-rise"><img src={asset('/assets/eu-logo.svg')} alt="EU" /></span>
+        <span class="logo-rise"><img src={asset('/assets/eu-logo.svg')} alt="European Union" /></span>
       </span>
     </div>
 

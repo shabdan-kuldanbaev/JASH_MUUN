@@ -68,6 +68,11 @@
 
   /** First text block gets the drop cap (the article intro). */
   const firstTextIndex = $derived(sections.findIndex((s) => s.type === 'text'));
+
+  /** Article title (from the hero block) — the alt fallback for body images that
+      lack a CMS alt, so no editorial photo ends up with an empty alt. */
+  const heroSection = $derived(sections.find((s) => s.type === 'hero'));
+  const articleTitle = $derived(heroSection?.type === 'hero' ? heroSection.title : '');
 </script>
 
 {#snippet sectionBlock(section: ArticleSection, index: number)}
@@ -86,7 +91,12 @@
     </header>
     {#if section.image}
       <figure class="plate plate--lead">
-        <CmsImage image={section.image} sizes="(min-width: 1200px) 1152px, 100vw" eager={true} />
+        <CmsImage
+          image={section.image}
+          alt={section.title}
+          sizes="(min-width: 1200px) 1152px, 100vw"
+          eager={true}
+        />
       </figure>
     {/if}
     {#if section.lede}
@@ -104,12 +114,24 @@
       {#if section.imageSecondary}
         <div class="pair">
           {#if section.image}
-            <CmsImage image={section.image} sizes="(min-width: 1200px) 640px, 100vw" />
+            <CmsImage
+              image={section.image}
+              alt={section.caption || articleTitle}
+              sizes="(min-width: 1200px) 640px, 100vw"
+            />
           {/if}
-          <CmsImage image={section.imageSecondary} sizes="(min-width: 1200px) 470px, 100vw" />
+          <CmsImage
+            image={section.imageSecondary}
+            alt={section.caption || articleTitle}
+            sizes="(min-width: 1200px) 470px, 100vw"
+          />
         </div>
       {:else if section.image}
-        <CmsImage image={section.image} sizes="(min-width: 1200px) 1152px, 100vw" />
+        <CmsImage
+          image={section.image}
+          alt={section.caption || articleTitle}
+          sizes="(min-width: 1200px) 1152px, 100vw"
+        />
       {/if}
       {#if section.caption}<figcaption>{section.caption}</figcaption>{/if}
     </figure>
@@ -142,7 +164,11 @@
       <div class="pt-inner">
         <div class="pt-media">
           {#if section.image}
-            <CmsImage image={section.image} sizes="(min-width: 900px) 50vw, 100vw" />
+            <CmsImage
+              image={section.image}
+              alt={section.heading || articleTitle}
+              sizes="(min-width: 900px) 50vw, 100vw"
+            />
           {/if}
         </div>
         <div class="pt-copy">
