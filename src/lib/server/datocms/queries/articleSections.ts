@@ -1,4 +1,5 @@
 import { datoRequest, DatoLocaleError } from '../client';
+import { LOCALIZED_ALT } from '../fragments';
 import { parseSectionVariants } from '../sectionVariants';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
@@ -29,14 +30,14 @@ const QUERY = /* GraphQL */ `
           caption
           image {
             url
-            alt
+            ${LOCALIZED_ALT}
             width
             height
             blurUpThumb
           }
           imageSecondary {
             url
-            alt
+            ${LOCALIZED_ALT}
             width
             height
             blurUpThumb

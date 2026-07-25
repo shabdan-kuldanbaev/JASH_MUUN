@@ -1,4 +1,5 @@
 import { datoRequest } from '../client';
+import { LOCALIZED_ALT } from '../fragments';
 import type { ArchiveItem } from '$lib/types/datocms';
 import { datoKey } from '$lib/imgix';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
@@ -16,7 +17,7 @@ import type { Locale } from '$lib/i18n';
 // masonry needs: dims for aspect ratio, blurUpThumb for the blur-up).
 const IMG = `{
   url
-  alt
+  ${LOCALIZED_ALT}
   width
   height
   blurUpThumb

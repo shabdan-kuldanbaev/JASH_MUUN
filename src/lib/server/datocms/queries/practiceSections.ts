@@ -1,4 +1,5 @@
 import { datoRequest, DatoLocaleError } from '../client';
+import { LOCALIZED_ALT } from '../fragments';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
 import type { PracticeSection, TableRow, RecRow } from '$lib/types/datocms';
@@ -50,7 +51,7 @@ const QUERY = /* GraphQL */ `
           caption
           image {
             url
-            alt
+            ${LOCALIZED_ALT}
             width
             height
           }
@@ -65,11 +66,11 @@ const QUERY = /* GraphQL */ `
               checklist
               image {
                 url
-                alt
+                ${LOCALIZED_ALT}
               }
               imageSecondary {
                 url
-                alt
+                ${LOCALIZED_ALT}
               }
             }
             ... on StepBlockRecord {
@@ -191,7 +192,8 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
           word: s.title ?? '',
           subtitle: s.body ?? '',
           image: s.image?.url ?? '',
-          imageAlt: s.image?.alt ?? ''
+          // Fall back to the poster word so the hero photo is never announced with an empty alt.
+          imageAlt: s.image?.alt || s.title || ''
         });
         break;
       case 'timeline':
@@ -221,9 +223,9 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
             checklistIntro: i.checklistIntro ?? undefined,
             checklist: checklistRows(i.checklist),
             image: i.image?.url ?? '',
-            imageAlt: i.image?.alt ?? '',
+            imageAlt: i.image?.alt || i.title || '',
             imageSecondary: i.imageSecondary?.url ?? undefined,
-            imageSecondaryAlt: i.imageSecondary?.alt ?? undefined,
+            imageSecondaryAlt: i.imageSecondary ? i.imageSecondary.alt || i.title : undefined,
             mood: firstToken(i.kicker)
           }))
         });
@@ -239,7 +241,8 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
         out.push({
           type: 'photo',
           image: s.image?.url ?? '',
-          imageAlt: s.image?.alt ?? '',
+          // Caption describes the plate when the asset carries no alt of its own.
+          imageAlt: s.image?.alt || s.caption || '',
           width: s.image?.width ?? undefined,
           height: s.image?.height ?? undefined,
           mood: firstToken(s.kicker)
