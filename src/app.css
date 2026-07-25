@@ -63,6 +63,11 @@ body {
   font-family: 'Jost', system-ui, sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
+
+  /* Kill the mobile tap flash (the grey/brown box WebKit paints over a tapped
+     link or button). Inherited, so this covers every clickable element. Keyboard
+     focus rings are untouched — they live on :focus-visible and must stay (WCAG 2.4.7). */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /*
