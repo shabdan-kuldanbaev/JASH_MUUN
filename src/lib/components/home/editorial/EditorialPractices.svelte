@@ -95,6 +95,7 @@
               {#if practice.coverImage}
                 <CmsImage
                   image={practice.coverImage}
+                  alt={practice.title}
                   sizes="(max-width: 1024px) 100vw, 42vw"
                   class="pf-img-el"
                 />

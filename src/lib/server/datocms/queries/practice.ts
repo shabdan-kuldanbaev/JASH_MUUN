@@ -1,4 +1,5 @@
 import { datoRequest } from '../client';
+import { LOCALIZED_ALT } from '../fragments';
 import type { Practice } from '$lib/types/datocms';
 import { LOCALES, CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
@@ -15,7 +16,7 @@ const POST_QUERY = /* GraphQL */ `
         description
         image {
           url
-          alt
+          ${LOCALIZED_ALT}
           width
           height
         }

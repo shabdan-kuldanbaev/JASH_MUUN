@@ -1,4 +1,5 @@
 import { datoRequest } from '../client';
+import { LOCALIZED_ALT } from '../fragments';
 import type { PracticeSummary } from '$lib/types/datocms';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
@@ -18,7 +19,7 @@ const QUERY = /* GraphQL */ `
       excerpt
       coverImage {
         url
-        alt
+        ${LOCALIZED_ALT}
         width
         height
         blurUpThumb

@@ -6,12 +6,16 @@
     image,
     sizes = '100vw',
     class: className = '',
-    eager = false
+    eager = false,
+    alt = ''
   }: {
     image: DatoImage;
     sizes?: string;
     class?: string;
     eager?: boolean;
+    /** Descriptive fallback used when the CMS `image.alt` is missing/empty
+        (e.g. the practice or article title). Empty string keeps it decorative. */
+    alt?: string;
   } = $props();
 
   // Responsive srcset via the shared DatoCMS/Imgix URL builder ($lib/imgix).
@@ -24,7 +28,7 @@
   {src}
   {srcset}
   {sizes}
-  alt={image.alt ?? ''}
+  alt={image.alt || alt}
   width={image.width}
   height={image.height}
   loading={eager ? 'eager' : 'lazy'}

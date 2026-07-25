@@ -177,14 +177,14 @@
               type="button"
               class="frame"
               style="--gap:{GAPS[(ci * 7 + ri) % GAPS.length]}px"
-              aria-label={item.imageAlt}
+              aria-label={item.imageAlt || categoryLabel(item.category) || m.gallery_title()}
               onclick={() => openAt(item)}
               use:reveal={(ri % 6) * 40}
             >
               <CmsImage
                 image={{
                   url: item.imageUrl,
-                  alt: item.imageAlt,
+                  alt: item.imageAlt || categoryLabel(item.category) || m.gallery_title(),
                   width: item.width,
                   height: item.height,
                   blurUpThumb: item.blurUpThumb
