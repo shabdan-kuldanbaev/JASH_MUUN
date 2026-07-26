@@ -128,9 +128,11 @@
 </div>
 
 <style>
+  /* Same box as the header .nav-inner and footer .footer-inner
+     (--home-w + --gutter) so the index lines up with the site chrome. */
   .page {
     position: relative;
-    max-width: var(--content-w);
+    max-width: var(--home-w);
     margin: 0 auto;
     padding: clamp(20px, 2.5vw, 40px) var(--gutter) clamp(48px, 6vw, 80px);
   }

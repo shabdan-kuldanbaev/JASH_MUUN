@@ -142,9 +142,11 @@
 </div>
 
 <style>
+  /* Same box as the header .nav-inner and footer .footer-inner
+     (--home-w + --gutter) so the index lines up with the site chrome. */
   .page {
     position: relative;
-    max-width: var(--content-w);
+    max-width: var(--home-w);
     margin: 0 auto;
     padding: clamp(24px, 3vw, 48px) var(--gutter) clamp(64px, 8vw, 120px);
   }
@@ -175,34 +177,74 @@
   }
 
   /* ── Bento ────────────────────────────────── */
+  /* Mobile-first: one column. Rows keep a base height for the slot rhythm but
+     `auto` as the max lets a row grow when a long descriptive title needs it —
+     the caption is in normal flow (only the image is absolute) so it feeds that
+     growth instead of overflowing a fixed-height card. */
   .bento {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 150px;
-    gap: clamp(12px, 1.5vw, 24px);
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(clamp(200px, 52vw, 290px), auto);
+    gap: 16px;
   }
-  /* Slot rhythm mirrors the mockup: big / stacked pair / narrow / wide / full panorama. */
-  .card:nth-child(6n + 1) {
-    grid-column: span 2;
-    grid-row: span 2;
+
+  /* Tablet — two columns; hero and panorama slots run full width. */
+  @media (min-width: 601px) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: minmax(clamp(190px, 26vw, 250px), auto);
+      gap: clamp(12px, 1.5vw, 24px);
+    }
+    .card:nth-child(6n + 1),
+    .card:nth-child(6n + 6) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    /* Slots 2 and 4 start a row — widen a trailing one so it doesn't sit half-empty. */
+    .card:nth-child(6n + 2):last-child,
+    .card:nth-child(6n + 4):last-child {
+      grid-column: span 2;
+    }
   }
-  .card:nth-child(6n + 2) {
-    grid-row: span 1;
-  }
-  .card:nth-child(6n + 3) {
-    grid-row: span 1;
-  }
-  .card:nth-child(6n + 4) {
-    grid-column: span 1;
-    grid-row: span 2;
-  }
-  .card:nth-child(6n + 5) {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-  .card:nth-child(6n + 6) {
-    grid-column: span 3;
-    grid-row: span 2;
+
+  /* Desktop — slot rhythm from the mockup: big / stacked pair / narrow / wide / panorama. */
+  @media (min-width: 901px) {
+    .bento {
+      grid-template-columns: repeat(3, 1fr);
+      /* Tracks ~1.75:1 per column across 950px→1920px at the --home-w container. */
+      grid-auto-rows: minmax(clamp(165px, 17vw, 280px), auto);
+    }
+    .card:nth-child(6n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    .card:nth-child(6n + 2),
+    .card:nth-child(6n + 3) {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+    .card:nth-child(6n + 4) {
+      grid-column: span 1;
+      grid-row: span 2;
+    }
+    .card:nth-child(6n + 5) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    .card:nth-child(6n + 6) {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+    /* A trailing card must close its row rather than leave a 2×2 hole
+       (page size is 6, so only these three positions can end a page short). */
+    .card:nth-child(6n + 1):last-child,
+    .card:nth-child(6n + 4):last-child {
+      grid-column: span 3;
+    }
+    .card:nth-child(6n + 2):last-child {
+      grid-column: span 1; /* reset the tablet block's widening */
+      grid-row: span 2;
+    }
   }
 
   .card {
@@ -211,10 +253,15 @@
     overflow: hidden;
     background: var(--paper-2);
     text-decoration: none;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     min-height: 0;
+    container-type: inline-size;
   }
   .card :global(img) {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -231,27 +278,31 @@
     pointer-events: none;
     background: rgba(13, 11, 9, 0.12);
   }
+  /* In normal flow (pushed to the bottom by the card's flex end) so the row
+     height accounts for it. The top padding keeps air above a grown caption. */
   .caption {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: relative;
     padding: clamp(16px, 1.6vw, 28px);
+    padding-top: clamp(28px, 3vw, 48px);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 10px; /* title first, badge below */
   }
+  /* Sized against the CARD's own width, so the tier follows the real slot —
+     including the trailing-card widening above and every breakpoint. */
   .card-title {
-    font-size: clamp(22px, 2vw, 30px);
+    font-size: clamp(17px, 5cqw, 21px);
     font-weight: 600;
     letter-spacing: -0.5px;
-    line-height: 1.05;
+    line-height: 1.15;
     color: #fff;
+    text-wrap: balance;
   }
-  .card:nth-child(6n + 1) .card-title,
-  .card:nth-child(6n + 6) .card-title {
-    font-size: clamp(28px, 2.6vw, 40px);
+  @container (min-width: 480px) {
+    .card-title {
+      font-size: clamp(22px, 3.4cqw, 40px);
+    }
   }
   /* Frost badge — translucent white pill, blur, NO border. Below the title. */
   .badge {
@@ -283,28 +334,5 @@
     transition:
       opacity 0.45s ease,
       transform 0.45s ease;
-  }
-
-  /* ── Mobile: single column, EQUAL-size cards ─ */
-  @media (max-width: 600px) {
-    .bento {
-      grid-template-columns: 1fr;
-      grid-auto-rows: 220px;
-      gap: 16px;
-    }
-    .card:nth-child(6n + 1),
-    .card:nth-child(6n + 2),
-    .card:nth-child(6n + 3),
-    .card:nth-child(6n + 4),
-    .card:nth-child(6n + 5),
-    .card:nth-child(6n + 6) {
-      grid-column: span 1;
-      grid-row: span 1;
-    }
-    .card-title,
-    .card:nth-child(6n + 1) .card-title,
-    .card:nth-child(6n + 6) .card-title {
-      font-size: 23px;
-    }
   }
 </style>
