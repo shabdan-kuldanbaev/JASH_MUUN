@@ -32,7 +32,7 @@
 
   /* ── Practices variant — mirrors PracticesIndex .card:nth-child(6n+k) ── */
   .skel--practices {
-    grid-auto-rows: 150px;
+    grid-auto-rows: clamp(165px, 17vw, 280px);
   }
   .skel--practices .cell-1 {
     grid-column: span 2;
@@ -81,13 +81,26 @@
     .skel--articles .cell {
       grid-column: span 1 !important;
     }
+    .skel--practices {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: clamp(190px, 26vw, 250px);
+    }
+    .skel--practices .cell {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+    .skel--practices .cell-1,
+    .skel--practices .cell-6 {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
   }
   @media (max-width: 600px) {
     .skel {
       grid-template-columns: 1fr;
     }
     .skel--practices {
-      grid-auto-rows: 220px;
+      grid-auto-rows: clamp(200px, 52vw, 290px);
     }
     .skel--practices .cell,
     .skel--articles .cell {
