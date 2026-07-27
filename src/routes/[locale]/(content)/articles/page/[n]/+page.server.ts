@@ -8,8 +8,9 @@ import { ARTICLES_PAGE_SIZE, computeTotalPages } from '$lib/pagination';
 
 export const prerender = true;
 
-// Build-time page-count per locale. Page 1 carries the featured hero, so the paginated
-// bento is over the REST (count - 1). A dataset ≤ (1 + PAGE_SIZE) emits no page/[n] entries.
+// Build-time page-count per locale. The featured article is no longer carved out of
+// pagination — it is simply the lead card of page 1 — so the count is the whole list.
+// A dataset ≤ PAGE_SIZE emits no page/[n] entries.
 export const entries: EntryGenerator = async () => {
   const out: Array<{ locale: string; n: string }> = [];
   for (const locale of LOCALES) {
@@ -19,8 +20,7 @@ export const entries: EntryGenerator = async () => {
     } catch {
       count = 0;
     }
-    const restCount = Math.max(0, count - 1);
-    const totalPages = computeTotalPages(restCount, ARTICLES_PAGE_SIZE);
+    const totalPages = computeTotalPages(count, ARTICLES_PAGE_SIZE);
     for (let n = 2; n <= totalPages; n++) out.push({ locale, n: String(n) });
   }
   return out;
@@ -41,9 +41,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
     articles = [];
   }
 
-  const featured = articles.find((a) => a.featured) ?? articles[0];
-  const restCount = articles.filter((a) => a !== featured).length;
-  const totalPages = computeTotalPages(restCount, ARTICLES_PAGE_SIZE);
+  const totalPages = computeTotalPages(articles.length, ARTICLES_PAGE_SIZE);
   if (n > totalPages) {
     error(404, 'Page not found');
   }

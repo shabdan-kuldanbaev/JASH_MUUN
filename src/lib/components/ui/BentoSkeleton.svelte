@@ -8,7 +8,7 @@
   }
   let { variant = 'practices' }: Props = $props();
 
-  const count = $derived(variant === 'practices' ? 6 : 4);
+  const count = $derived(variant === 'practices' ? 6 : 7);
   const cells = $derived(Array.from({ length: count }, (_, i) => i + 1));
 </script>
 
@@ -57,29 +57,36 @@
     grid-row: span 2;
   }
 
-  /* ── Articles variant — mirrors ArticlesIndex .card:nth-child(4n+k) ── */
+  /* ── Articles variant — mirrors the ArticlesIndex card grid (4 cols, lead spans 2) ── */
   .skel--articles {
-    grid-auto-rows: clamp(240px, 26vw, 360px);
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: clamp(190px, 17vw, 260px);
+    gap: clamp(44px, 4.5vw, 76px) clamp(20px, 2.4vw, 40px);
   }
   .skel--articles .cell-1 {
     grid-column: span 2;
   }
-  .skel--articles .cell-2 {
-    grid-column: span 1;
+
+  /* Articles: 4 → 3 → 2 → 1, mirroring ArticlesIndex. */
+  @media (max-width: 1280px) {
+    .skel--articles {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
-  .skel--articles .cell-3 {
-    grid-column: span 1;
-  }
-  .skel--articles .cell-4 {
-    grid-column: span 2;
+  @media (max-width: 620px) {
+    .skel--articles {
+      grid-template-columns: 1fr;
+      grid-auto-rows: clamp(200px, 52vw, 260px);
+    }
+    .skel--articles .cell-1 {
+      grid-column: span 1;
+    }
   }
 
   @media (max-width: 900px) {
     .skel--articles {
       grid-template-columns: repeat(2, 1fr);
-    }
-    .skel--articles .cell {
-      grid-column: span 1 !important;
+      gap: clamp(40px, 5vw, 64px) clamp(24px, 3vw, 44px);
     }
     .skel--practices {
       grid-template-columns: repeat(2, 1fr);
@@ -96,19 +103,13 @@
     }
   }
   @media (max-width: 600px) {
-    .skel {
-      grid-template-columns: 1fr;
-    }
     .skel--practices {
+      grid-template-columns: 1fr;
       grid-auto-rows: clamp(200px, 52vw, 290px);
     }
-    .skel--practices .cell,
-    .skel--articles .cell {
+    .skel--practices .cell {
       grid-column: span 1 !important;
       grid-row: span 1 !important;
-    }
-    .skel--articles {
-      grid-auto-rows: 210px;
     }
   }
 </style>

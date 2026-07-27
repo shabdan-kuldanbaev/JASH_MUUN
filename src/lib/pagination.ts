@@ -1,7 +1,9 @@
 // Shared pagination constants + pure helpers for the content index pages.
 
 export const PRACTICES_PAGE_SIZE = 6;
-export const ARTICLES_PAGE_SIZE = 4;
+// The lead card spans two of the four columns, so a page holds `cards + 1` slots.
+// 7 keeps every page exactly two full rows with no trailing hole.
+export const ARTICLES_PAGE_SIZE = 7;
 
 export function computeTotalPages(count: number, pageSize: number): number {
   return Math.max(1, Math.ceil(count / pageSize));

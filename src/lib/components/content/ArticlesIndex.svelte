@@ -9,7 +9,7 @@
   import Pagination from '$components/ui/Pagination.svelte';
   import BentoSkeleton from '$components/ui/BentoSkeleton.svelte';
   import { reveal } from '$lib/actions/reveal';
-  import { ARTICLES_PAGE_SIZE, computeTotalPages, pageSlice } from '$lib/pagination';
+  import { ARTICLES_PAGE_SIZE, computeTotalPages, pageSlice, featuredFirst } from '$lib/pagination';
 
   interface Props {
     articles: ArticleSummary[]; // FULL list
@@ -32,13 +32,11 @@
     }
   }
 
-  // Featured = CMS-flagged article, else the newest (list is publishedDate_DESC).
-  const featured = $derived<ArticleSummary | undefined>(
-    articles.find((a) => a.featured) ?? articles[0]
-  );
-  const rest = $derived(articles.filter((a) => a !== featured));
-  const totalPages = $derived(computeTotalPages(rest.length, ARTICLES_PAGE_SIZE));
-  const cards = $derived(pageSlice(rest, page, ARTICLES_PAGE_SIZE));
+  // The CMS-flagged article floats to the front and becomes the lead card of page 1;
+  // it is no longer carved out of pagination, so the grid rows stay full.
+  const ordered = $derived(featuredFirst(articles));
+  const totalPages = $derived(computeTotalPages(ordered.length, ARTICLES_PAGE_SIZE));
+  const cards = $derived(pageSlice(ordered, page, ARTICLES_PAGE_SIZE));
 
   // Skeleton only while navigating to an articles INDEX route (not a [slug] detail — PR-002).
   const isNavigating = $derived.by(() => {
@@ -60,6 +58,7 @@
 
   <header class="masthead">
     <h1 class="page-title">{m.articles_title()}</h1>
+    <p class="lede">{m.articles_meta_description()}</p>
   </header>
 
   {#if articles.length === 0}
@@ -69,53 +68,35 @@
   {:else if isNavigating}
     <BentoSkeleton variant="articles" />
   {:else}
-    {#if page === 1 && featured}
-      <a class="featured" href={href(featured.slug)} use:reveal={0}>
-        <div class="featured-text">
-          {#if featured.publishedDate}
-            <span class="eyebrow">{formatDate(featured.publishedDate)}</span>
-          {/if}
-          <h2 class="featured-title">{featured.title}</h2>
-          {#if featured.excerpt}
-            <p class="featured-excerpt">{featured.excerpt}</p>
-          {/if}
-          <span class="read read--accent">{m.articles_read_full()}</span>
-        </div>
-        <div class="featured-cover">
-          {#if featured.coverImage}
-            <CmsImage
-              image={featured.coverImage}
-              alt={featured.title}
-              eager
-              sizes="(min-width: 900px) 660px, 100vw"
-            />
-          {/if}
-        </div>
-      </a>
-    {/if}
-
-    <div class="bento" aria-label={m.articles_list_aria()}>
+    <ul class="cards" aria-label={m.articles_list_aria()}>
       {#each cards as article, i (article.id)}
-        <a class="card" href={href(article.slug)} use:reveal={i * 40}>
-          {#if article.coverImage}
-            <CmsImage
-              image={article.coverImage}
-              alt={article.title}
-              sizes="(min-width: 900px) 50vw, 100vw"
-            />
-          {/if}
-          <span class="scrim" aria-hidden="true"></span>
-          <div class="caption">
-            <h3 class="card-title">{article.title}</h3>
-            <span class="card-meta"
-              >{article.publishedDate
-                ? `${formatDate(article.publishedDate)} · `
-                : ''}{m.common_read()}</span
-            >
-          </div>
-        </a>
+        {@const lead = i === 0}
+        <li>
+          <a class="card" class:card--lead={lead} href={href(article.slug)} use:reveal={i * 60}>
+            {#if article.coverImage}
+              <div class="card-media">
+                <CmsImage
+                  image={article.coverImage}
+                  alt={article.title}
+                  eager={lead}
+                  sizes={lead
+                    ? '(min-width: 1280px) 50vw, 100vw'
+                    : '(min-width: 1280px) 25vw, (min-width: 620px) 50vw, 100vw'}
+                />
+              </div>
+            {/if}
+            {#if article.publishedDate}
+              <span class="card-date">{formatDate(article.publishedDate)}</span>
+            {/if}
+            <h2 class="card-title">{article.title}</h2>
+            <!-- The lead runs on its headline alone; the excerpt would crowd the wide slot. -->
+            {#if !lead && article.excerpt}
+              <p class="card-excerpt">{article.excerpt}</p>
+            {/if}
+          </a>
+        </li>
       {/each}
-    </div>
+    </ul>
 
     <Pagination
       {page}
@@ -141,14 +122,22 @@
   .masthead {
     position: relative;
     z-index: 1;
-    margin-bottom: clamp(28px, 4vw, 56px);
+    margin-bottom: clamp(36px, 5vw, 72px);
   }
   .page-title {
-    font-weight: 600;
-    font-size: clamp(34px, 4vw, 42px);
-    letter-spacing: -1px;
-    line-height: 1;
+    font-weight: 400;
+    font-size: clamp(32px, 3.4vw, 54px);
+    letter-spacing: -0.025em;
+    line-height: 1.02;
     color: var(--ink);
+  }
+  .lede {
+    max-width: 46ch;
+    margin-top: clamp(18px, 2vw, 28px);
+    font-size: clamp(15px, 1.4vw, 18px);
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--ink-2);
   }
 
   .empty {
@@ -157,144 +146,85 @@
     font-size: 16px;
   }
 
-  /* ── Featured hero ──────────────────────────── */
-  .featured {
+  /* ── Cards ──────────────────────────────────── */
+  /* Four columns, lead spans two. No frames, rules or dividers — the cards are
+     held by whitespace alone. Grid items are the <li>, so the span lives there. */
+  .cards {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 1fr minmax(0, 660px);
-    gap: clamp(24px, 4vw, 60px);
-    align-items: center;
-    margin-bottom: clamp(32px, 5vw, 60px);
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(44px, 4.5vw, 76px) clamp(20px, 2.4vw, 40px);
+    list-style: none;
+  }
+  .cards > li {
+    display: flex;
+  }
+  .cards > li:first-child {
+    grid-column: span 2;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     text-decoration: none;
     color: inherit;
   }
-  .featured-text {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .eyebrow {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    color: var(--madder);
-  }
-  .featured-title {
-    font-size: clamp(26px, 3vw, 36px);
-    font-weight: 600;
-    letter-spacing: -1px;
-    line-height: 1.14;
-    color: var(--ink);
-  }
-  .featured-excerpt {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--ink-2);
-    max-width: 46ch;
-  }
-  .read {
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-  .read--accent {
-    color: var(--madder);
-  }
-  .featured-cover {
-    aspect-ratio: 660 / 500;
-    border-radius: 12px;
+  .card-media {
     overflow: hidden;
     background: var(--paper-2);
   }
-  .featured-cover :global(img) {
+  .card-media :global(img) {
     width: 100%;
-    height: 100%;
+    aspect-ratio: 3 / 2;
     object-fit: cover;
     display: block;
-    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .featured:hover .featured-cover :global(img) {
-    transform: scale(1.02);
+  .card:hover .card-media :global(img) {
+    transform: scale(1.025);
+  }
+  .card--lead .card-media :global(img) {
+    aspect-ratio: 16 / 9;
   }
 
-  /* ── Bento grid ─────────────────────────────── */
-  .bento {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(12px, 1.5vw, 20px);
-  }
-  .card {
-    position: relative;
-    min-height: clamp(240px, 26vw, 360px);
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--paper-2);
-    text-decoration: none;
+  .card-date {
     display: block;
-  }
-  /* Mirrored asymmetric rhythm, repeats every 4 cards. */
-  .card:nth-child(4n + 1) {
-    grid-column: span 2;
-  }
-  .card:nth-child(4n + 2) {
-    grid-column: span 1;
-  }
-  .card:nth-child(4n + 3) {
-    grid-column: span 1;
-  }
-  .card:nth-child(4n + 4) {
-    grid-column: span 2;
-  }
-  .card :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-  .card:hover :global(img) {
-    transform: scale(1.03);
-  }
-  .scrim {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      0deg,
-      rgba(16, 15, 13, 0.94) 0%,
-      rgba(16, 15, 13, 0.23) 50%,
-      rgba(16, 15, 13, 0) 100%
-    );
-  }
-  .caption {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: clamp(18px, 2vw, 28px);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    margin-top: clamp(14px, 1.5vw, 20px);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
   .card-title {
-    font-size: clamp(18px, 1.7vw, 22px);
-    font-weight: 600;
-    letter-spacing: -0.3px;
-    line-height: 1.2;
-    color: var(--paper);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin-top: clamp(10px, 1vw, 14px);
+    font-weight: 400;
+    font-size: clamp(17px, 1.3vw, 21px);
+    line-height: 1.3;
+    letter-spacing: -0.008em;
+    color: var(--ink);
+    text-wrap: pretty;
   }
-  .card-meta {
-    font-size: 13px;
-    font-weight: 500;
-    color: #fff;
+  .card:hover .card-title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: var(--line);
+  }
+  .card--lead .card-title {
+    max-width: 30ch;
+    font-size: clamp(22px, 1.9vw, 30px);
+    line-height: 1.24;
+    letter-spacing: -0.015em;
+  }
+  .card-excerpt {
+    margin-top: clamp(10px, 1.1vw, 15px);
+    font-size: 13.5px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--ink-2);
   }
 
   /* ── Petroglyph ─────────────────────────────── */
@@ -321,32 +251,28 @@
       transform 0.45s ease;
   }
 
-  /* ── Responsive ─────────────────────────────── */
-  @media (max-width: 900px) {
-    .featured {
-      grid-template-columns: 1fr;
-    }
-    .featured-cover {
-      order: -1;
-      aspect-ratio: 16 / 9;
-    }
-    .bento {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    /* Even 2-col grid on tablet — reset the mirrored spans. */
-    .card:nth-child(4n + 1),
-    .card:nth-child(4n + 2),
-    .card:nth-child(4n + 3),
-    .card:nth-child(4n + 4) {
-      grid-column: span 1;
+  /* ── Responsive: 4 → 3 → 2 → 1 ──────────────── */
+  @media (max-width: 1280px) {
+    .cards {
+      grid-template-columns: repeat(3, 1fr);
     }
   }
-  @media (max-width: 600px) {
-    .bento {
-      grid-template-columns: 1fr;
+  @media (max-width: 900px) {
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+      gap: clamp(40px, 5vw, 64px) clamp(24px, 3vw, 44px);
     }
-    .card {
-      min-height: 210px;
+  }
+  @media (max-width: 620px) {
+    .cards {
+      grid-template-columns: 1fr;
+      gap: clamp(36px, 7vw, 56px);
+    }
+    .cards > li:first-child {
+      grid-column: auto;
+    }
+    .card--lead .card-title {
+      max-width: none;
     }
   }
 </style>
