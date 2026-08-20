@@ -207,7 +207,8 @@
   class:nav--hidden={editorialHeader.hidden}
 >
   <div class="nav-inner">
-    <!-- Logos: mark → home, ALIPH → foundation site, EU → static -->
+    <!-- Only the project mark rides the nav; the donor lockups live in the footer,
+         where they can carry the required "Supported by" / "Co-funded by" wording. -->
     <div class="nav-logos">
       <span class="logo logo--main">
         <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- homeHref is already resolve()'d -->
@@ -224,20 +225,6 @@
             aria-hidden="true"
           />
         </a>
-      </span>
-      <span class="logo logo--aliph">
-        <a
-          class="logo-rise"
-          href="https://www.aliph-foundation.org"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={m.nav_support_partner()}
-        >
-          <img src={asset('/assets/supporting-logo.svg')} alt="ALIPH" />
-        </a>
-      </span>
-      <span class="logo">
-        <span class="logo-rise"><img src={asset('/assets/eu-logo.svg')} alt="European Union" /></span>
       </span>
     </div>
 
@@ -460,16 +447,6 @@
     display: block;
   }
 
-  /* ALIPH mark: white over hero → brand colour over content. */
-  .logo--aliph img {
-    filter: brightness(0) invert(1);
-    transition: filter 0.32s ease;
-  }
-
-  .nav--onlight .logo--aliph img {
-    filter: none;
-  }
-
   /* Main mark: cross-fade white hero variant to the standard mark */
   .logo--main .logo-rise {
     position: relative;
@@ -610,16 +587,8 @@
       transform: translateY(0);
     }
 
-    .nav-logos .logo:nth-child(1) .logo-rise {
+    .nav-logos .logo .logo-rise {
       transition-delay: 0.32s;
-    }
-
-    .nav-logos .logo:nth-child(2) .logo-rise {
-      transition-delay: 0.39s;
-    }
-
-    .nav-logos .logo:nth-child(3) .logo-rise {
-      transition-delay: 0.46s;
     }
 
     .nav-links .nav-item:nth-child(1) .nav-rise {

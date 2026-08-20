@@ -51,7 +51,7 @@
 <div class="content-shell" class:flush={isPracticeDetail}>
   {@render children()}
 </div>
-<FooterWordmark credit />
+<FooterWordmark />
 
 <style>
   /* Sits above the fixed footer and reserves its height below — the content
