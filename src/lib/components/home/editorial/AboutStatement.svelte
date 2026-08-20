@@ -23,26 +23,6 @@
         >
       </p>
     </div>
-
-    <div class="statement-grid statement-partners">
-      <span class="eyebrow" data-rise use:rise>
-        <span class="rise-inner">{m.footer_supported_by()}</span>
-      </span>
-      <div class="st-support">
-        <div class="st-logos">
-          <span class="st-logo"><img src={asset('/assets/main-logo.svg')} alt="Jash-Muun" /></span>
-          <span class="st-logo"><img src={asset('/assets/supporting-logo.svg')} alt="ALIPH" /></span
-          >
-          <span class="st-logo"
-            ><img src={asset('/assets/eu-logo.svg')} alt="European Union" /></span
-          >
-        </div>
-        <!-- footer_support_note — verbatim. -->
-        <p class="st-note" data-rise use:rise>
-          <span class="rise-inner">{m.footer_support_note()}</span>
-        </p>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -99,54 +79,9 @@
     color: var(--muted);
   }
 
-  .statement-partners {
-    margin-top: clamp(44px, 6vw, 88px);
-    align-items: start;
-  }
-
-  .st-support {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(18px, 2vw, 28px);
-  }
-
-  .st-logos {
-    display: flex;
-    gap: clamp(32px, 4vw, 60px);
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .st-logo {
-    height: clamp(48px, 5vw, 72px);
-  }
-
-  .st-logo img {
-    height: 100%;
-    width: auto;
-    display: block;
-  }
-
-  .st-note {
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: var(--muted);
-    max-width: 64ch;
-  }
-
   @media (max-width: 1024px) {
     .statement-grid {
       grid-template-columns: 1fr;
-    }
-
-    .statement-partners {
-      margin-top: clamp(32px, 5vw, 56px);
-    }
-  }
-
-  @media (max-width: 640px) {
-    .st-logo {
-      height: 44px;
     }
   }
 </style>
