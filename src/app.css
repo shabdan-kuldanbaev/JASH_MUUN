@@ -20,6 +20,7 @@
   --steppe: #c49a2a;
   --valley: #2a7a6a;
   --clay: #a0522d;
+  --horsehair: #4a3a2e;
 
   /* Legacy aliases (used by existing components) */
   --ochre-2: var(--shyrdak);
@@ -71,19 +72,13 @@ body {
 }
 
 /*
-  html needs a defined height so body's min-height: 100% resolves correctly.
-  body uses min-height (not height) so it can grow with content —
-  height: 100% would pin body to the viewport and break vertical scrolling
-  on any page taller than the screen (mobile fallback, content pages).
-  Scroll is locked imperatively (body[data-panel-open] / [data-mobile-menu-open]),
-  not globally — see the Scrolling Model in CLAUDE.md.
+  Native vertical scroll everywhere. html keeps its auto height so the footer's
+  trailing margin-bottom reveal gap stays scrollable; body fills at least the
+  viewport. Scroll is locked imperatively (body[data-panel-open] /
+  [data-mobile-menu-open]), not globally — see the Scrolling Model in CLAUDE.md.
 */
-html {
-  height: 100%;
-}
-
 body {
-  min-height: 100%;
+  min-height: 100vh;
 }
 
 a {
@@ -98,33 +93,6 @@ body[data-panel-open] {
 
 /* Lock scroll when mobile menu is open */
 body[data-mobile-menu-open] {
-  overflow: hidden;
-}
-
-/* =====================================================================
-   SMOOTH SCROLL — Lenis (content pages only)
-   Class hooks added by the Lenis instance in the (content) layout. The
-   horizontal homepage never mounts Lenis, so `html` keeps its 100% height.
-   ===================================================================== */
-html.lenis,
-html.lenis body,
-/* Touch devices run native scroll (no Lenis) but still need height:auto so the
-   footer's trailing margin-bottom reveal gap is actually scrollable — without it
-   the fixed footer only surfaces on overscroll. Class set in $lib/smoothScroll. */
-html.native-scroll,
-html.native-scroll body {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
   overflow: hidden;
 }
 

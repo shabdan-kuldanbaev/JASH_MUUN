@@ -186,8 +186,7 @@
     if (e.key === 'Escape' && langOpen) closeLang(true);
   }
 
-  // Lock page scroll (pauses Lenis via its body-attr observer) while the
-  // full-screen language panel is open.
+  // Lock page scroll while the full-screen language panel is open.
   $effect(() => {
     document.body.toggleAttribute('data-panel-open', langOpen);
     return () => document.body.removeAttribute('data-panel-open');

@@ -126,9 +126,8 @@
         onClick: () => pswp.next()
       });
     });
-    // Pause Lenis + lock the page via the shared body attribute (the smoothScroll
-    // observer stops Lenis on it). PhotoSwipe covers the viewport, so the header
-    // it forces visible underneath never shows.
+    // Lock the page via the shared body attribute. PhotoSwipe covers the viewport,
+    // so the header it forces visible underneath never shows.
     lightbox.on('beforeOpen', () => document.body.setAttribute('data-panel-open', ''));
     lightbox.on('destroy', () => document.body.removeAttribute('data-panel-open'));
     lightbox.init();

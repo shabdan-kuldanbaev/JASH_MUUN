@@ -49,7 +49,6 @@
   },
   "dependencies": {
     "@lucide/svelte": "^1.24.0",
-    "lenis": "^1.3.25",
     "photoswipe": "^5.4.4"
   }
 }

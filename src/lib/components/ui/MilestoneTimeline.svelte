@@ -44,6 +44,7 @@
 <section
   class="timeline {theme ? `timeline--theme-${theme}` : ''}"
   class:timeline--themed={Boolean(theme)}
+  class:timeline--dense={steps.length > 7}
 >
   {#if petroglyphs}
     <img class="petroglyph pg-a" src={asset(petroglyphs[0])} alt="" aria-hidden="true" />
@@ -51,7 +52,7 @@
   {/if}
 
   <div class="tl-inner">
-    <h2 class="tl-title">{title}</h2>
+    {#if title}<h2 class="tl-title">{title}</h2>{/if}
 
     <!--
       origin-ui timeline-12 (horizontal), ported to the project's Tailwind-v3 / hand-CSS
@@ -146,6 +147,7 @@
   .tl-item {
     position: relative;
     flex: 1 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -220,6 +222,17 @@
     color: var(--ink);
   }
 
+  /* Long rails (8+ steps): smaller labels, hyphenated so a long word can't push the rail past the column. */
+  .timeline--dense .tl-name {
+    font-size: clamp(13px, 1.1vw, 15.5px);
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .timeline--dense .tl-item {
+    padding-inline: clamp(3px, 0.5vw, 8px);
+  }
+
   .tl-content {
     margin: 6px 0 0;
     font-size: clamp(13px, 1.1vw, 15px);
@@ -246,6 +259,11 @@
   /* `dye` — single steppe/gold rail (natural-dye) */
   .timeline--theme-dye .tl-item {
     --tl-acc: var(--steppe);
+  }
+
+  /* `kyl` — horsehair rail */
+  .timeline--theme-kyl .tl-item {
+    --tl-acc: var(--horsehair);
   }
 
   /* `duotone` — the two contrast wools, rail flows as a gradient between them */
