@@ -10,7 +10,6 @@
   import ArchiveScatter from '$components/home/editorial/ArchiveScatter.svelte';
   import FooterWordmark from '$components/home/editorial/FooterWordmark.svelte';
   import { initEditorialHeader } from '$lib/editorialHeader.svelte';
-  import { initSmoothScroll } from '$lib/smoothScroll';
 
   let { data }: { data: PageData } = $props();
 
@@ -18,10 +17,6 @@
   let heroEl = $state<HTMLElement | null>(null);
 
   onMount(() => {
-    // Restore vertical scroll (app.css locks body overflow globally).
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'auto';
-
     // Load gate: paint the pre-state one frame, then flip `is-loaded` so the transitions run.
     let raf1 = 0;
     let raf2 = 0;
@@ -33,18 +28,14 @@
     window.addEventListener('load', onLoad);
 
     const stopHeader = initEditorialHeader(() => heroEl?.offsetHeight ?? null);
-    // Momentum smooth-scroll on the homepage too (drives native scroll so the header tracker still fires).
-    const smooth = initSmoothScroll();
 
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
       window.removeEventListener('load', onLoad);
       stopHeader();
-      smooth.destroy();
       // Leave `is-loaded` set (see the content layout): removing + re-adding it across
       // navigation replays the header/hero entrance, which reads as a double animation.
-      document.body.style.overflow = prevOverflow;
     };
   });
 </script>
