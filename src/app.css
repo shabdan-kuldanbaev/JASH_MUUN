@@ -20,6 +20,7 @@
   --steppe: #c49a2a;
   --valley: #2a7a6a;
   --clay: #a0522d;
+  --horsehair: #4a3a2e;
 
   /* Legacy aliases (used by existing components) */
   --ochre-2: var(--shyrdak);

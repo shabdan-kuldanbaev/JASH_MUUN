@@ -2,7 +2,7 @@ import { datoRequest, DatoLocaleError } from '../client';
 import { LOCALIZED_ALT } from '../fragments';
 import { CMS_FALLBACK_LOCALE, resolveContentLocale } from '$lib/i18n';
 import type { Locale } from '$lib/i18n';
-import type { PracticeSection, TableRow, RecRow } from '$lib/types/datocms';
+import type { NarrativeBlock, PracticeSection, TableRow, RecRow } from '$lib/types/datocms';
 
 /** Raw shapes returned by the modular `page_sections` query. */
 interface DatoImage {
@@ -22,6 +22,9 @@ interface DatoStageBlock {
   image: DatoImage | null;
   /** Second frame — the pinned visual pages through the stage's photos on scroll. */
   imageSecondary: DatoImage | null;
+  /** Stage film (video upload) — paged after the photos. Raw-file serving is disabled
+   *  on the project, so playback goes through the Mux MP4 rendition. */
+  video: { video: { mp4Url: string | null; thumbnailUrl: string | null } | null } | null;
 }
 type DatoItem =
   | DatoStageBlock
@@ -72,6 +75,12 @@ const QUERY = /* GraphQL */ `
                 url
                 ${LOCALIZED_ALT}
               }
+              video {
+                video {
+                  mp4Url(res: high)
+                  thumbnailUrl(format: jpg)
+                }
+              }
             }
             ... on StepBlockRecord {
               time
@@ -94,6 +103,14 @@ function paragraphs(body: string | null): string[] {
     .split(/\n{2,}/)
     .map((p) => p.trim())
     .filter(Boolean);
+}
+
+/** Stage narrative: a block whose every line starts with `- ` is a bullet list. */
+function narrative(body: string | null): NarrativeBlock[] {
+  return paragraphs(body).map((p) => {
+    const lines = p.split('\n').map((l) => l.trim());
+    return lines.every((l) => l.startsWith('- ')) ? lines.map((l) => l.slice(2).trim()) : p;
+  });
 }
 
 /** Parse the flat "icon|term|desc" checklist text into rows (desc may contain `|`). */
@@ -218,7 +235,7 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
           theme,
           items: stages.map((i) => ({
             title: i.title,
-            narrative: paragraphs(i.body),
+            narrative: narrative(i.body),
             checklistTitle: i.checklistTitle ?? undefined,
             checklistIntro: i.checklistIntro ?? undefined,
             checklist: checklistRows(i.checklist),
@@ -226,6 +243,8 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
             imageAlt: i.image?.alt || i.title || '',
             imageSecondary: i.imageSecondary?.url ?? undefined,
             imageSecondaryAlt: i.imageSecondary ? i.imageSecondary.alt || i.title : undefined,
+            video: i.video?.video?.mp4Url ?? undefined,
+            videoPoster: i.video?.video?.thumbnailUrl ?? undefined,
             mood: firstToken(i.kicker)
           }))
         });
@@ -233,6 +252,9 @@ function normalize(sections: DatoSection[]): PracticeSection[] {
       }
       case 'lede':
         out.push({ type: 'lede', kicker: s.kicker ?? '', body: s.body ?? '', theme });
+        break;
+      case 'text':
+        out.push({ type: 'text', paragraphs: paragraphs(s.body) });
         break;
       case 'quote':
         out.push({ type: 'quote', quote: s.body ?? '', attribution: s.caption ?? '' });

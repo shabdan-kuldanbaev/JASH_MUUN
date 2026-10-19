@@ -58,6 +58,12 @@
             {/if}
           </div>
         </section>
+      {:else if section.type === 'text'}
+        <section class="sec text-sec">
+          <div class="sec-inner">
+            {#each section.paragraphs as para, p (p)}<p class="text-p">{para}</p>{/each}
+          </div>
+        </section>
       {:else if section.type === 'timeline'}
         <section class="sec arc">
           <MilestoneTimeline title={section.title} steps={section.steps} theme={section.theme} />
@@ -277,6 +283,13 @@
     --orn-c: var(--clay);
   }
 
+  /* `kyl` — two strands: horsehair + sheep wool, joined by an ink knot */
+  .lede--theme-kyl .ornament {
+    --orn-a: var(--horsehair);
+    --orn-b: color-mix(in srgb, var(--horsehair) 55%, var(--paper));
+    --orn-c: var(--ink);
+  }
+
   /* `dye` — single steppe/gold ornament */
   .lede--theme-dye .ornament {
     --orn-a: var(--steppe);
@@ -332,9 +345,40 @@
     );
   }
 
+  /* `twist` — horsehair soak with faint diagonal fibre hatching (the twisting stages). */
+  .ritual.is-twist {
+    background: color-mix(in srgb, var(--horsehair) 5%, var(--paper));
+  }
+
+  .ritual.is-twist::after {
+    opacity: 1;
+    background: repeating-linear-gradient(
+      -62deg,
+      color-mix(in srgb, var(--horsehair) 7%, transparent) 0 1px,
+      transparent 1px 9px
+    );
+    mask-image: radial-gradient(120% 80% at 50% 40%, #000, transparent 75%);
+  }
+
   .ritual :global(.ssr) {
     position: relative;
     z-index: 1;
+  }
+
+  /* Text — plain prose column */
+  .text-sec {
+    padding-block: clamp(8px, 2vw, 24px) var(--section-py);
+  }
+
+  .text-p {
+    max-width: 64ch;
+    font-size: clamp(17px, 1.6vw, 19px);
+    line-height: 1.75;
+    color: var(--ink-2);
+  }
+
+  .text-p + .text-p {
+    margin-top: 18px;
   }
 
   /* Photo — uncropped plate */

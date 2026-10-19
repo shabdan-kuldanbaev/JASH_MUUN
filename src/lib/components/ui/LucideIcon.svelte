@@ -35,6 +35,8 @@
     TestTube,
     TriangleAlert,
     Utensils,
+    Volume2,
+    VolumeX,
     Waves,
     Wind
   } from '@lucide/svelte';
@@ -70,6 +72,8 @@
     'test-tube': TestTube,
     'triangle-alert': TriangleAlert,
     utensils: Utensils,
+    'volume-2': Volume2,
+    'volume-x': VolumeX,
     waves: Waves,
     wind: Wind
   };

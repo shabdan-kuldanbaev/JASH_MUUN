@@ -167,12 +167,15 @@ export interface RecRow {
   text: string;
 }
 
+/** Narrative block: a paragraph, or a bullet list (`- ` lines in the CMS body). */
+export type NarrativeBlock = string | string[];
+
 /** A single ritual step rendered in the sticky-scroll block. */
 export interface RitualStep {
   /** Step heading — the "Шаг N" prefix is intentionally dropped. */
   title: string;
-  /** Full narrative, one entry per paragraph. */
-  narrative: string[];
+  /** Full narrative in source order — paragraphs and bullet lists. */
+  narrative: NarrativeBlock[];
   /** Heading for the how-to checklist (e.g. "Проращивание пшеницы (3–5 дней)"). */
   checklistTitle?: string;
   /** Optional intro line under the checklist heading. */
@@ -185,6 +188,9 @@ export interface RitualStep {
   /** Second frame — the pinned visual pages through the stage's photos by scroll progress. */
   imageSecondary?: string;
   imageSecondaryAlt?: string;
+  /** Stage film — the last pinned frame (after the photos); muted loop, sound on demand. */
+  video?: string;
+  videoPoster?: string;
   /**
    * Zone mood (from the stage kicker) — the ritual background reflects the
    * ACTIVE stage's mood, so a zone can both start and end mid-ritual. Rendered
@@ -202,13 +208,15 @@ export interface RitualStep {
 //            timeline / ritual / lede as `--theme-<name>`. Known: `duotone`
 //            (two alternating wool accents + two-colour ornament), `ember`
 //            (single clay accent + clay ornament), `dye` (single steppe/gold
-//            accent + steppe ornament — natural-dye identity). Add a theme =
+//            accent + steppe ornament — natural-dye identity), `kyl` (horsehair
+//            accent, upright narrative, hair/wool two-strand ornament). Add a theme =
 //            one CSS block per themed component, no component-logic change.
 //   MOOD   — one token per ritual STAGE kicker (zone soak) and on a `photo`
 //            section kicker (spatial close band), rendered as `is-<mood>` /
 //            `photo--<mood>`. Known: `silk`, `ember`, `dye` (warm vat zone —
 //            golden haze; placed on the single thermal stage so the zone lives
-//            mid-ritual and never touches a section boundary).
+//            mid-ritual and never touches a section boundary), `twist`
+//            (horsehair soak + fibre hatching over the twisting stages).
 
 export type PracticeSection =
   | {
@@ -228,6 +236,8 @@ export type PracticeSection =
       theme?: string;
     }
   | { type: 'quote'; quote: string; attribution: string }
+  /** Plain prose column — paragraphs that are neither the lede nor a stage. */
+  | { type: 'text'; paragraphs: string[] }
   | {
       type: 'photo';
       image: string;
